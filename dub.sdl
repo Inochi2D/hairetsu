@@ -1,0 +1,30 @@
+name "hairetsu"
+description "Cross-platform text layouting library"
+authors "Luna"
+copyright "Copyright © 2025, Luna"
+license "BSL-1.0"
+
+dependency "numem" version=">=1.0.0-rc2"
+
+targetType "dynamicLibrary"
+targetPath "out/"
+
+configuration "win32" {
+    platforms "windows"
+
+    libs "usp10" "gdi32"
+    sourcePaths "backends/win32/"
+}
+
+configuration "appleOS" {
+    platforms "darwin"
+
+    lflags "-framework" "CoreText"
+    sourcePaths "backends/darwin/"
+}
+
+configuration "posix" {
+
+    libs "harfbuzz" "fontconfig" "freetype"
+    sourcePaths "backends/posix/"
+}
