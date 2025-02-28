@@ -1,5 +1,5 @@
 /**
-    Harfbuzz Shaper
+    Hairetsu Posix Fonts
 
     Copyright:
         Copyright © 2023-2025, Kitsunebi Games
@@ -8,15 +8,12 @@
     License:   $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
     Authors:   Luna Nielsen
 */
-module hairetsu.shaper;
-import hairetsu.buffer;
+module hairetsu.backend.font;
+import hairetsu.backend.face;
+import hairetsu.backend.hb;
+import hairetsu.backend.ft;
+
+import hairetsu.font;
+import nulib.collections;
+import nulib.string;
 import numem;
-
-final
-class Shaper : NuRefCounted {
-@nogc:
-    void shape(ref Buffer buffer) {
-
-    }
-}
-
