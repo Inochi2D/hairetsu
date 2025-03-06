@@ -1,0 +1,8 @@
+name "fontlisting"
+description "Hairetsu example which lists the installed fonts."
+authors "Luna"
+copyright "Copyright © 2025, Luna"
+license "BSL-1.0"
+targetPath "out/"
+
+dependency "hairetsu" path="../../" version="*"

@@ -1,0 +1,16 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/fontlisting
+fontlisting.so
+fontlisting.dylib
+fontlisting.dll
+fontlisting.a
+fontlisting.lib
+fontlisting-test-*
+*.exe
+*.pdb
+*.o
+*.obj
+*.lst
