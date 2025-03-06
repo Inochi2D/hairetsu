@@ -373,8 +373,7 @@ struct  FT_Size_Metrics {
     FT_Pos     max_advance; /* max horizontal advance, in 26.6 pixels */
 }
 
-alias struct  FT_SizeRec_
-{
+struct  FT_SizeRec_ {
     FT_Face           face;      /* parent face object              */
     FT_Generic        generic;   /* generic pointer for client uses */
     FT_Size_Metrics   metrics;   /* size metrics                    */

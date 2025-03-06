@@ -28,6 +28,7 @@
         Luna Nielsen
 */
 module hairetsu.backend.fc;
+import hairetsu.backend.ft : FT_Face;
 
 extern (C) nothrow @nogc:
 
@@ -409,6 +410,13 @@ void FcDirCacheUnload (FcCache *cache);
 /* fcfreetype.c */
 FcPattern* FcFreeTypeQuery (const(FcChar8)* file, uint id, FcBlanks *blanks, int *count);
 uint FcFreeTypeQueryAll (const(FcChar8)* file, uint id, FcBlanks *blanks, int *count, FcFontSet *set);
+FcResult FcPatternGetFTFace (const (FcPattern) *p, const (char) *object, int n, FT_Face *f);
+FcBool FcPatternAddFTFace (FcPattern *p, const (char) *object, const FT_Face f);
+FcPattern* FcFreeTypeQueryFace (const (FT_Face)  face,
+                     const(FcChar8)* file,
+                     uint   id,
+                     FcBlanks      *blanks);
+
 
 /* fcfs.c */
 FcFontSet* FcFontSetCreate ();

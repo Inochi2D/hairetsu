@@ -20,3 +20,4 @@ public import hairetsu.backend.hb.map;
 public import hairetsu.backend.hb.paint;
 public import hairetsu.backend.hb.set;
 public import hairetsu.backend.hb.unicode;
+public import hairetsu.backend.hb.ft;

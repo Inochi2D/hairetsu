@@ -8,12 +8,12 @@
     License:   $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
     Authors:   Luna Nielsen
 */
-module hairetsu.backend.fontmgr;
-import hairetsu.backend.font;
-import hairetsu.backend.face;
-import hairetsu.backend.family;
+module hairetsu.impl.fontmgr;
+import hairetsu.impl.font;
+import hairetsu.impl.face;
+import hairetsu.impl.family;
+import hairetsu.impl;
 import hairetsu.backend.fc;
-import hairetsu.backend;
 
 import hairetsu.font;
 import hairetsu.face;
@@ -22,14 +22,6 @@ import hairetsu.fontmgr;
 import nulib.collections;
 import nulib.string;
 import numem;
-
-extern(C)
-export HaFontManager ha_fontmanager_new() @nogc {
-    if (!ha_get_initialized())
-        ha_initialize();
-    
-    return nogc_new!PosixFontManager();
-}
 
 class PosixFontManager : HaFontManager {
 @nogc:
@@ -135,4 +127,12 @@ public:
     @property HaFontFamily[] fontFamilies() @trusted { 
         return cast(HaFontFamily[])families[];
     }
+}
+
+extern(C)
+export HaFontManager ha_fontmanager_new() @nogc {
+    if (!ha_get_initialized())
+        ha_initialize();
+    
+    return nogc_new!PosixFontManager();
 }

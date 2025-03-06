@@ -62,7 +62,7 @@ extern HaFontManager ha_fontmanager_new() @nogc;
     Increases the font manager's refcount.
 */
 extern(C)
-HaFontManager ha_fontmanager_retain(HaFontManager fm) {
+HaFontManager ha_fontmanager_retain(HaFontManager fm) @nogc {
     return cast(HaFontManager)fm.retain();
 }
 
@@ -70,6 +70,6 @@ HaFontManager ha_fontmanager_retain(HaFontManager fm) {
     Decreases the font manager's refcount.
 */
 extern(C)
-HaFontManager ha_fontmanager_release(HaFontManager fm) {
+HaFontManager ha_fontmanager_release(HaFontManager fm) @nogc {
     return cast(HaFontManager)fm.release();
 }

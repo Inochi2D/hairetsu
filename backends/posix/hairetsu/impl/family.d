@@ -8,11 +8,11 @@
     License:   $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
     Authors:   Luna Nielsen
 */
-module hairetsu.backend.family;
-import hairetsu.backend.font;
-import hairetsu.backend.face;
+module hairetsu.impl.family;
+import hairetsu.impl.font;
+import hairetsu.impl.face;
+import hairetsu.impl;
 import hairetsu.backend.fc;
-import hairetsu.backend;
 
 import hairetsu.font;
 import hairetsu.face;
@@ -56,7 +56,7 @@ public:
     //
     //              INTERNAL
     //
-package(hairetsu.backend):
+package(hairetsu.impl):
     void addFcFace(FcPattern* pattern) {
         HaFontDescriptor descriptor;
         descriptor.handle = pattern;
@@ -82,8 +82,6 @@ package(hairetsu.backend):
                 descriptor.format = HaFontFormat.type1;
                 break;
         }
-        FcPatternPrint(pattern);
-
         this.descriptors ~= descriptor;
     }
 }
