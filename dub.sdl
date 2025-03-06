@@ -4,9 +4,12 @@ authors "Luna"
 copyright "Copyright © 2025, Luna"
 license "BSL-1.0"
 
-dependency "numem" version=">=1.0.0-rc2"
+dependency "numem" version=">=1.0.5"
+dependency "nulib" repository="git+https://github.com/Inochi2D/nulib.git" version="~main"
 
-targetType "dynamicLibrary"
+dependency "silly" version="*"
+
+targetType "library"
 targetPath "out/"
 
 configuration "win32" {
@@ -27,4 +30,5 @@ configuration "posix" {
 
     libs "harfbuzz" "fontconfig" "freetype"
     sourcePaths "backends/posix/"
+    importPaths "backends/posix/"
 }

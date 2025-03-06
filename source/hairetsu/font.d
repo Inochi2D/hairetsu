@@ -1,5 +1,5 @@
 /**
-    Hairetsu Posix Fonts
+    Hairetsu Context
 
     Copyright:
         Copyright © 2023-2025, Kitsunebi Games
@@ -8,15 +8,7 @@
     License:   $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
     Authors:   Luna Nielsen
 */
-module hairetsu.backend.font;
-import hairetsu.backend.face;
-import hairetsu.backend.hb;
-import hairetsu.backend.ft;
-import hairetsu.backend.fc;
-
-import hairetsu.font;
-import hairetsu.face;
-import hairetsu.fontmgr;
+module hairetsu.font;
 import nulib.collections;
 import nulib.string;
 import numem;

@@ -44,24 +44,63 @@ enum uint ISO15924(immutable(char)[4] tag) = (
 enum TextDirection : uint {
     
     /**
-        Text is read le
+        Text is read left-to-right
     */
-    leftToRight,
+    leftToRight = 1,
     
     /**
         Text is read right-to-left
     */
-    rightToLeft,
+    rightToLeft = 2,
+
+    /**
+        Text direction is weak, meaning it may change mid-run.
+    */
+    weak = 4,
+}
+
+/**
+    The orientation of glyphs in a text segment.
+*/
+enum TextGravity : uint {
     
     /**
-        Text is read top-to-bottom
+        Southern (upright) gravity.
     */
-    topToBottom,
+    south   = 0x00,
     
     /**
-        Text is read bottom to top.
+        Eastern gravity.
     */
-    bottomToTop,
+    east    = 0x01,
+    
+    /**
+        Northen (upside-down) gravity.
+    */
+    north   = 0x02,
+    
+    /**
+        Western gravity.
+    */
+    west    = 0x03,
+
+    /**
+        Scripts will use the natural gravity based on the
+        base gravity of the script.
+    */
+    natural = 0x00,
+
+    /**
+        Forces the base gravity to always be used, regardless
+        of script.
+    */
+    strong  = 0x08,
+
+    /**
+        For scripts not in their natural direction (eg. Latin in East gravity), 
+        choose per-script gravity such that every script respects the line progression.
+    */
+    line    = 0x0F
 }
 
 /**

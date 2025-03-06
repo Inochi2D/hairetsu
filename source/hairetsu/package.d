@@ -17,3 +17,36 @@
     Authors:   Luna Nielsen
 */
 module hairetsu;
+
+public import hairetsu.buffer;
+public import hairetsu.common;
+public import hairetsu.fontmgr;
+public import hairetsu.family;
+public import hairetsu.face;
+public import hairetsu.font;
+
+/**
+    Gets whether hairetsu is initialized.
+
+    Returns:
+        $(D true) if initialized,
+        $(D false) otherwise.
+*/
+extern(C)
+extern bool ha_get_initialized() @nogc;
+
+/**
+    Initializes hairetsu.
+
+    Returns:
+        $(D true) if initialization succeeded,
+        $(D false) otherwise.
+*/
+extern(C)
+extern bool ha_init() @nogc;
+
+/**
+    Shuts down hairetsu.
+*/
+extern(C)
+extern void ha_shutdown() @nogc;

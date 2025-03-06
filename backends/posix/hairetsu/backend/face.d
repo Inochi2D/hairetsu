@@ -12,6 +12,7 @@ module hairetsu.backend.face;
 import hairetsu.backend.hb;
 import hairetsu.backend.ft;
 
+import hairetsu.face;
 import hairetsu.font;
 import nulib.collections;
 import nulib.string;
@@ -24,7 +25,8 @@ class PosixFontFace : HaFontFace {
 @nogc:
 private:
     hb_face_t* hb_face;
+    FT_Face ft_face;
 
 public:
-    this(HaFontFamily family) { super(family); }
+    
 }

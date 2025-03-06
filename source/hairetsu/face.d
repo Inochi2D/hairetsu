@@ -1,5 +1,5 @@
 /**
-    Shaper Interface
+    Hairetsu Context
 
     Copyright:
         Copyright © 2023-2025, Kitsunebi Games
@@ -8,14 +8,17 @@
     License:   $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
     Authors:   Luna Nielsen
 */
-module hairetsu.shaper;
+module hairetsu.face;
+import nulib.collections;
+import nulib.string;
+import numem;
 
 /**
-    The underlying shaper subsystem
+    A font face.
 */
-extern
-final
-class Shaper : NuRefCounted {
+abstract
+class HaFontFace : NuRefCounted {
 @nogc:
-    void shape(ref Buffer buffer);
+public:
+    
 }
