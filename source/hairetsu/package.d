@@ -21,8 +21,6 @@ module hairetsu;
 public import hairetsu.buffer;
 public import hairetsu.common;
 public import hairetsu.fontmgr;
-public import hairetsu.family;
-public import hairetsu.face;
 public import hairetsu.font;
 
 /**

@@ -10,13 +10,14 @@
 */
 module hairetsu.fontmgr;
 
+version(linux):
+
 import hairetsu.family;
 import hairetsu.font;
 import hairetsu.face;
 import nulib.collections;
 import nulib.string;
 import numem;
-
 /**
     Font Managers handle the lifetimes of font objects.
 */

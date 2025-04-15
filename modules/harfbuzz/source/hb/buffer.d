@@ -215,7 +215,7 @@ struct hb_segment_properties_t {
  */
 const hb_segment_properties_t HB_SEGMENT_PROPERTIES_DEFAULT = {
     hb_direction_t.HB_DIRECTION_INVALID, 
-    hb_script_t.Unknown, 
+    0x00000000, 
     HB_LANGUAGE_INVALID, 
     cast(const(void*)) 0, 
     cast(const(void*)) 0

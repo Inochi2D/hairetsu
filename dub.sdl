@@ -6,16 +6,19 @@ license "BSL-1.0"
 
 dependency "numem" version=">=1.0.5"
 dependency "nulib" repository="git+https://github.com/Inochi2D/nulib.git" version="~main"
+// dependency "hairetsu:harfbuzz" version="*"
 
-dependency "silly" version="*"
+stringImportPaths "res/"
 
 targetType "library"
 targetPath "out/"
 
+subPackage "modules/harfbuzz"
+
 configuration "win32" {
     platforms "windows"
 
-    libs "usp10" "gdi32"
+    libs "gdi32"
     sourcePaths "backends/win32/"
 }
 
@@ -28,7 +31,11 @@ configuration "appleOS" {
 
 configuration "posix" {
 
-    libs "harfbuzz" "fontconfig" "freetype"
+    libs "fontconfig" "freetype"
     sourcePaths "backends/posix/"
-    importPaths "backends/posix/"
+}
+
+configuration "unittest" {
+    dependency "silly" version="*"
+    dependency "numem:hookset-libc" version="*"
 }

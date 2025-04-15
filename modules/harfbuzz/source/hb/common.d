@@ -28,7 +28,6 @@
         Grillo del Mal
 */
 module hairetsu.backend.hb.common;
-import hairetsu.common;
 
 extern(C) nothrow @nogc:
 
@@ -123,7 +122,7 @@ enum uint HB_TAG(immutable(char)[4] tag) = (
      (cast(uint)(tag[3]) & 0xFF)
 );
 
-alias hb_script_t = Script;
+alias hb_script_t = uint;
 
 /**
 * hb_direction_t:

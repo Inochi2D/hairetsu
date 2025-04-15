@@ -29,6 +29,9 @@
         Luna Nielsen
 */
 module hairetsu.backend.hb.ft;
+
+version(Have_freetype):
+
 import hairetsu.backend.hb.face;
 import hairetsu.backend.hb.font;
 import hairetsu.backend.hb.common;
