@@ -9,6 +9,7 @@
     Authors:   Luna Nielsen
 */
 module hairetsu.font;
+import hairetsu.font.reader;
 import nulib.io.stream.rw;
 import nulib.io.stream;
 import nulib.text.unicode;
@@ -89,11 +90,10 @@ struct HaMetrics {
     A font file
 */
 abstract
-class HaFontFile : NuObject {
+class HaFont : NuObject {
 @nogc:
 private:
-    Stream stream;
-    StreamReader reader;
+    nstring name_;
     weak_vector!HaFontFace faces_;
 
     // Clears and removes a refcount from all faces.
@@ -106,23 +106,21 @@ private:
         }
     }
 
-    void reset() {
-        if (reader) nogc_delete(reader);
-        if (stream) nogc_delete(stream);
-        this.clearFaces();
-
-        reader = null;
-        stream = null;
-    }
-
 protected:
+
+    /**
+        The backing font reader
+    */
+    HaFontReader reader;
     
     /**
         Implemented by the font file reader to index the faces.
     */
-    abstract void onIndexFontFile(StreamReader reader, ref weak_vector!HaFontFace faces);
+    abstract void onIndexFont(ref weak_vector!HaFontFace faces);
 
 public:
+
+    final @property string name() { return name_[]; }
 
     /**
         Font faces within the font.
@@ -133,44 +131,43 @@ public:
         Destructor
     */
     ~this() {
-        this.reset();
+        this.clearFaces();
+
+        // Delete old reader
+        if (this.reader) {
+            nogc_delete(this.reader);
+        }
     }
 
     /**
         Constructs a font file from a stream.
 
         Params:
-            stream = The stream to read the file from.
+            reader =    The font reader to read the file from.
+            name =      (optional) name of the font, usually its file path
     */
-    this(Stream stream) {
-        this.reload(stream);
+    this(HaFontReader reader, string name) {
+        this.name_ = name;
+        this.reader = reader;
+        this.onIndexFont(faces_);
     }
     
     /**
-        Reloads the font from the stream, this will reduce the refcount
-        of any faces that were prior owned by the font file.
-    */
-    final
-    void reload(Stream stream) {
-        this.reset();
+        Creates a new font for the given stream.
 
-        // Prepare stream
-        this.stream = stream;
-        this.reader = nogc_new!StreamReader(stream);
-        this.stream.seek(0);
+        Params:
+            stream =    The stream to create a font from
+            name =      The name to give the font.
         
-        // Index file
-        this.onIndexFontFile(reader, faces_);
-    }
-
-    /**
-        Reduces the refcount of all the faces in the font file,
-        this will unload all the font faces that haven't explicitly
-        been taken from the file.
+        Returns:
+            A $(D HaFont) instance on success,
+            $(D null) on failure.
     */
-    final
-    void releaseUnused() {
-        this.clearFaces();
+    static HaFont createFont(Stream stream, string name = "<memory stream>") {
+        if (HaFontReader reader = HaFontReaderFactory.tryCreateFor(stream)) {
+            return reader.createFont(name);
+        }
+        return null;
     }
 
     /**
@@ -186,17 +183,6 @@ public:
 }
 
 /**
-    An exception thrown by the FontFile loader.
-*/
-class HaFontFileLoadException : NuException {
-@nogc:
-public:
-    this(string reason, string file = __FILE__, size_t line = __LINE__) {
-        super(reason, null, file, line);
-    }
-}
-
-/**
     A Font Object
 */
 abstract
@@ -204,27 +190,13 @@ class HaFontFace : NuRefCounted {
 @nogc:
 private:
     uint index_;
-    Stream stream;
-
-    void reset() {
-        if (reader) nogc_delete(reader);
-        if (stream) nogc_delete(stream);
-
-        reader = null;
-        stream = null;
-    }
 
 protected:
-
-    /**
-        The reader for the font
-    */
-    StreamReader reader;
     
     /**
         Implemented by the font face to read the face.
     */
-    abstract void onFaceLoad(StreamReader reader);
+    abstract void onFaceLoad(HaFontReader reader);
     
 public:
 
@@ -236,19 +208,10 @@ public:
     /**
         Constructs a new font face from a stream.
     */
-    this(uint index, Stream stream) {
+    this(uint index, HaFontReader reader) {
         this.index_ = index;
-        this.stream = stream;
-        this.reader = nogc_new!StreamReader(stream);
-
-        reader.stream.seek(0);
         this.onFaceLoad(reader);
     }
-
-    /*
-        Destructor
-    */
-    ~this() { this.reset(); }
 
     /**
         The postscript name of the font face.
@@ -264,6 +227,11 @@ public:
         The sub font family of the font face.
     */
     abstract @property string subfamily();
+
+    /**
+        The name of the type of font.
+    */
+    abstract @property string type();
 
     /**
         Amount of glyphs within font face.
@@ -286,4 +254,48 @@ public:
             The amount of codepoints that were added to the set.
     */
     abstract uint fillCodepoints(ref set!codepoint cSet);
+}
+
+/**
+    An exception thrown by the FontFile loader.
+*/
+class HaFontReadException : NuException {
+@nogc:
+public:
+    this(string reason, string file = __FILE__, size_t line = __LINE__) {
+        super(reason, null, file, line);
+    }
+}
+
+
+/**
+    Initializes the font loader subsystem.
+*/
+extern(C)
+bool ha_init_fonts() @nogc {
+    import hairetsu : ha_get_initialized;
+    if (ha_get_initialized) 
+        return true;
+
+    import hairetsu.font.reader : ha_init_fonts_reader;
+    if (!ha_init_fonts_reader())
+        return false;
+    
+    return true;
+}
+
+/**
+    Initializes the font loader subsystem.
+*/
+extern(C)
+bool ha_shutdown_fonts()  @nogc {
+    import hairetsu : ha_get_initialized;
+    if (!ha_get_initialized) 
+        return true;
+
+    import hairetsu.font.reader : ha_shutdown_fonts_reader;
+    if (!ha_shutdown_fonts_reader())
+        return false;
+    
+    return true;
 }

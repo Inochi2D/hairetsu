@@ -9,7 +9,9 @@
     Authors:   Luna Nielsen
 */
 module hairetsu.common;
-@nogc:
+public import nulib.math.fixed;
+public import nulib.text.unicode;
+public import nulib.string;
 
 @nogc nothrow:
 

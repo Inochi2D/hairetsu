@@ -31,7 +31,9 @@ public import hairetsu.font;
         $(D false) otherwise.
 */
 extern(C)
-extern bool ha_get_initialized() @nogc;
+bool ha_get_initialized() @nogc {
+    return _ha_initialized;
+}
 
 /**
     Initializes hairetsu.
@@ -41,10 +43,30 @@ extern bool ha_get_initialized() @nogc;
         $(D false) otherwise.
 */
 extern(C)
-extern bool ha_init() @nogc;
+bool ha_init() @nogc {
+    if (!_ha_initialized) {
+
+        // Initialize the fonts subsystem.
+        if (!ha_init_fonts())
+            return false;
+
+        _ha_initialized = true;
+    }
+    return _ha_initialized;
+}
 
 /**
     Shuts down hairetsu.
 */
 extern(C)
-extern void ha_shutdown() @nogc;
+void ha_shutdown() @nogc {
+    if (_ha_initialized) {
+        cast(void)ha_shutdown_fonts();
+        _ha_initialized = false;
+    }
+}
+
+private:
+
+// Whether hairetsu is initialized.
+__gshared bool _ha_initialized = false;
