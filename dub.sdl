@@ -6,7 +6,7 @@ license "BSL-1.0"
 
 dependency "numem" version=">=1.0.5"
 dependency "nulib" repository="git+https://github.com/Inochi2D/nulib.git" version="~main"
-// dependency "hairetsu:harfbuzz" version="*"
+dependency "hairetsu:harfbuzz" version="*" optional=true default=false
 
 stringImportPaths "res/"
 
