@@ -214,6 +214,11 @@ struct TTCmapTable {
         records = reader.readRecords!TTCmapEncodingRecord(tableCount);
 
         foreach(ref TTCmapEncodingRecord record; records) {
+            
+            // Skip non-unicode and non-windows platforms
+            if (record.platformId != 0 && record.platformId != 3)
+                continue;
+            
             reader.seek(baseOffset+record.subtableOffset);
             tables ~= reader.readRecord!TTCmapSubTable();
         }
@@ -225,9 +230,8 @@ struct TTCmapTable {
 */
 struct TTCmapEncodingRecord {
 @nogc:
-
     ushort platformId;
-    ushort platformSpecificId;
+    ushort encodingId;
     uint subtableOffset;
 }
 
