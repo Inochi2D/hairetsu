@@ -9,6 +9,7 @@
     Authors:   Luna Nielsen
 */
 module hairetsu.font.reader;
+import hairetsu.font.file;
 import nulib.collections;
 import nulib.io.stream.rw;
 import nulib.io.stream;
@@ -16,7 +17,6 @@ import nulib.math.fixed;
 import nulib.text.unicode;
 import nulib.string;
 import numem;
-import hairetsu.font;
 
 /**
     A factory for constructing a font reader and
@@ -279,7 +279,18 @@ public:
     /**
         Creates a font instance associated with the reader.
     */
-    abstract HaFont createFont(string name);
+    abstract HaFontFile createFont(string name);
+}
+
+/**
+    An exception thrown by the FontFile loader.
+*/
+class HaFontReadException : NuException {
+@nogc:
+public:
+    this(string reason, string file = __FILE__, size_t line = __LINE__) {
+        super(reason, null, file, line);
+    }
 }
 
 /**

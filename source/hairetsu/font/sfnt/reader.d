@@ -203,9 +203,9 @@ public:
         Creates a font instance using this reader.
     */
     override
-    HaFont createFont(string name) {
-        import hairetsu.font.sfnt : SFNTFont;
-        return nogc_new!SFNTFont(this, name);
+    HaFontFile createFont(string name) {
+        import hairetsu.font.sfnt.file : SFNTFontFile;
+        return nogc_new!SFNTFontFile(this, name);
     }
 }
 

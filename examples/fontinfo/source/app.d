@@ -14,10 +14,10 @@ void main(string[] args) {
 	foreach(i, arg; args[1..$]) {
 		if (stdfile.exists(arg)) {
 			auto stream = nogc_new!MemoryStream(cast(ubyte[])stdfile.read(arg).nu_dup);
-			HaFont font = HaFont.createFont(stream, arg);
+			HaFontFile font = HaFontFile.fromStream(stream, arg);
 
-			writefln("%u: %s (%u faces)", i, font.name, font.faces.length);
-			foreach(HaFontFace face; font.faces) {
+			writefln("%u: %s (%u subfonts)", i, font.name, font.fonts.length);
+			foreach(HaFont face; font.fonts) {
 				writefln("\t%u: %s %s (%s)", face.index, face.family, face.subfamily, face.type);
 			}
 		}
