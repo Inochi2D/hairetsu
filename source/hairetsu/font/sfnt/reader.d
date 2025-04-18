@@ -17,6 +17,7 @@ import hairetsu.font;
 import nulib.collections;
 import nulib.io.stream.rw;
 import nulib.io.stream;
+import numem.core.traits : Fields, isStructLike;
 import numem;
 
 /**
@@ -40,15 +41,15 @@ private:
                 entry.type = SNFTFontType.openType;
                 break;
             
-            // TrueType Collections
+            // TrueType
             case ISO15924!("true"):
             case 0x00010000:
                 entry.type = SNFTFontType.trueType;
                 break;
             
-            // TrueType Collections
+            // Type 1
             case ISO15924!("typ1"):
-                entry.type = SNFTFontType.type1;
+                entry.type = SNFTFontType.postScript;
                 break;
             
             // TrueType Collections
@@ -169,18 +170,29 @@ public:
     /**
         Reads a single record from the stream
     */
-    T readRecord(T)() if (is(T == struct)) {
+    T readRecord(T)() if (isStructLike!T) {
         T rt;
 
-        static if (is(typeof((T rt) { rt.deserialize(reader); }))) {
-            rt.deserialize(reader);
+        static if (is(typeof((T rt) { rt.deserialize(SFNTReader.init); }))) {
+            rt.deserialize(this);
         } else {
+            alias members = rt.tupleof;
+            alias fields = Fields!T;
 
             // Iterates through every member of the struct that is a scalar.
-            static foreach(memberName; __traits(allMembers, T)) {
+            static foreach(i, fieldT; fields) {
                 {
-                    alias member = __traits(getMember, rt, memberName);
-                    __traits(getMember, rt, memberName) = this.readElementBE!(typeof(member));
+                    static if (isStructLike!fieldT) {
+                        members[i] = this.readRecord!fieldT;
+                    } else static if (__traits(isStaticArray, fieldT)) {
+                        static if (fieldT.init[0].sizeof == 1) {
+                            this.read(cast(ubyte[])members[i]);
+                        } else {
+                            members[i] = this.readElementBE!fieldT;
+                        }
+                    } else {
+                        members[i] = this.readElementBE!fieldT;
+                    }
                 }
             }
         }

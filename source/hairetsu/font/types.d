@@ -4,23 +4,6 @@ import nulib.collections;
 import nulib.string;
 
 /**
-    A unicode character range.
-*/
-struct HaCharRange {
-@nogc:
-    
-    /**
-        Starting codepoint of the range.
-    */
-    codepoint start;
-    
-    /**
-        Ending codepoint of the range.
-    */
-    codepoint end;
-}
-
-/**
     Style of a font
 */
 enum HaFontStyle : uint {

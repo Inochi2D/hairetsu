@@ -11,7 +11,9 @@
 module hairetsu.font.sfnt.font;
 import hairetsu.font.sfnt.reader;
 import hairetsu.font.sfnt.font;
+import hairetsu.font.tt.cmap;
 import hairetsu.font.font;
+import hairetsu.font.cmap;
 import hairetsu.common;
 
 import nulib.collections;
@@ -29,12 +31,7 @@ class SFNTFont : HaFont {
 private:
     SFNTFontEntry entry;
     map!(ushort, nstring) names;
-
-    bool isUnicodeName(SFNTNameRecord record) {
-        return 
-            (record.platformId == 0) ||
-            (record.platformId == 3 && record.encodingId == 10);
-    }
+    TTCharMap charmap;
 
     void parseNameTable(SFNTReader reader) {
         if (auto nameTable = entry.findTable(ISO15924!("name"))) {
@@ -62,6 +59,19 @@ private:
         }
     }
 
+    //
+    //      CMAP TABLE
+    //
+
+    void parseCmapTable(SFNTReader reader) {
+        this.charmap = nogc_new!TTCharMap();
+
+        if (auto table = entry.findTable(ISO15924!("cmap"))) {
+            reader.seek(entry.offset+table.offset);
+            charmap.parseCmapTable(reader);
+        }
+    }
+
 protected:
     
     /**
@@ -70,6 +80,7 @@ protected:
     override
     void onFaceLoad(HaFontReader reader) {
         this.parseNameTable(cast(SFNTReader)reader);
+        this.parseCmapTable(cast(SFNTReader)reader);
     }
 
     /**
@@ -88,6 +99,14 @@ protected:
     }
 
 public:
+    
+    /*
+        Destructor
+    */
+    ~this() {
+        if (charmap)
+            nogc_delete(charmap);
+    }
     
     /**
         Constructs a new font face from a stream.
@@ -126,7 +145,11 @@ public:
         Amount of glyphs within font face.
     */
     override
-    @property size_t glyphCount() { return 0; }
+
+    /**
+        The character map for the font.
+    */
+    override @property HaCharMap charMap() { return this.charmap; }
 
     /**
         Units per EM.

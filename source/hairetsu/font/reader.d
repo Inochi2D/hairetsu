@@ -201,7 +201,13 @@ public:
             return reader.readBE!T;
         else static if(isFixed!T)
             return T.fromData(reader.readBE!(typeof(T.data)));
-        else static assert(0, "Not supported.");
+        else static if (__traits(isStaticArray, T)) {
+            T tmp;
+            foreach(i; 0..tmp.length) {
+                tmp[i] = this.readElementBE!(typeof(tmp[0]))();
+            }
+            return tmp;
+        } else static assert(0, "Type " ~ T.stringof ~ " not supported.");
     }
 
     /**
@@ -214,7 +220,33 @@ public:
             return reader.readLE!T;
         else static if(isFixed!T)
             return T.fromData(reader.readLE!(typeof(T.data)));
-        else static assert(0, "Not supported.");
+        else static if (__traits(isStaticArray, T)) {
+            T tmp;
+            foreach(i; 0..tmp.length) {
+                tmp[i] = this.readElementBE!(typeof(tmp[0]))();
+            }
+            return tmp;
+        } else static assert(0, "Not supported.");
+    }
+
+    /**
+        Reads a range of elements and stores them
+        in the given range slice.
+    */
+    void readElementsBE(T)(T[] range) @trusted {
+        foreach(i; 0..range.length) {
+            range[i] = this.readElementBE!T();
+        }
+    }
+
+    /**
+        Reads a range of elements and stores them
+        in the given range slice.
+    */
+    void readElementsLE(T)(T[] range) @trusted {
+        foreach(i; 0..range.length) {
+            range[i] = this.readElementLE!T();
+        }
     }
 
     /**

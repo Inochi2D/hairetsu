@@ -10,11 +10,14 @@
 */
 module hairetsu.font.font;
 import hairetsu.font.reader;
+import hairetsu.font.cmap;
 import hairetsu.font.face;
 import nulib.text.unicode;
 import nulib.collections;
 import nulib.string;
 import numem;
+
+import hairetsu.common;
 
 /**
     A Font Object
@@ -68,24 +71,17 @@ public:
     abstract @property string type();
 
     /**
-        Amount of glyphs within font face.
+        Amount of glyphs within the font.
     */
     abstract @property size_t glyphCount();
+
+    /**
+        The character map for the font.
+    */
+    abstract @property HaCharMap charMap();
 
     /**
         Units per EM.
     */
     abstract @property uint upem();
-
-    /**
-        Fills all of the unicode codepoints that the face supports,
-        and writes them to the given set.
-
-        Params:
-            cSet = The set to fill.
-
-        Returns:
-            The amount of codepoints that were added to the set.
-    */
-    abstract uint fillCodepoints(ref set!codepoint cSet);
 }
