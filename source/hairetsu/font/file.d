@@ -51,12 +51,20 @@ protected:
 
 public:
 
+    /**
+        The name of the file, usually its file path.
+    */
     final @property string name() { return name_[]; }
 
     /**
         Font Objects within the file
     */
     final @property HaFont[] fonts() { return faces_[]; }
+
+    /**
+        The type of the font file, essentially its container.
+    */
+    abstract @property string type();
 
     /*
         Destructor

@@ -37,13 +37,18 @@ protected:
                     break;
 
                 // Not supported for now.
-                case SNFTFontType.type1:
+                case SNFTFontType.postScript:
                     break;
             }
         }
     }
 
 public:
+
+    /**
+        The type of the font file, essentially its container.
+    */
+    override @property string type() { return "SFNT"; }
 
     /**
         Constructs a font file from a stream.
