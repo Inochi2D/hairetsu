@@ -1,0 +1,9 @@
+name "metrics"
+description "Hairetsu example which gets metrics from glyphs."
+authors "Luna"
+copyright "Copyright © 2025, Luna"
+license "BSL-1.0"
+targetPath "out/"
+
+dependency "hairetsu" path="../../" version="*"
+dependency "numem:hookset-libc" version="*"
