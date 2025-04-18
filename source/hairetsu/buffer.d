@@ -16,6 +16,24 @@ import numem;
 @nogc:
 
 /**
+    Glyph Information.
+*/
+struct GlyphInfo {
+    uint codepoint;
+    uint cluster;
+}
+
+/**
+    Position of a glyph
+*/
+struct GlyphPosition {
+    uint xAdvance;
+    uint yAdvance;
+    uint xOffset;
+    uint yOffset;
+}
+
+/**
     A multipurpose buffer.
 */
 final

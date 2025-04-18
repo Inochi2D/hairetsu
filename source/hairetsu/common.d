@@ -24,27 +24,9 @@ public import nulib.string;
 alias GlyphIndex = uint;
 
 /**
-    Glyph Information.
-*/
-struct GlyphInfo {
-    uint codepoint;
-    uint cluster;
-}
-
-/**
-    Position of a glyph
-*/
-struct GlyphPosition {
-    uint xAdvance;
-    uint yAdvance;
-    uint xOffset;
-    uint yOffset;
-}
-
-/**
     Represents an invalid glyph in operations that fetches glyphs.
 */
-enum GlyphIndex INVALID_GLYPH = 0xFFFFFFFFu;
+enum GlyphIndex GLYPH_UNKOWN = 0xFFFFFFFFu;
 
 /**
     Converts a 4-character ISO15924 string to its numeric equivalent.
