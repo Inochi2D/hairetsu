@@ -20,6 +20,48 @@ import numem;
 import hairetsu.common;
 
 /**
+    Style of a font
+*/
+enum HaFontStyle : uint {
+    normal,
+    italic,
+    oblique
+}
+
+/**
+    A direction flag used to determine which kinds of metrics
+    to get.
+*/
+enum HaDirection : uint {
+    
+    /**
+        Horizontal direction
+    */
+    horizontal,
+    
+    /**
+        Vertical direction
+    */
+    vertical
+}
+
+/**
+    Glyph Metrics
+*/
+struct HaGlyphMetrics {
+    
+    /**
+        The advance for the glyph.
+    */
+    fixed32 advance;
+    
+    /**
+        The bearing for the glyph.
+    */
+    fixed32 bearing;
+}
+
+/**
     A Font Object
 */
 abstract
@@ -84,4 +126,27 @@ public:
         Units per EM.
     */
     abstract @property uint upem();
+
+    /**
+        The lowest recommended pixels-per-EM for readability.
+    */
+    abstract @property uint lowestPPEM();
+
+    /**
+        The bounding box of the font.
+    */
+    abstract @property HaRect boundingBox();
+
+    /**
+        Gets the vertical metrics for the given glyph.
+
+        Params:
+            glyph =     Index of the glyph to get the metrics for.
+            direction = The direction to get metrics for.
+
+        Note:
+            It is recommended you cache the value returned by
+            this function.
+    */
+    abstract HaGlyphMetrics getMetricsFor(GlyphIndex glyph, HaDirection direction);
 }

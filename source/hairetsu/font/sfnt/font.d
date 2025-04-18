@@ -12,6 +12,7 @@ module hairetsu.font.sfnt.font;
 import hairetsu.font.sfnt.reader;
 import hairetsu.font.sfnt.font;
 import hairetsu.font.tt.cmap;
+import hairetsu.font.tt.types;
 import hairetsu.font.font;
 import hairetsu.font.cmap;
 import hairetsu.common;
@@ -29,9 +30,13 @@ abstract
 class SFNTFont : HaFont {
 @nogc:
 private:
+    SFNTReader reader;
     SFNTFontEntry entry;
     map!(ushort, nstring) names;
     SFNTMaxpTable maxp;
+    TTHeadTable head;
+    TTHheaTable hhea;
+    TTVheaTable vhea;
     TTCharMap charmap;
 
 
@@ -71,6 +76,32 @@ private:
             (record.platformId == 3 && record.encodingId == 10);
     }
 
+    //
+    //     HEAD TABLE
+    //
+    void parseHeadTable(SFNTReader reader) {
+        if (auto table = entry.findTable(ISO15924!("head"))) {
+            reader.seek(entry.offset+table.offset);
+            head = reader.readRecord!TTHeadTable();
+        }
+    }
+
+
+    //
+    //     METRICS TABLES
+    //
+    void parseMetricsTables(SFNTReader reader) {
+        if (auto table = entry.findTable(ISO15924!("hhea"))) {
+            reader.seek(entry.offset+table.offset);
+            hhea = reader.readRecord!TTHheaTable();
+        }
+
+        if (auto table = entry.findTable(ISO15924!("vhea"))) {
+            reader.seek(entry.offset+table.offset);
+            vhea = reader.readRecord!TTVheaTable();
+        }
+    }
+
 
     //
     //      MAXP TABLE
@@ -103,9 +134,14 @@ protected:
     */
     override
     void onFaceLoad(HaFontReader reader) {
-        this.parseNameTable(cast(SFNTReader)reader);
-        this.parseMaxpTable(cast(SFNTReader)reader);
-        this.parseCmapTable(cast(SFNTReader)reader);
+        this.reader = cast(SFNTReader)reader;
+
+        this.parseHeadTable(this.reader);
+        this.parseNameTable(this.reader);
+        this.parseMaxpTable(this.reader);
+        this.parseCmapTable(this.reader);
+
+        this.parseMetricsTables(this.reader);
     }
 
     /**
@@ -175,11 +211,63 @@ public:
     /**
         The character map for the font.
     */
-    override @property HaCharMap charMap() { return this.charmap; }
+    override
+    @property HaCharMap charMap() { return this.charmap; }
 
     /**
         Units per EM.
     */
     override
-    @property uint upem() { return 0; }
+    @property uint upem() { return head.unitsPerEm; }
+
+    /**
+        The lowest recommended pixels-per-EM for readability.
+    */
+    override
+    @property uint lowestPPEM() { return head.lowestRecPPEM; }
+
+    /**
+        The bounding box of the font.
+    */
+    override
+    @property HaRect boundingBox() {
+        return HaRect(head.xMin, head.xMax, head.yMin, head.yMax);
+    }
+
+    /**
+        Gets the vertical metrics for the given glyph.
+    */
+    override
+    HaGlyphMetrics getMetricsFor(GlyphIndex glyph, HaDirection direction) {
+        
+        // Avoid indexing out of range.
+        if (glyph >= glyphCount)
+            return HaGlyphMetrics.init;
+
+        final switch(direction) {
+            case HaDirection.horizontal:
+                if (auto table = entry.findTable(ISO15924!("hmtx"))) {
+                    reader.seek(entry.offset+table.offset);
+
+                    // Skip to our glyph's entry.
+                    reader.skip(TTMetricRecord.sizeof*glyph);
+                    TTMetricRecord metric = reader.readRecord!TTMetricRecord();
+                    return HaGlyphMetrics(fixed32(metric.advance), fixed32(metric.bearing));
+                }
+                break;
+
+            case HaDirection.vertical:
+                if (auto table = entry.findTable(ISO15924!("vmtx"))) {
+                    reader.seek(entry.offset+table.offset);
+
+                    // Skip to our glyph's entry.
+                    reader.skip(TTMetricRecord.sizeof*glyph);
+                    TTMetricRecord metric = reader.readRecord!TTMetricRecord();
+                    return HaGlyphMetrics(fixed32(metric.advance), fixed32(metric.bearing));
+                }
+                break;
+
+        }
+        return HaGlyphMetrics.init;
+    }
 }

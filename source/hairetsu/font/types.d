@@ -4,15 +4,6 @@ import nulib.collections;
 import nulib.string;
 
 /**
-    Style of a font
-*/
-enum HaFontStyle : uint {
-    normal,
-    italic,
-    oblique
-}
-
-/**
     Text Baseline
 */
 enum HaTextBaseline : uint {

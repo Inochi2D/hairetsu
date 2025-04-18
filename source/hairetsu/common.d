@@ -41,6 +41,17 @@ enum uint ISO15924(immutable(char)[4] tag) = (
 );
 
 /**
+    A bounding box
+*/
+struct HaRect {
+@nogc:
+    uint xMin;
+    uint xMax;
+    uint yMin;
+    uint yMax;
+}
+
+/**
     Text reading direction.
 */
 enum TextDirection : uint {

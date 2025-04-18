@@ -26,6 +26,18 @@ void main(string[] args) {
 					font.glyphCount, 
 					font.type
 				);
+
+				auto aIdx = font.charMap.getGlyphIndex('a');
+				auto aMetrics = font.getMetricsFor(aIdx, HaDirection.horizontal);
+				aMetrics.advance /= font.upem;
+				aMetrics.bearing /= font.upem;
+
+				writefln(
+					"\t\t'a' (%u) metrics: (advance=%s, bearing=%s)",
+					aIdx,
+					cast(float)aMetrics.advance,
+					cast(float)aMetrics.bearing
+				);
 			}
 		}
 	}
