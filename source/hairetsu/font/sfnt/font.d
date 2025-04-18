@@ -33,9 +33,14 @@ private:
     map!(ushort, nstring) names;
     TTCharMap charmap;
 
+
+    //
+    //      NAME TABLE
+    //
+
     void parseNameTable(SFNTReader reader) {
-        if (auto nameTable = entry.findTable(ISO15924!("name"))) {
-            size_t tableOffset = entry.offset+nameTable.offset;
+        if (auto table = entry.findTable(ISO15924!("name"))) {
+            size_t tableOffset = entry.offset+table.offset;
             reader.seek(tableOffset);
 
             ushort format = reader.readElementBE!ushort();
@@ -58,6 +63,14 @@ private:
             }
         }
     }
+
+    bool isUnicodeName(SFNTNameRecord record) {
+        return 
+            (record.platformId == 0) ||
+            (record.platformId == 3 && record.encodingId == 10);
+    }
+
+
 
     //
     //      CMAP TABLE
