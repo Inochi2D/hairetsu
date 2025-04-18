@@ -27,9 +27,9 @@ enum SNFTFontType {
     trueType,
     
     /**
-        A Type1 font
+        A PostScript font
     */
-    type1
+    postScript
 }
 
 /**
@@ -63,4 +63,12 @@ struct SFNTNameRecord {
     ushort nameId;
     ushort length;
     ushort offset;
+}
+
+/**
+    MAXP table
+*/
+struct SFNTMaxpTable {
+    fixed32 version_;
+    ushort numGlyphs;
 }

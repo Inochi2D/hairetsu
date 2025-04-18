@@ -31,6 +31,7 @@ class SFNTFont : HaFont {
 private:
     SFNTFontEntry entry;
     map!(ushort, nstring) names;
+    SFNTMaxpTable maxp;
     TTCharMap charmap;
 
 
@@ -71,6 +72,16 @@ private:
     }
 
 
+    //
+    //      MAXP TABLE
+    //
+    void parseMaxpTable(SFNTReader reader) {
+        if (auto table = entry.findTable(ISO15924!("maxp"))) {
+            reader.seek(entry.offset+table.offset);
+            maxp = reader.readRecord!SFNTMaxpTable();
+        }
+    }
+
 
     //
     //      CMAP TABLE
@@ -93,6 +104,7 @@ protected:
     override
     void onFaceLoad(HaFontReader reader) {
         this.parseNameTable(cast(SFNTReader)reader);
+        this.parseMaxpTable(cast(SFNTReader)reader);
         this.parseCmapTable(cast(SFNTReader)reader);
     }
 
@@ -120,7 +132,7 @@ public:
         if (charmap)
             nogc_delete(charmap);
     }
-    
+
     /**
         Constructs a new font face from a stream.
     */
@@ -155,9 +167,10 @@ public:
     @property string type() { return "SFNT derived"; }
 
     /**
-        Amount of glyphs within font face.
+        Amount of glyphs within the font.
     */
     override
+    @property size_t glyphCount() { return maxp.numGlyphs; }
 
     /**
         The character map for the font.
@@ -169,17 +182,4 @@ public:
     */
     override
     @property uint upem() { return 0; }
-
-    /**
-        Fills all of the unicode codepoints that the face supports,
-        and writes them to the given set.
-
-        Params:
-            cSet = The set to fill.
-
-        Returns:
-            The amount of codepoints that were added to the set.
-    */
-    override
-    uint fillCodepoints(ref set!codepoint cSet) { return 0; }
 }
