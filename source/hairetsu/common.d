@@ -29,11 +29,16 @@ alias GlyphIndex = uint;
 enum GlyphIndex GLYPH_UNKOWN = 0xFFFFFFFFu;
 
 /**
+    An unsigned 32-bit tag.
+*/
+alias Tag = uint;
+
+/**
     Converts a 4-character ISO15924 string to its numeric equivalent.
 
     This essentially packs the ISO14924 string into a uint. 
 */
-enum uint ISO15924(immutable(char)[4] tag) = (
+enum Tag ISO15924(immutable(char)[4] tag) = (
     ((cast(uint)(tag[0]) & 0xFF) << 24) | 
     ((cast(uint)(tag[1]) & 0xFF) << 16) | 
     ((cast(uint)(tag[2]) & 0xFF) << 8) |
@@ -117,9 +122,14 @@ enum TextGravity : uint {
 }
 
 /**
+    Language tag for "DFLT"
+*/
+enum LANG_DFLT = ISO15924!("DFLT");
+
+/**
     The various scripts supported defined in $(LINK2 https://unicode.org/iso15924/, ISO 15924).
 */
-enum Script : uint {
+enum Script : Tag {
     
     /**
         Adlam

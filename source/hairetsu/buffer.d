@@ -67,7 +67,7 @@ public:
         The IETF BCP 47 language tag specifying which language
         the text is written in.
     */
-    nstring language;
+    Tag language = LANG_DFLT;
 
     /**
         The length of the buffer in bytes.
@@ -194,9 +194,9 @@ public:
             this.buffer = buffer.nu_resize(0);
             this.isShaped_ = false;
 
-            script = Script.Unknown;
-            direction = TextDirection.leftToRight;
-            language.clear();
+            this.script = Script.Unknown;
+            this.direction = TextDirection.leftToRight;
+            this.language = LANG_DFLT;
         }
     }
 
@@ -224,7 +224,7 @@ public:
             this.buffer = null;
             this.script = Script.Unknown;
             this.direction = TextDirection.leftToRight;
-            this.language.clear();
+            this.language = LANG_DFLT;
             return buf;
         }
 
