@@ -5,8 +5,8 @@ copyright "Copyright © 2025, Luna"
 license "BSL-1.0"
 
 dependency "numem" version=">=1.0.5"
-dependency "nulib" repository="git+https://github.com/Inochi2D/nulib.git" version="~main"
-dependency "hairetsu:harfbuzz" version="*" optional=true default=false
+dependency "nulib" version=">=0.2.5"
+// dependency "hairetsu:harfbuzz" version="*" optional=true default=false
 
 stringImportPaths "res/"
 
@@ -31,7 +31,7 @@ configuration "appleOS" {
 
 configuration "posix" {
 
-    libs "fontconfig" "freetype"
+    libs "fontconfig"
     sourcePaths "backends/posix/"
 }
 
