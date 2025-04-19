@@ -56,24 +56,14 @@ struct HaVec2(T) {
 }
 
 /**
-    A 4-dimensional vector.
-*/
-struct HaVec4(T) {
-    T x;
-    T y;
-    T z;
-    T w;
-}
-
-/**
     A bounding box
 */
-struct HaRect {
+struct HaRect(T) {
 @nogc:
-    uint xMin;
-    uint xMax;
-    uint yMin;
-    uint yMax;
+    T xMin;
+    T xMax;
+    T yMin;
+    T yMax;
 }
 
 /**

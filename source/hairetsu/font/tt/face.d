@@ -1,5 +1,5 @@
 /**
-    Hairetsu OpenType Font Face
+    Hairetsu TrueType Font Face
 
     Copyright:
         Copyright © 2023-2025, Kitsunebi Games
@@ -8,7 +8,7 @@
     License:   $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
     Authors:   Luna Nielsen
 */
-module hairetsu.font.ot.face;
+module hairetsu.font.tt.face;
 import hairetsu.font.reader;
 import hairetsu.font.font;
 import hairetsu.font.face;
@@ -23,7 +23,7 @@ import hairetsu.common;
 /**
     OpenType CFF/CFF2 font face.
 */
-class OTFontFace : HaFontFace {
+class TTFontFace : HaFontFace {
 private:
 @nogc:
 

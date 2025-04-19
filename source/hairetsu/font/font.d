@@ -12,45 +12,13 @@ module hairetsu.font.font;
 import hairetsu.font.reader;
 import hairetsu.font.cmap;
 import hairetsu.font.face;
+import hairetsu.glyph;
 import nulib.text.unicode;
 import nulib.collections;
 import nulib.string;
 import numem;
 
 import hairetsu.common;
-
-/**
-    A direction flag used to determine which kinds of metrics
-    to get.
-*/
-enum HaDirection : uint {
-    
-    /**
-        Horizontal direction
-    */
-    horizontal,
-    
-    /**
-        Vertical direction
-    */
-    vertical
-}
-
-/**
-    Glyph Metrics
-*/
-struct HaGlyphMetrics {
-    
-    /**
-        The advance for the glyph.
-    */
-    fixed32 advance;
-    
-    /**
-        The bearing for the glyph.
-    */
-    fixed32 bearing;
-}
 
 /**
     A Font Object
@@ -133,20 +101,22 @@ public:
     /**
         The bounding box of the font.
     */
-    abstract @property HaRect boundingBox();
+    abstract @property HaRect!int boundingBox();
 
     /**
         Gets the vertical metrics for the given glyph.
 
         Params:
             glyph =     Index of the glyph to get the metrics for.
-            direction = The direction to get metrics for.
+
+        Returns:
+            The metrics for the glyph in **font units**.
 
         Note:
             It is recommended you cache the value returned by
             this function.
     */
-    abstract HaGlyphMetrics getMetricsFor(GlyphIndex glyph, HaDirection direction);
+    abstract HaGlyphMetrics getMetricsFor(GlyphIndex glyph);
 
     /**
         Creates a face from the font.

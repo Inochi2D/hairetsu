@@ -77,3 +77,11 @@ struct TTMetricRecord {
     ushort advance;
     short bearing;
 }
+
+struct TTGlyfHeader {
+    short numberOfCountours;
+    short xMin;
+    short yMin;
+    short xMax;
+    short yMax;
+}

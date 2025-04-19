@@ -15,6 +15,7 @@ import hairetsu.font.tt.cmap;
 import hairetsu.font.tt.types;
 import hairetsu.font.font;
 import hairetsu.font.cmap;
+import hairetsu.glyph;
 import hairetsu.common;
 
 import nulib.collections;
@@ -30,11 +31,8 @@ abstract
 class SFNTFont : HaFont {
 @nogc:
 private:
-    SFNTReader reader;
-    SFNTFontEntry entry;
     map!(ushort, nstring) names;
     SFNTMaxpTable maxp;
-    TTHeadTable head;
     TTHheaTable hhea;
     TTVheaTable vhea;
     TTCharMap charmap;
@@ -127,7 +125,40 @@ private:
         }
     }
 
+    //
+    //      OS/2 TABLE
+    //
+
+    void parseOS2Table(SFNTReader reader) {
+        if (auto table = entry.findTable(ISO15924!("OS/2"))) {
+            reader.seek(entry.offset+table.offset);
+            os2 = reader.readRecord!SFNTOS2Table;
+        }
+    }
+
 protected:
+
+    /**
+        The shared head table
+    */
+    TTHeadTable head;
+
+    /**
+        The OS/2 table.
+
+        May not exist in TrueType files.
+    */
+    SFNTOS2Table os2;
+    
+    /**
+        The reader instance
+    */
+    SFNTReader reader;
+    
+    /**
+        The font entry.
+    */
+    SFNTFontEntry entry;
     
     /**
         Implemented by the font face to read the face.
@@ -140,7 +171,7 @@ protected:
         this.parseNameTable(this.reader);
         this.parseMaxpTable(this.reader);
         this.parseCmapTable(this.reader);
-
+        this.parseOS2Table(this.reader);
         this.parseMetricsTables(this.reader);
     }
 
@@ -230,44 +261,64 @@ public:
         The bounding box of the font.
     */
     override
-    @property HaRect boundingBox() {
-        return HaRect(head.xMin, head.xMax, head.yMin, head.yMax);
+    @property HaRect!int boundingBox() {
+        return HaRect!int(head.xMin, head.xMax, head.yMin, head.yMax);
     }
 
     /**
         Gets the vertical metrics for the given glyph.
     */
     override
-    HaGlyphMetrics getMetricsFor(GlyphIndex glyph, HaDirection direction) {
-        
+    HaGlyphMetrics getMetricsFor(GlyphIndex glyph) {
+        HaGlyphMetrics metrics;
+        TTMetricRecord metricRecord;
+
         // Avoid indexing out of range.
         if (glyph >= glyphCount)
-            return HaGlyphMetrics.init;
+            return metrics;
 
-        final switch(direction) {
-            case HaDirection.horizontal:
-                if (auto table = entry.findTable(ISO15924!("hmtx"))) {
-                    reader.seek(entry.offset+table.offset);
+        if (auto table = entry.findTable(ISO15924!("hmtx"))) {
+            reader.seek(entry.offset+table.offset);
 
-                    // Skip to our glyph's entry.
-                    reader.skip(TTMetricRecord.sizeof*glyph);
-                    TTMetricRecord metric = reader.readRecord!TTMetricRecord();
-                    return HaGlyphMetrics(fixed32(metric.advance), fixed32(metric.bearing));
-                }
-                break;
+            // Handle the optimization step.
+            if (glyph > hhea.numberOfHMetrics) {
+                reader.skip((hhea.numberOfHMetrics-1)*TTMetricRecord.sizeof);
+                metricRecord = reader.readRecord!TTMetricRecord();
+                metrics.advance.x = metricRecord.advance;
 
-            case HaDirection.vertical:
-                if (auto table = entry.findTable(ISO15924!("vmtx"))) {
-                    reader.seek(entry.offset+table.offset);
+                reader.skip((glyph-hhea.numberOfHMetrics));
+                metrics.bearingH.x = reader.readElementBE!ushort();
+            } else {
 
-                    // Skip to our glyph's entry.
-                    reader.skip(TTMetricRecord.sizeof*glyph);
-                    TTMetricRecord metric = reader.readRecord!TTMetricRecord();
-                    return HaGlyphMetrics(fixed32(metric.advance), fixed32(metric.bearing));
-                }
-                break;
-
+                // Skip to our glyph's entry.
+                reader.skip(TTMetricRecord.sizeof*glyph);
+                metricRecord = reader.readRecord!TTMetricRecord();
+                metrics.bearingH.x = metricRecord.bearing;
+                metrics.advance.x = metricRecord.advance;
+            }
         }
-        return HaGlyphMetrics.init;
+
+        if (auto table = entry.findTable(ISO15924!("vmtx"))) {
+            reader.seek(entry.offset+table.offset);
+
+            // Handle the optimization step.
+            if (glyph > vhea.numberOfVMetrics) {
+                reader.skip((vhea.numberOfVMetrics-1)*TTMetricRecord.sizeof);
+                metricRecord = reader.readRecord!TTMetricRecord();
+                metrics.advance.y = metricRecord.advance;
+
+                reader.skip((glyph-vhea.numberOfVMetrics));
+                metrics.bearingV.y = reader.readElementBE!ushort();
+            } else {
+
+                // Skip to our glyph's entry.
+                reader.skip(TTMetricRecord.sizeof*glyph);
+                metricRecord = reader.readRecord!TTMetricRecord();
+                metrics.bearingV.y = metricRecord.bearing;
+                metrics.advance.y = metricRecord.advance;
+            }
+        }
+
+        return metrics;
     }
 }

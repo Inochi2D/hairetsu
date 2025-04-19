@@ -72,3 +72,45 @@ struct SFNTMaxpTable {
     fixed32 version_;
     ushort numGlyphs;
 }
+
+struct SFNTOS2Table {
+    ushort version_;
+    short xAvgCharWidth;
+    ushort usWeightClass;
+    ushort usWidthClass;
+    ushort fsType;
+    short ySubscriptXSize; 	
+    short ySubscriptYSize; 	
+    short ySubscriptXOffset; 	
+    short ySubscriptYOffset; 	
+    short ySuperscriptXSize; 	
+    short ySuperscriptYSize; 	
+    short ySuperscriptXOffset; 	
+    short ySuperscriptYOffset; 	
+    short yStrikeoutSize; 	
+    short yStrikeoutPosition;
+    short sFamilyClass;
+    ubyte[10] panose;
+    uint ulUnicodeRange1;
+    uint ulUnicodeRange2;
+    uint ulUnicodeRange3;
+    uint ulUnicodeRange4;
+    Tag achVendID;
+    ushort fsSelection;
+    ushort usFirstCharIndex;
+    ushort usLastCharIndex;
+    short sTypoAscender;
+    short sTypoDescender;
+    short sTypoLineGap;
+    ushort usWinAscent;
+    ushort usWinDescent;
+    uint ulCodePageRange1;
+    uint ulCodePageRange2;
+    ushort sxHeight;
+    ushort sCapHeight;
+    ushort usDefaultChar;
+    ushort usBreakChar;
+    ushort usMaxContext;
+    ushort usLowerOpticalPointSize;
+    ushort usUpperOpticalPointSize;
+}

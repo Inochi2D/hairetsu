@@ -44,6 +44,32 @@ enum HaGlyphType : uint {
 }
 
 /**
+    Glyph Metrics
+*/
+struct HaGlyphMetrics {
+
+    /**
+        The size of the glyph
+    */
+    HaVec2!fixed26_6 size;
+    
+    /**
+        The horizontal bearing for the glyph.
+    */
+    HaVec2!fixed26_6 bearingH;
+    
+    /**
+        The vertical bearing for the glyph.
+    */
+    HaVec2!fixed26_6 bearingV;
+    
+    /**
+        The advance for the glyph.
+    */
+    HaVec2!fixed26_6 advance;
+}
+
+/**
     A glyph.
 */
 struct HaGlyph {
@@ -82,7 +108,7 @@ public:
     }
     
     /**
-        The index of the glyph
+        The index of the glyph.
     */
     GlyphIndex index;
     
@@ -92,7 +118,12 @@ public:
     HaGlyphType type;
     
     /**
-        The data of the glyph
+        The scaled metrics of the glyph.
+    */
+    HaGlyphMetrics metrics;
+    
+    /**
+        The data of the glyph.
     */
     HaGlyphData data;
 
