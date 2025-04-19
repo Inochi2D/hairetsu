@@ -24,9 +24,11 @@ public import nulib.string;
 alias GlyphIndex = uint;
 
 /**
-    Represents an invalid glyph in operations that fetches glyphs.
+    Represents a missing glyph, when rendering this
+    glyph should indicate to the user that a character
+    is not implemented within the font.
 */
-enum GlyphIndex GLYPH_UNKOWN = 0xFFFFFFFFu;
+enum GlyphIndex GLYPH_MISSING = 0x0u;
 
 /**
     An unsigned 32-bit tag.
@@ -44,6 +46,24 @@ enum Tag ISO15924(immutable(char)[4] tag) = (
     ((cast(uint)(tag[2]) & 0xFF) << 8) |
      (cast(uint)(tag[3]) & 0xFF)
 );
+
+/**
+    A 2-dimensional vector.
+*/
+struct HaVec2(T) {
+    T x;
+    T y;
+}
+
+/**
+    A 4-dimensional vector.
+*/
+struct HaVec4(T) {
+    T x;
+    T y;
+    T z;
+    T w;
+}
 
 /**
     A bounding box

@@ -12,6 +12,8 @@ module hairetsu.font.tt.font;
 import hairetsu.font.tt.types;
 import hairetsu.font.sfnt.reader;
 import hairetsu.font.sfnt.font;
+import hairetsu.font.font;
+import hairetsu.font.face;
 import nulib.collections;
 import numem;
 
@@ -22,9 +24,15 @@ import hairetsu.common;
     A TrueType font
 */
 class TTFont : SFNTFont {
-@nogc:
-private:
 protected:
+@nogc:
+
+    override
+    HaFontFace onCreateFace(HaFontReader reader) {
+        return null;
+    }
+
+
 public:
     
     /**

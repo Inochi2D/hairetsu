@@ -20,15 +20,6 @@ import numem;
 import hairetsu.common;
 
 /**
-    Style of a font
-*/
-enum HaFontStyle : uint {
-    normal,
-    italic,
-    oblique
-}
-
-/**
     A direction flag used to determine which kinds of metrics
     to get.
 */
@@ -68,14 +59,20 @@ abstract
 class HaFont : NuRefCounted {
 @nogc:
 private:
+    HaFontReader reader;
     uint index_;
 
 protected:
     
     /**
-        Implemented by the font face to read the face.
+        Implemented by the font to read the font.
     */
-    abstract void onFaceLoad(HaFontReader reader);
+    abstract void onFontLoad(HaFontReader reader);
+    
+    /**
+        Implemented by the font to create a new font face.
+    */
+    abstract HaFontFace onCreateFace(HaFontReader reader);
     
 public:
 
@@ -89,7 +86,8 @@ public:
     */
     this(uint index, HaFontReader reader) {
         this.index_ = index;
-        this.onFaceLoad(reader);
+        this.reader = reader;
+        this.onFontLoad(reader);
     }
 
     /**
@@ -149,4 +147,15 @@ public:
             this function.
     */
     abstract HaGlyphMetrics getMetricsFor(GlyphIndex glyph, HaDirection direction);
+
+    /**
+        Creates a face from the font.
+
+        Returns:
+            A font face.
+    */
+    final
+    HaFontFace createFace() {
+        return this.onCreateFace(reader);
+    }
 }

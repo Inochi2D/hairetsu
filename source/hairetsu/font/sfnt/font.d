@@ -133,7 +133,7 @@ protected:
         Implemented by the font face to read the face.
     */
     override
-    void onFaceLoad(HaFontReader reader) {
+    void onFontLoad(HaFontReader reader) {
         this.reader = cast(SFNTReader)reader;
 
         this.parseHeadTable(this.reader);

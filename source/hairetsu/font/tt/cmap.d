@@ -87,6 +87,7 @@ public:
     */
     override
     GlyphIndex getGlyphIndex(codepoint code) {
+        import nulib.text.ascii : isEscapeCharacter;
 
         // TODO:    Currently this algorithm has no built in
         //          acceleration structures, as such
@@ -148,7 +149,8 @@ public:
                     break;
             }
         }
-        return GLYPH_UNKOWN;
+        
+        return GLYPH_MISSING;
     }
 
     /**

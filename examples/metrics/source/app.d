@@ -70,7 +70,7 @@ void main(string[] args) {
 
 			foreach(dchar c; str[1..$]) {
 				auto aIdx = font.charMap.getGlyphIndex(c);
-				if (aIdx == GLYPH_UNKOWN) {
+				if (aIdx == GLYPH_MISSING) {
 					writefln(
 						"        '%s' (%x): (no glyph)",
 						c,
