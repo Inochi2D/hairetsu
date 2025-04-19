@@ -21,7 +21,7 @@ import numem;
     A font file
 */
 abstract
-class HaFontFile : NuObject {
+class HaFontFile : NuRefCounted {
 @nogc:
 private:
     nstring name_;
@@ -99,13 +99,53 @@ public:
             name =      The name to give the font.
         
         Returns:
-            A $(D HaFont) instance on success,
+            A $(D HaFontFile) instance on success,
             $(D null) on failure.
     */
     static HaFontFile fromStream(Stream stream, string name = "<memory stream>") {
         if (HaFontReader reader = HaFontReaderFactory.tryCreateFor(stream)) {
             return reader.createFont(name);
         }
+        return null;
+    }
+
+    /**
+        Creates a new font for the given memory slice
+
+        Params:
+            data =  The memory slice to read the font data from.
+            name =  The name to give the font.
+        
+        Returns:
+            A $(D HaFontFile) instance on success,
+            $(D null) on failure.
+        
+        Note:
+            This function will copy the memory out of data,
+            this is to ensure ownership of the data is properly handled.
+    */
+    static HaFontFile fromMemory(ubyte[] data, string name = "<memory stream>") {
+        auto stream = nogc_new!MemoryStream(data.nu_dup);
+        if (HaFontFile file = HaFontFile.fromStream(stream, name))
+            return file;
+
+        nogc_delete(stream);
+        return null;
+    }
+
+    /**
+        Creates a new font for the given file path
+
+        Params:
+            path =  Path to the file containing the font.
+        
+        Returns:
+            A $(D HaFontFile) instance on success,
+            $(D null) on failure.
+    */
+    static HaFontFile fromFile(string path) {
+        
+        // TODO: Implement file loads.
         return null;
     }
 }

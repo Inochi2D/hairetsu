@@ -3,26 +3,54 @@ Hairetsu (配列 /haiɾetsɯ/, sequence/arrangement in Japanese) provides cross-
 lookup, shaping and blitting services on top of system APIs. 
 Making building D applications with complex font and text shaping support easier.
 
-The API is relatively closely built to resemble the harfbuzz and CoreText APIs, which are also used internally.
-While under normal circumstances you may have used harfbuzz and its backends, building those
-and linking them in, in a D context ends up being bothersome.
-
-As such Hairetsu uses the underlying text shaping of the OS to make linking easier.
-
 Hairetsu is built around reference counted types built ontop of `numem`; despite this the types provided
 by hairetsu should be usable in a GC context.
 
-## Why nogc?
+## Loading Fonts
 
-The Inochi2D Project is moving towards a mainly nogc codebase, as such existing libraries around which relies
-on the D garbage collector are not suitable for our usecase.
+Hairetsu includes its own font reading and rendering mechanism, to load a font you first create a `HaFontFile` instance.
+A couple of convenience functions are provided to do this.
 
-Additionally a work-in-progress C ABI is being added aswell, allowing other programming languages to access
-the facilities of hairetsu to easily abstract the system level text shaping APIs.
+Font Files are the top level object of Hairetsu's font ownership hirearchy; ownership is managed internally by hairetsu,
+as such you should not attempt to manually destroy objects unless the documentation tells you to.
 
-## Which systems are supported?
+From these font files you can create `HaFont` objects, which represent the logical font within a font file container,
+some containers can contain **multiple** fonts within a single file, such as TTC containers.
 
-There's currently 3 planned backends in the works:
- * POSIX Backend; uses harfbuzz, FreeType and FontConfig internally.
- * Darwin Backend; uses CoreText.
- * Win32 Backend; Uses Uniscribe and GDI32.
+```d
+HaFontFile myFile = HaFontFile.fromFile("notosans.ttf");
+HaFont myFont = myFile.fonts[0]; // Gets the first font within the file.
+
+writeln(myFont.type, " ", myFile.type); // Likely would print "TrueType SFNT"
+```
+
+## Looking up glyphs
+
+Generally you should refer to a text shaper to find glyph IDs for your target language,
+but Hairetsu does provide the essentials for looking up glyphs by character, however this
+will be **without** substitutions unless you write code to fetch those.
+
+A `HaCharMap` is provided by fonts which allows looking up glyph indices from eg. the `CMAP`
+table in TTF and OTF fonts. If a font does not contain a glyph for the given character code,
+the `.notdef` glyph index will be returned instead, a convenience `GLYPH_MISSING` enum is provided
+to help you check this case.
+
+```d
+GlyphIndex i = myFont.charMap.getGlyphIndex('あ');
+```
+
+## Faces
+When using a font it's often desired to be able to configure properties about the font without needing
+to repeatedly reload a font to do so; the `HaFontFace` facilitates this by being a type which refers
+back in to the parent font that created it.
+
+This allows you to, for example, set style, sizing, hinting requirements, etc. for the glyph data
+you wish to fetch from the font. You can have as many font faces loaded at a time as you want.
+
+```d
+
+// Create a font face, scaled to half of the base size.
+HaFontFace myFace = myFont.createFace();
+myFace.scale.x = 0.5;
+myFace.scale.y = 0.5;
+```
