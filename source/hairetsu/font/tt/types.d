@@ -9,7 +9,10 @@
     Authors:   Luna Nielsen
 */
 module hairetsu.font.tt.types;
+import hairetsu.font.sfnt.reader;
+import nulib.collections;
 import hairetsu.common;
+import numem;
 
 struct TTHeadTable {
     ushort majorVersion;
@@ -78,10 +81,116 @@ struct TTMetricRecord {
     short bearing;
 }
 
-struct TTGlyfHeader {
+struct TTGlyfTableHeader {
     short numberOfCountours;
     short xMin;
     short yMin;
     short xMax;
     short yMax;
+}
+
+struct TTGlyfTable {
+@nogc:
+
+    ~this() {
+        if (header.numberOfCountours > 0)
+            nogc_delete(simple); 
+    }
+
+    TTGlyfTableHeader header;
+    union {
+        TTSimpleGlyphRecord simple;
+    }
+
+    void deserialize(SFNTReader reader) {
+        header = reader.readRecord!TTGlyfTableHeader;
+
+        if (header.numberOfCountours >= 0) {
+
+            // Read contours
+            simple.endPtsOfContours.resize(header.numberOfCountours);
+            reader.readElementsBE!ushort(simple.endPtsOfContours);
+
+            // Read instructions
+            uint instructionCount = reader.readElementBE!ushort;
+            if (instructionCount > 0) {
+                simple.instructions.resize(instructionCount);
+                reader.read(simple.instructions);
+            }
+
+            uint pointCount = simple.endPtsOfContours[$-1]+1;
+            if (pointCount > 0) {
+                simple.flags.resize(pointCount);
+                simple.contours.resize(pointCount);
+
+                // Read and expand flags
+                for (size_t i = 0; i < pointCount; i++) {
+                    ubyte flag = reader.readElementBE!ubyte;
+                    simple.flags[i] = flag;
+
+                    if (flag & REPEAT_FLAG) {
+                        ubyte repeat = reader.readElementBE!ubyte;
+                        foreach(_; 0..repeat) {
+                            simple.flags[++i] = flag;
+                        }
+                    }
+                }
+
+
+                // Read X coordinates
+                for (size_t i = 0; i < pointCount; i++) {
+                    int coordinate;
+                    ubyte flag = simple.flags[i];
+                    bool sameOrSign = (flag & X_IS_SAME_OR_POSITIVE_X_SHORT_VECTOR) > 0;
+
+                    if (flag & X_SHORT_VECTOR) {
+                        coordinate = sameOrSign ? 
+                            reader.readElementBE!ubyte :
+                            -(cast(int)reader.readElementBE!ubyte);
+                    } else {
+                        coordinate = sameOrSign ? 
+                            0 : // No change
+                            reader.readElementBE!short;
+                    }
+
+                    simple.contours[i].x = coordinate;
+                }
+
+                // Read Y coordinates
+                for (size_t i = 0; i < pointCount; i++) {
+                    int coordinate;
+                    ubyte flag = simple.flags[i];
+                    bool sameOrSign = (flag & Y_IS_SAME_OR_POSITIVE_Y_SHORT_VECTOR) > 0;
+
+                    if (flag & Y_SHORT_VECTOR) {
+                        coordinate = sameOrSign ? 
+                            reader.readElementBE!ubyte :
+                            -(cast(int)reader.readElementBE!ubyte);
+                    } else {
+                        coordinate = sameOrSign ? 
+                            0 : // No change
+                            reader.readElementBE!short;
+                    }
+
+                    simple.contours[i].y = coordinate;
+                }
+            }
+        }
+    }
+}
+
+enum ubyte 
+    ON_CURVE_POINT                          = 0x01,
+    X_SHORT_VECTOR                          = 0x02,
+    Y_SHORT_VECTOR                          = 0x04,
+    REPEAT_FLAG                             = 0x08,
+    X_IS_SAME_OR_POSITIVE_X_SHORT_VECTOR    = 0x10,
+    Y_IS_SAME_OR_POSITIVE_Y_SHORT_VECTOR    = 0x20,
+    OVERLAP_SIMPLE                          = 0x40;
+
+struct TTSimpleGlyphRecord {
+    vector!ushort endPtsOfContours;
+    vector!ubyte instructions;
+    vector!ubyte flags;
+    vector!(HaVec2!float) contours;
 }

@@ -66,8 +66,8 @@ public:
     void quadTo(HaVec2!float control, HaVec2!float to) {
         pushOp(HaOutlineOp(
             opcode: HaOutlineOpCode.quadTo, 
+            control1: control,
             target: to, 
-            control1: control
         ));
     }
 
@@ -76,10 +76,10 @@ public:
     */
     void cubicTo(HaVec2!float control1, HaVec2!float control2, HaVec2!float to) {
         pushOp(HaOutlineOp(
-            opcode: HaOutlineOpCode.quadTo, 
-            target: to, 
+            opcode: HaOutlineOpCode.cubicTo, 
             control1: control1, 
-            control2: control2
+            control2: control2,
+            target: to, 
         ));
     }
 

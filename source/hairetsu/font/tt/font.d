@@ -44,15 +44,15 @@ private:
         return -1;
     }
 
-    TTGlyfHeader getGlyphHeader(GlyphIndex index) {
+    TTGlyfTableHeader getGlyphHeader(GlyphIndex index) {
         ptrdiff_t gHeaderOffset = getOffset(index);
 
         if (auto table = entry.findTable(ISO15924!("glyf"))) {
             reader.seek(entry.offset+table.offset+gHeaderOffset);
-            return reader.readRecord!TTGlyfHeader();
+            return reader.readRecord!TTGlyfTableHeader();
         }
 
-        return TTGlyfHeader.init;
+        return TTGlyfTableHeader.init;
     }
 
 protected:
@@ -64,6 +64,20 @@ protected:
 
 
 public:
+
+    /**
+        Reads the Glyf table.
+    */
+    TTGlyfTable getGlyphTable(GlyphIndex index) {
+        ptrdiff_t gHeaderOffset = getOffset(index);
+
+        if (auto table = entry.findTable(ISO15924!("glyf"))) {
+            reader.seek(entry.offset+table.offset+gHeaderOffset);
+            return reader.readRecord!TTGlyfTable();
+        }
+
+        return TTGlyfTable.init;
+    }
     
     /**
         Constructs a new font face from a stream.
@@ -81,7 +95,7 @@ public:
     override
     HaGlyphMetrics getMetricsFor(GlyphIndex glyph) {
         HaGlyphMetrics metrics = super.getMetricsFor(glyph);
-        TTGlyfHeader header = getGlyphHeader(glyph);
+        TTGlyfTableHeader header = getGlyphHeader(glyph);
 
         metrics.size.x = (header.xMax - header.xMin);
         metrics.size.y = (header.yMax - header.yMin);

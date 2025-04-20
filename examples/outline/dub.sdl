@@ -1,0 +1,13 @@
+name "outline"
+description "Hairetsu example which renders a string to an image."
+authors "Luna"
+copyright "Copyright © 2025, Luna"
+license "BSL-1.0"
+targetPath "out/"
+
+dependency "hairetsu" path="../../" version="*"
+dependency "numem:hookset-libc" version="*"
+dependency "canvasity" version="1.0.4"
+dependency "nulib:stdc" version=">=0.2.7"
+
+buildRequirements "allowWarnings"

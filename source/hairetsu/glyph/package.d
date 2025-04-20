@@ -73,39 +73,8 @@ struct HaGlyphMetrics {
     A glyph.
 */
 struct HaGlyph {
-private:
-@nogc:
-    void reset() {
-        final switch(type) {
-            case HaGlyphType.outline:
-                data.outline.reset();
-                break;
-                
-            case HaGlyphType.bitmap:
-                data.bitmap.reset();
-                break;
-                
-            case HaGlyphType.svg:
-                data.svg.reset();
-                break;
-            
-            case HaGlyphType.none:
-                return;
-        }
-        
-        this.type = HaGlyphType.none;
-        this.index = 0;
-        nogc_zeroinit(data);
-    }
-
 public:
-    
-    /*
-        Destructor
-    */
-    ~this() {
-        this.reset();
-    }
+@nogc:
     
     /**
         The index of the glyph.
@@ -158,6 +127,32 @@ public:
         this.type = HaGlyphType.svg;
         this.index = index;
         this.data.svg = svg;
+    }
+
+    /**
+        Resets the glyph.
+    */
+    void reset() {
+        final switch(type) {
+            case HaGlyphType.outline:
+                data.outline.reset();
+                break;
+                
+            case HaGlyphType.bitmap:
+                data.bitmap.reset();
+                break;
+                
+            case HaGlyphType.svg:
+                data.svg.reset();
+                break;
+            
+            case HaGlyphType.none:
+                return;
+        }
+        
+        this.type = HaGlyphType.none;
+        this.index = 0;
+        nogc_zeroinit(data);
     }
 }
 

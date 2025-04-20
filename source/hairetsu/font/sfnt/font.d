@@ -36,6 +36,7 @@ private:
     TTHheaTable hhea;
     TTVheaTable vhea;
     TTCharMap charmap;
+    HaFontMetrics fmetrics_;
 
 
     //
@@ -92,11 +93,23 @@ private:
         if (auto table = entry.findTable(ISO15924!("hhea"))) {
             reader.seek(entry.offset+table.offset);
             hhea = reader.readRecord!TTHheaTable();
+
+            fmetrics_.ascender.x = hhea.ascender;
+            fmetrics_.descender.x = hhea.descender;
+            fmetrics_.lineGap.x = hhea.lineGap;
+            fmetrics_.maxExtent.x = hhea.xMaxExtent;
+            fmetrics_.maxAdvance.x = hhea.advanceWidthMax;
         }
 
         if (auto table = entry.findTable(ISO15924!("vhea"))) {
             reader.seek(entry.offset+table.offset);
             vhea = reader.readRecord!TTVheaTable();
+
+            fmetrics_.ascender.y = vhea.ascender;
+            fmetrics_.descender.y = vhea.descender;
+            fmetrics_.lineGap.y = vhea.lineGap;
+            fmetrics_.maxExtent.y = vhea.yMaxExtent;
+            fmetrics_.maxAdvance.y = vhea.advanceHeightMax;
         }
     }
 
@@ -133,6 +146,10 @@ private:
         if (auto table = entry.findTable(ISO15924!("OS/2"))) {
             reader.seek(entry.offset+table.offset);
             os2 = reader.readRecord!SFNTOS2Table;
+            
+            fmetrics_.ascender.x = os2.sTypoAscender;
+            fmetrics_.descender.x = os2.sTypoDescender;
+            fmetrics_.lineGap.x = os2.sTypoLineGap;
         }
     }
 
@@ -171,8 +188,10 @@ protected:
         this.parseNameTable(this.reader);
         this.parseMaxpTable(this.reader);
         this.parseCmapTable(this.reader);
-        this.parseOS2Table(this.reader);
+
+        // OS/2 metrics are preferred.
         this.parseMetricsTables(this.reader);
+        this.parseOS2Table(this.reader);
     }
 
     /**
@@ -243,7 +262,13 @@ public:
         The character map for the font.
     */
     override
-    @property HaCharMap charMap() { return this.charmap; }
+    @property HaCharMap charMap() { return charmap; }
+
+    /**
+        Font-wide shared metrics.
+    */
+    override
+    @property HaFontMetrics fontMetrics() { return fmetrics_; }
 
     /**
         Units per EM.

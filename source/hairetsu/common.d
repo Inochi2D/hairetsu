@@ -50,9 +50,14 @@ enum Tag ISO15924(immutable(char)[4] tag) = (
 /**
     A 2-dimensional vector.
 */
-struct HaVec2(T) {
-    T x;
-    T y;
+union HaVec2(T) {
+@nogc:
+    alias data this;
+    struct {
+        T x = 0;
+        T y = 0;
+    }
+    T[2] data;
 }
 
 /**

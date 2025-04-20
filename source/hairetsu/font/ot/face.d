@@ -49,6 +49,6 @@ public:
         Constructs a font face.
     */
     this(HaFont parent, HaFontReader reader) {
-        super(parent, reader);
+        super(parent, reader, false);
     }
 }

@@ -89,6 +89,11 @@ public:
     abstract @property HaCharMap charMap();
 
     /**
+        Font-wide shared metrics.
+    */
+    abstract @property HaFontMetrics fontMetrics();
+
+    /**
         Units per EM.
     */
     abstract @property uint upem();
@@ -128,4 +133,36 @@ public:
     HaFontFace createFace() {
         return this.onCreateFace(reader);
     }
+}
+
+/**
+    Metrics shared between glyphs in a font.
+*/
+struct HaFontMetrics {
+@nogc:
+
+    /**
+        The global ascenders for the font.
+    */
+    HaVec2!fixed26_6 ascender;
+    
+    /**
+        The global descenders for the font.
+    */
+    HaVec2!fixed26_6 descender;
+    
+    /**
+        The global line gaps for the font.
+    */
+    HaVec2!fixed26_6 lineGap;
+    
+    /**
+        The global max extents for glyphs.
+    */
+    HaVec2!fixed26_6 maxExtent;
+    
+    /**
+        The global max advances for glyphs.
+    */
+    HaVec2!fixed26_6 maxAdvance;
 }
