@@ -40,18 +40,6 @@ class HaCharMap : NuObject {
 public:
 
     /**
-        Gets whether the charmap has a specified language ID.
-
-        Params:
-            langId =  The language ID to query.
-        
-        Returns:
-            $(D true) if the language ID was found in the charmap,
-            $(D false) otherwise.
-    */
-    abstract bool hasLanguage(uint langId);
-
-    /**
         Gets whether the charmap has a specified codepoint.
 
         Params:

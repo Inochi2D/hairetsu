@@ -24,16 +24,10 @@ private:
 @nogc:
     TTCmapTable cmapTable;
     vector!HaCharRange charRanges;
-    set!uint langIds;
 
 public:
 
     this() { }
-
-    override
-    bool hasLanguage(uint langId) {
-        return langId in langIds;
-    }
 
     /**
         Gets whether the font has a specified codepoint.

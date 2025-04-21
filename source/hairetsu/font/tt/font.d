@@ -29,23 +29,31 @@ class TTFont : SFNTFont {
 private:
 @nogc:
     
-    ptrdiff_t getOffset(GlyphIndex index) {
+    ptrdiff_t getOffset(GlyphIndex index, ref bool hasOutlines) {
         if (auto table = entry.findTable(ISO15924!("loca"))) {
             reader.seek(entry.offset+table.offset);
 
             if (head.indexToLocFormat == 1) {
                 reader.skip(index*4);
-                return reader.readElementBE!uint();
+                uint f0 = reader.readElementBE!uint();
+                uint f1 = reader.readElementBE!uint();
+
+                hasOutlines = f0 != f1;
+                return f0;
             }
 
             reader.skip(index*2);
-            return reader.readElementBE!uint();
+            ushort f0 = reader.readElementBE!ushort();
+            ushort f1 = reader.readElementBE!ushort();
+            hasOutlines = f0 != f1;
+            return f0;
         }
         return -1;
     }
 
     TTGlyfTableHeader getGlyphHeader(GlyphIndex index) {
-        ptrdiff_t gHeaderOffset = getOffset(index);
+        bool hasOutlines;
+        ptrdiff_t gHeaderOffset = getOffset(index, hasOutlines);
 
         if (auto table = entry.findTable(ISO15924!("glyf"))) {
             reader.seek(entry.offset+table.offset+gHeaderOffset);
@@ -69,11 +77,19 @@ public:
         Reads the Glyf table.
     */
     TTGlyfTable getGlyphTable(GlyphIndex index) {
-        ptrdiff_t gHeaderOffset = getOffset(index);
+        bool hasOutlines;
+        ptrdiff_t gHeaderOffset = getOffset(index, hasOutlines);
 
         if (auto table = entry.findTable(ISO15924!("glyf"))) {
             reader.seek(entry.offset+table.offset+gHeaderOffset);
-            return reader.readRecord!TTGlyfTable();
+
+            if (hasOutlines)
+                return reader.readRecord!TTGlyfTable();
+
+            // No outlines, clear contours.
+            auto header = reader.readRecord!TTGlyfTableHeader();
+            header.numberOfCountours = 0;
+            return TTGlyfTable(header: header);
         }
 
         return TTGlyfTable.init;
