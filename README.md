@@ -54,3 +54,9 @@ HaFontFace myFace = myFont.createFace();
 myFace.scale.x = 0.5;
 myFace.scale.y = 0.5;
 ```
+
+### Acknowledgements
+Language tag mapping is based on the map table created by `jclark`.
+
+https://github.com/jclark/lang-ietf-opentype
+
