@@ -9,7 +9,8 @@
     Authors:   Luna Nielsen
 */
 module hairetsu.shaper;
-public import hairetsu.buffer;
+public import hairetsu.font.face;
+public import hairetsu.shaper.buffer;
 public import hairetsu.common;
 import numem;
 
@@ -17,7 +18,8 @@ import numem;
     The base interface of text shapers.
 */
 abstract
-class HaShaper : NuObject {
+class HaShaper : NuRefCounted {
+protected:
 @nogc:
 public:
 
@@ -25,7 +27,8 @@ public:
         Shape a buffer of text.
 
         Params:
+            face =      The font face to use for shaping.
             buffer =    The buffer to shape.
     */
-    abstract void shape(ref HaBuffer buffer);
+    abstract void shape(ref HaFontFace face, ref HaBuffer buffer);
 }

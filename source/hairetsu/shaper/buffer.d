@@ -8,7 +8,8 @@
     License:   $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
     Authors:   Luna Nielsen
 */
-module hairetsu.buffer;
+module hairetsu.shaper.buffer;
+import hairetsu.shaper;
 import nulib.text.unicode;
 import hairetsu.common;
 import numem;
@@ -16,21 +17,48 @@ import numem;
 @nogc:
 
 /**
-    Glyph Information.
+    The predominant reading direction for text shaping.
+
+    You can AND these flags together, but vertical will
+    take precedence if declared.
 */
-struct GlyphInfo {
-    uint codepoint;
-    uint cluster;
+enum HaTextDirection : ubyte {
+    
+    /**
+        Text is read left-to-right
+    */
+    leftToRight = 0b0001,
+    
+    /**
+        Text is read right-to-left
+    */
+    rightToLeft = 0b0011,
+
+    /**
+        Text is read top to bottom
+    */
+    topToBottom = 0b0100,
+
+    /**
+        Text is read bottom to top
+    */
+    bottomToTop = 0b1100,
 }
 
 /**
-    Position of a glyph
+    Gets whether a text direction is specified as horizontal
 */
-struct GlyphPosition {
-    uint xAdvance;
-    uint yAdvance;
-    uint xOffset;
-    uint yOffset;
+pragma(inline, true)
+bool isHorizontal(HaTextDirection direction) @safe @nogc nothrow {
+    return (direction & 0b0011) > 0;
+}
+
+/**
+    Gets whether a text direction is specified as vertical
+*/
+pragma(inline, true)
+bool isVertical(HaTextDirection direction) @safe @nogc nothrow {
+    return (direction & 0b1100) > 0;
 }
 
 /**
@@ -40,14 +68,14 @@ final
 class HaBuffer : NuRefCounted {
 @nogc:
 private:
-    GlyphInfo[] buffer;
+    GlyphIndex[] buffer_;
     bool isShaped_;
 
     // Grows the buffer and returns the index of the
     // starting location of the newly created space.
-    size_t grow(size_t growBy) {
+    size_t grow(size_t growBy) @trusted {
         size_t i = buffer.length;
-        buffer = buffer.nu_resize(buffer.length+growBy);
+        buffer_ = buffer_.nu_resize(buffer_.length+growBy);
         return i;
     }
 
@@ -61,7 +89,7 @@ public:
     /**
         The direction the text is read in.
     */
-    TextDirection direction = TextDirection.leftToRight;
+    HaTextDirection direction = HaTextDirection.leftToRight;
     
     /**
         The IETF BCP 47 language tag specifying which language
@@ -72,24 +100,29 @@ public:
     /**
         The length of the buffer in bytes.
     */
-    @property uint length() { return cast(uint)buffer.length; }
+    @property uint length() @safe { return cast(uint)buffer_.length; }
 
     /**
         Gets whether the buffer contains already shaped glyphs.
     */
-    @property bool isShaped() { return isShaped_; }
+    @property bool isShaped() @safe { return isShaped_; }
+
+    /**
+        A slice of the contents of the buffer.
+    */
+    @property GlyphIndex[] buffer() @system { return buffer_; }
 
     /*
         Destructor
     */
-    ~this() {
+    ~this() @safe {
         this.clear();
     }
 
     /**
         Creates a new empty buffer.
     */
-    this() { }
+    this() @safe { }
 
     /**
         Creates a copy of the given buffer
@@ -97,12 +130,9 @@ public:
         Params:
             src = The source buffer to copy from.
     */
-    this(ref HaBuffer src) {
+    this(ref HaBuffer src) @trusted {
         this.script = src.script;
-        
-        // Make a copy of buffer store.
-        this.buffer.nu_resize(src.buffer.length);
-        this.buffer[0..$] = src.buffer[0..$];
+        this.buffer_ = src.buffer_.nu_dup;
     }
 
     /**
@@ -119,14 +149,14 @@ public:
             if you wish to reuse a buffer that has been
             shaped, make sure to call $(D reset) first.
     */
-    bool addUTF8(string text) {
+    bool addUTF8(string text) @trusted {
         if (this.isShaped_)
             return false;
         
         ndstring u32 = toUTF32(text);
         size_t ix = this.grow(u32.length);
         foreach(i, dchar c; u32[]) {
-            this.buffer[ix+i].codepoint = cast(codepoint)c;
+            this.buffer_[ix+i].codepoint = cast(codepoint)c;
         }
 
         return true;
@@ -146,14 +176,14 @@ public:
             if you wish to reuse a buffer that has been
             shaped, make sure to call $(D reset) first.
     */
-    bool addUTF16(wstring text) {
+    bool addUTF16(wstring text) @trusted {
         if (this.isShaped_)
             return false;
 
         ndstring u32 = toUTF32(text);
         size_t ix = this.grow(u32.length);
         foreach(i, dchar c; u32[]) {
-            this.buffer[ix+i].codepoint = cast(codepoint)c;
+            this.buffer_[ix+i].codepoint = cast(codepoint)c;
         }
 
         return true;
@@ -173,13 +203,13 @@ public:
             if you wish to reuse a buffer that has been
             shaped, make sure to call $(D reset) first.
     */
-    bool addUTF32(dstring text) {
+    bool addUTF32(dstring text) @safe {
         if (this.isShaped_)
             return false;
         
         size_t ix = this.grow(text.length);
         foreach(i, dchar c; text) {
-            this.buffer[ix+i].codepoint = cast(codepoint)c;
+            this.buffer_[ix+i].codepoint = cast(codepoint)c;
         }
 
         return true;
@@ -189,13 +219,13 @@ public:
         Clears all state from the buffer, allowing it
         to be reused.
     */
-    void clear() {
-        if (this.buffer) {
-            this.buffer = buffer.nu_resize(0);
+    void clear() @trusted {
+        if (this.buffer_) {
+            this.buffer_ = buffer_.nu_resize(0);
             this.isShaped_ = false;
 
             this.script = Script.Unknown;
-            this.direction = TextDirection.leftToRight;
+            this.direction = HaTextDirection.leftToRight;
             this.language = LANG_DFLT0;
         }
     }
@@ -216,14 +246,14 @@ public:
             This function is generally only called 
             internally by the implementation.
     */
-    GlyphInfo[] take() {
+    codepoint[] take() @safe {
         if (!this.isShaped_) {
-            auto buf = this.buffer;
+            auto buf = this.buffer_;
 
             // Reset the overall state.
-            this.buffer = null;
+            this.buffer_ = null;
             this.script = Script.Unknown;
-            this.direction = TextDirection.leftToRight;
+            this.direction = HaTextDirection.leftToRight;
             this.language = LANG_DFLT0;
             return buf;
         }
@@ -235,8 +265,8 @@ public:
         Gives the bufer the ownership of a now, shaped buffer.
 
         Params:
-            info =  The glyph info slice containing the now shaped
-                    glyph IDs
+            glyphs =    The glyph info slice containing the now shaped
+                        glyph IDs
 
         Returns:
             Whether the operation succeeded.
@@ -247,13 +277,13 @@ public:
             generally only called internally by the 
             implementation.
     */
-    bool giveShaped(ref GlyphInfo[] info) {
-        if (this.buffer)
+    bool giveShaped(ref GlyphIndex[] glyphs) @safe {
+        if (this.buffer_)
             return false;
         
         this.isShaped_ = true;
-        this.buffer = info;
-        info = null;
+        this.buffer_ = glyphs;
+        glyphs = null;
         return true;
     }
 }

@@ -11,6 +11,7 @@
 module hairetsu.font.face;
 import hairetsu.font.reader;
 import hairetsu.font.font;
+import hairetsu.font.cmap;
 import hairetsu.glyph;
 import nulib.text.unicode;
 import nulib.collections;
@@ -55,6 +56,7 @@ private:
     HaFont parent_;
     HaFontReader reader_;
     HaFontMetrics fmetrics_;
+    HaFontFace fallback_;
 
     // Internal Glyph information.
     HaGlyph glyph_;
@@ -113,6 +115,7 @@ protected:
 
 public:
 
+
     /**
         The units-per-EM of the font face.
     */
@@ -138,7 +141,41 @@ public:
     */
     final @property size_t glyphCount() { return parent_.glyphCount; }
 
+    /**
+        Whether hinting is enabled.
+    */
     final @property bool hinted() { return isHinted_; }
+
+    /**
+        The fallback face for the font face.
+
+        This is for example used during rendering if the current face
+        does not have a specified glyph needed by the renderer;
+        if so, it will attempt every fallback font specified.
+
+        Note:
+            This property will not allow recursive references. If the provided 
+            fallback somehow ends up referencing this face again, it won't be 
+            applied. You can check whether this happened by checking whether 
+            the fallback after the setter operation is $(D null).
+    */
+    final @property HaFontFace fallback() { return fallback_; }
+    final @property void fallback(HaFontFace fallback) { 
+        if (this.fallback_)
+            this.fallback_.release();
+
+        HaFontFace iter = fallback;
+        while (iter) {
+            if (iter is this) {
+                this.fallback_ = null;
+                return;
+            }
+
+            iter = iter.fallback_;
+        }
+        
+        this.fallback_ = fallback ? fallback.retained : null;
+    }
 
     /**
         Whether hinting is requested enabled for the font face.
@@ -230,6 +267,36 @@ public:
         metrics.bearingV.x *= scaleFactor_;
         metrics.bearingV.y *= scaleFactor_;
         return metrics;
+    }
+
+    /**
+        Iterates through all of the font fallbacks and finds the first font
+        which supports the given unicode code point.
+
+        Params:
+            code =      The codepoint to look up
+            dstIdx =    The variable to store the resulting glyph index in.
+            dstFace =   The variable to store the resulting font face in.
+    */
+    void findGlyphFor(codepoint code, ref GlyphIndex dstIdx, ref HaFontFace dstFace) {
+        HaFontFace current = this;
+        GlyphIndex glyphIdx;
+
+        do {
+            glyphIdx = current.parent.charMap.getGlyphIndex(code);
+            if (glyphIdx != GLYPH_MISSING) {
+                
+                dstIdx = glyphIdx;
+                dstFace = current;
+                return;
+            }
+
+            current = current.fallback;
+        } while(current);
+
+        // Search failed.
+        dstIdx = GLYPH_MISSING;
+        dstFace = null;
     }
 
     /**

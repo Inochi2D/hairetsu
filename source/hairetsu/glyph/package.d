@@ -70,6 +70,22 @@ struct HaGlyphMetrics {
 }
 
 /**
+    Position of a glyph
+*/
+struct GlyphPosition {
+    
+    /**
+        The advance of the glyph.
+    */
+    HaVec2!fixed26_6 advance;
+    
+    /**
+        The visual offset of the glyph.
+    */
+    HaVec2!fixed26_6 offset;
+}
+
+/**
     A glyph.
 */
 struct HaGlyph {
