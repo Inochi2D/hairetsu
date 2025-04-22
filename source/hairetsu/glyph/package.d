@@ -51,22 +51,22 @@ struct HaGlyphMetrics {
     /**
         The size of the glyph
     */
-    HaVec2!fixed26_6 size;
+    vec2lf size;
     
     /**
         The horizontal bearing for the glyph.
     */
-    HaVec2!fixed26_6 bearingH;
+    vec2lf bearingH;
     
     /**
         The vertical bearing for the glyph.
     */
-    HaVec2!fixed26_6 bearingV;
+    vec2lf bearingV;
     
     /**
         The advance for the glyph.
     */
-    HaVec2!fixed26_6 advance;
+    vec2lf advance;
 }
 
 /**
@@ -77,12 +77,12 @@ struct GlyphPosition {
     /**
         The advance of the glyph.
     */
-    HaVec2!fixed26_6 advance;
+    vec2lf advance;
     
     /**
         The visual offset of the glyph.
     */
-    HaVec2!fixed26_6 offset;
+    vec2lf offset;
 }
 
 /**

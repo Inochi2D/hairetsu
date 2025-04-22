@@ -11,6 +11,8 @@ dependency "intel-intrinsics" version="1.12.0" default=false optional=true
 stringImportPaths "res/"
 targetPath "out/"
 
+copyFiles "LICENSE" "LICENSE-fontdue"
+
 configuration "static" {
     targetType "staticLibrary"
 }

@@ -150,25 +150,25 @@ struct HaFontMetrics {
     /**
         The global ascenders for the font.
     */
-    HaVec2!fixed26_6 ascender;
+    vec2lf ascender;
     
     /**
         The global descenders for the font.
     */
-    HaVec2!fixed26_6 descender;
+    vec2lf descender;
     
     /**
         The global line gaps for the font.
     */
-    HaVec2!fixed26_6 lineGap;
+    vec2lf lineGap;
     
     /**
         The global max extents for glyphs.
     */
-    HaVec2!fixed26_6 maxExtent;
+    vec2lf maxExtent;
     
     /**
         The global max advances for glyphs.
     */
-    HaVec2!fixed26_6 maxAdvance;
+    vec2lf maxAdvance;
 }
