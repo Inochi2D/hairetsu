@@ -6,33 +6,17 @@ license "BSL-1.0"
 
 dependency "numem" version=">=1.0.5"
 dependency "nulib" version=">=0.2.7"
-// dependency "hairetsu:harfbuzz" version="*" optional=true default=false
+dependency "intel-intrinsics" version="1.12.0" default=false optional=true
 
 stringImportPaths "res/"
-
-targetType "library"
 targetPath "out/"
 
-subPackage "modules/harfbuzz"
-
-configuration "win32" {
-    platforms "windows"
-
-    libs "gdi32"
-    sourcePaths "backends/win32/"
+configuration "static" {
+    targetType "staticLibrary"
 }
 
-configuration "appleOS" {
-    platforms "darwin"
-
-    lflags "-framework" "CoreText"
-    sourcePaths "backends/darwin/"
-}
-
-configuration "posix" {
-
-    libs "fontconfig"
-    sourcePaths "backends/posix/"
+configuration "dynamic" {
+    targetType "staticLibrary"
 }
 
 configuration "unittest" {
