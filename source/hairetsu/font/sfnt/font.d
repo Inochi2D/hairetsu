@@ -22,6 +22,15 @@ import nulib.collections;
 import numem;
 
 /**
+    Outline Types supported by the SFNT container.
+*/
+enum SFNTOutlineType {
+    trueType = 0x01,
+    CFF      = 0x02,
+    CFF2     = 0x04
+}
+
+/**
     SFNT Font Object
 
     Implements shared functionality between different
@@ -37,6 +46,8 @@ private:
     TTVheaTable vhea;
     TTCharMap charmap;
     HaFontMetrics fmetrics_;
+    SFNTOutlineType outlineType_;
+    SFNTFontEntry entry_;
 
 
     //
@@ -153,6 +164,58 @@ private:
         }
     }
 
+    //
+    //      Outlines
+    //
+    void detectOutlines() {
+        if (auto table = entry.findTable(ISO15924!("glyf"))) {
+            outlineType_ |= SFNTOutlineType.trueType;
+        } else if (auto table = entry.findTable(ISO15924!("CFF"))) {
+            outlineType_ |= SFNTOutlineType.CFF;
+        } else if (auto table = entry.findTable(ISO15924!("CFF"))) {
+            outlineType_ |= SFNTOutlineType.CFF2;
+        }
+    }
+    
+
+    //
+    //      TrueType Outlines
+    //
+
+    ptrdiff_t getGlyfOffset(GlyphIndex index, ref bool hasOutlines) {
+        if (auto table = entry.findTable(ISO15924!("loca"))) {
+            reader.seek(entry.offset+table.offset);
+
+            if (head.indexToLocFormat == 1) {
+                reader.skip(index*4);
+                uint f0 = reader.readElementBE!uint();
+                uint f1 = reader.readElementBE!uint();
+
+                hasOutlines = f0 != f1;
+                return f0;
+            }
+
+            reader.skip(index*2);
+            ushort f0 = reader.readElementBE!ushort();
+            ushort f1 = reader.readElementBE!ushort();
+            hasOutlines = f0 != f1;
+            return f0;
+        }
+        return -1;
+    }
+
+    TTGlyfTableHeader getGlyfHeader(GlyphIndex index) {
+        bool hasOutlines;
+        ptrdiff_t gHeaderOffset = getGlyfOffset(index, hasOutlines);
+
+        if (auto table = entry.findTable(ISO15924!("glyf"))) {
+            reader.seek(entry.offset+table.offset+gHeaderOffset);
+            return reader.readRecord!TTGlyfTableHeader();
+        }
+
+        return TTGlyfTableHeader.init;
+    }
+
 protected:
 
     /**
@@ -173,11 +236,6 @@ protected:
     SFNTReader reader;
     
     /**
-        The font entry.
-    */
-    SFNTFontEntry entry;
-    
-    /**
         Implemented by the font face to read the face.
     */
     override
@@ -192,6 +250,9 @@ protected:
         // OS/2 metrics are preferred.
         this.parseMetricsTables(this.reader);
         this.parseOS2Table(this.reader);
+
+        // Detect what kind of outlines are present.
+        this.detectOutlines();
     }
 
     /**
@@ -210,7 +271,41 @@ protected:
     }
 
 public:
+
+    /**
+        Attempts to read the Glyf table if any exists.
+    */
+    final
+    TTGlyfTable getGlyfTable(GlyphIndex index) {
+        bool hasOutlines;
+        ptrdiff_t gHeaderOffset = this.getGlyfOffset(index, hasOutlines);
+
+        if (auto table = entry.findTable(ISO15924!("glyf"))) {
+            reader.seek(entry.offset+table.offset+gHeaderOffset);
+
+            if (hasOutlines)
+                return reader.readRecord!TTGlyfTable();
+
+            // No outlines, clear contours.
+            auto header = reader.readRecord!TTGlyfTableHeader();
+            header.numberOfCountours = 0;
+            return TTGlyfTable(header: header);
+        }
+
+        return TTGlyfTable.init;
+    }
     
+    /**
+        Whether the given glyph index has a TrueType
+        outline.
+    */
+    final
+    bool hasGlyfOutline(GlyphIndex index) {
+        bool hasOutlines;
+        cast(void)this.getGlyfOffset(index, hasOutlines);
+        return hasOutlines;
+    }
+
     /*
         Destructor
     */
@@ -223,10 +318,24 @@ public:
         Constructs a new font face from a stream.
     */
     this(SFNTFontEntry entry, HaFontReader reader) {
-        this.entry = entry;
+        this.entry_ = entry;
 
-        super(entry.index, reader);
+        super(entry_.index, reader);
     }
+    
+    /**
+        The font entry.
+    */
+    final
+    @property SFNTFontEntry entry() { return entry_; }
+
+    /**
+        The types of outline found in the SFNT file.
+
+        This is represented as a bit flag.
+    */
+    final
+    @property SFNTOutlineType outlineTypes() { return outlineType_; }
 
     /**
         The full name of the font face.
@@ -251,6 +360,13 @@ public:
     */
     override
     @property string type() { return "SFNT derived"; }
+
+    /**
+        A string describing which outlines are supported
+        by the font.
+    */
+    override
+    @property string outlineTypeNames() { return __ha_sfnt_outline_type_names[outlineType_]; }
 
     /**
         Amount of glyphs within the font.
@@ -347,3 +463,15 @@ public:
         return metrics;
     }
 }
+
+// LUT containing the different outline type names.
+private __gshared const string[8] __ha_sfnt_outline_type_names = [
+    "",
+    "TrueType",
+    "CFF",
+    "TrueType, CFF",
+    "CFF2",
+    "TrueType, CFF2",
+    "CFF, CFF2",
+    "TrueType, CFF, CFF2",
+];

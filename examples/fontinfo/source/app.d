@@ -19,12 +19,13 @@ void main(string[] args) {
 			writefln("%u: %s (%s with %u subfonts)", i, file.name, file.type, file.fonts.length);
 			foreach(HaFont font; file.fonts) {
 				writefln(
-					"    %u: %s %s (%u glyphs, %s)", 
+					"    %u: %s %s (%u glyphs, %s, %s outlines)", 
 					font.index, 
 					font.family, 
 					font.subfamily, 
 					font.glyphCount, 
-					font.type
+					font.type,
+					font.outlineTypeNames
 				);
 			}
 		}

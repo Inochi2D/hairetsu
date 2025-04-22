@@ -29,6 +29,11 @@ private:
 public:
 
     /**
+        Winding rule to use.
+    */
+    HaWindingRule windingRule = HaWindingRule.nonZero;
+
+    /**
         Command stream
     */
     HaOutlineOp[] commands;
@@ -124,6 +129,22 @@ enum HaOutlineOpCode : uint {
         Closes the current path.
     */
     closePath
+}
+
+/**
+    Winding rule which should be applied during rendering.
+*/
+enum HaWindingRule : uint {
+    
+    /**
+        Even-odd winding rule.
+    */
+    evenOdd,
+    
+    /**
+        Non-zero winding rule.
+    */
+    nonZero
 }
 
 /**

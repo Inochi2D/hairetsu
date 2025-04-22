@@ -38,12 +38,12 @@ private:
 
             // OpenType
             case ISO15924!("OTTO"):
+            case 0x00010000:
                 entry.type = SNFTFontType.openType;
                 break;
             
             // TrueType
             case ISO15924!("true"):
-            case 0x00010000:
                 entry.type = SNFTFontType.trueType;
                 break;
             

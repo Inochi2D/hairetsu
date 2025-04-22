@@ -79,6 +79,12 @@ public:
     abstract @property string type();
 
     /**
+        A string describing which outlines are supported
+        by the font.
+    */
+    abstract @property string outlineTypeNames();
+
+    /**
         Amount of glyphs within the font.
     */
     abstract @property size_t glyphCount();

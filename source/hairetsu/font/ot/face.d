@@ -9,6 +9,7 @@
     Authors:   Luna Nielsen
 */
 module hairetsu.font.ot.face;
+import hairetsu.font.sfnt.face;
 import hairetsu.font.reader;
 import hairetsu.font.font;
 import hairetsu.font.face;
@@ -23,32 +24,15 @@ import hairetsu.common;
 /**
     OpenType CFF/CFF2 font face.
 */
-class OTFontFace : HaFontFace {
+class OTFontFace : SFNTFontFace {
 private:
 @nogc:
-
-protected:
-
-    /**
-        Implemented by a font face to load a glyph.
-    */
-    override
-    void onRenderGlyph(HaFontReader reader, ref HaGlyph glyph) {
-
-    }
-    
-    /**
-        Implemented by the font face to read the face.
-    */
-    override
-    void onFaceLoad(HaFontReader reader) { }
-    
 public:
 
     /**
         Constructs a font face.
     */
     this(HaFont parent, HaFontReader reader) {
-        super(parent, reader, false);
+        super(parent, reader);
     }
 }

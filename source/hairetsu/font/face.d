@@ -64,8 +64,7 @@ private:
     fixed32 dpi_    = 96;
     fixed32 ppem_;
     fixed32 scaleFactor_;
-    bool hinting_;
-    bool isHinted_;
+    bool wantHinting_;
 
     void updateGlyph(bool rerender = true) {
         ppem_ = pt_ * dpi_ / BASE_TYPOGRAPHIC_DPI;
@@ -142,11 +141,6 @@ public:
     final @property size_t glyphCount() { return parent_.glyphCount; }
 
     /**
-        Whether hinting is enabled.
-    */
-    final @property bool hinted() { return isHinted_; }
-
-    /**
         The fallback face for the font face.
 
         This is for example used during rendering if the current face
@@ -180,8 +174,8 @@ public:
     /**
         Whether hinting is requested enabled for the font face.
     */
-    final @property bool hinting() { return hinting_; }
-    final @property void hinting(bool hinting) { this.hinting_ = hinting; this.updateGlyph(); }
+    final @property bool wantHinting() { return wantHinting_; }
+    final @property void wantHinting(bool hinting) { this.wantHinting_ = hinting; this.updateGlyph(); }
 
     /**
         The dots-per-inch of the font face, defaults to 96.
@@ -234,10 +228,9 @@ public:
     /**
         Constructs a font face.
     */
-    this(HaFont parent, HaFontReader reader, bool canHint) {
+    this(HaFont parent, HaFontReader reader) {
         this.parent_ = parent;
         this.reader_ = reader;
-        this.isHinted_ = canHint;
         
         this.onFaceLoad(reader);
         this.updateGlyph(false);
