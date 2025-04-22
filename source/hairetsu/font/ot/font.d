@@ -26,7 +26,10 @@ import hairetsu.common;
 class OTFont : SFNTFont {
 protected:
 @nogc:
-
+    
+    /**
+        Implemented by the font to create a new font face.
+    */
     override
     HaFontFace onCreateFace(HaFontReader reader) {
         return nogc_new!OTFontFace(this, reader);

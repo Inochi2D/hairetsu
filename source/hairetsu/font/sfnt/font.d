@@ -204,18 +204,6 @@ private:
         return -1;
     }
 
-    TTGlyfTableHeader getGlyfHeader(GlyphIndex index) {
-        bool hasOutlines;
-        ptrdiff_t gHeaderOffset = getGlyfOffset(index, hasOutlines);
-
-        if (auto table = entry.findTable(ISO15924!("glyf"))) {
-            reader.seek(entry.offset+table.offset+gHeaderOffset);
-            return reader.readRecord!TTGlyfTableHeader();
-        }
-
-        return TTGlyfTableHeader.init;
-    }
-
 protected:
 
     /**
@@ -294,7 +282,23 @@ public:
 
         return TTGlyfTable.init;
     }
-    
+
+    /**
+        Attempts to read the Glyf table header if any exists.
+    */
+    final
+    TTGlyfTableHeader getGlyfHeader(GlyphIndex index) {
+        bool hasOutlines;
+        ptrdiff_t gHeaderOffset = getGlyfOffset(index, hasOutlines);
+
+        if (auto table = entry.findTable(ISO15924!("glyf"))) {
+            reader.seek(entry.offset+table.offset+gHeaderOffset);
+            return reader.readRecord!TTGlyfTableHeader();
+        }
+
+        return TTGlyfTableHeader.init;
+    }
+
     /**
         Whether the given glyph index has a TrueType
         outline.
@@ -458,6 +462,14 @@ public:
                 metrics.bearingV.y = metricRecord.bearing;
                 metrics.advance.y = metricRecord.advance;
             }
+        }
+
+        // TrueType Outlines store size in glyf header.
+        if (outlineTypes & SFNTOutlineType.trueType) {
+            auto header = this.getGlyfHeader(glyph);
+
+            metrics.size.x = (header.xMax - header.xMin);
+            metrics.size.y = (header.yMax - header.yMin);
         }
 
         return metrics;
