@@ -38,8 +38,6 @@ import numem;
 
 version(Have_intel_intrinsics) import inteli;
 
-debug import nulib.c.stdio : printf;
-
 /**
     A rasterized coverage mask
 */
