@@ -18,6 +18,7 @@ import numem;
 import hairetsu.common;
 
 public import hairetsu.render.canvas;
+import hairetsu.render.builtin;
 
 /**
     Compatibility flags
@@ -49,71 +50,14 @@ enum HaGlyphRendererCapabilityFlags : uint {
 abstract
 class HaRenderer : NuRefCounted {
 private:
-@nogc:
-    vec2 pen_;
-
 protected:
 
     /**
-        The position of the pen.
-    */
-    final
-    @property vec2 pen() { return pen_; }
-
-    /**
-        Called when rendering begins.
-    */
-    abstract void renderBegin(HaCanvas canvas);
-
-    /**
-        Moves the pen to the given position.
-
-        Note:
-            This function is virtual, call it to update
-            the actual pen position.
-    */
-    void moveTo(vec2 target) { this.pen_ = target; }
-
-    /**
-        Draws a line to the given point.
-    */
-    void lineTo(vec2 target) { this.pen_ = target; }
-
-    /**
-        Draws a quadratic bezier spline to the given point.
-    */
-    void quadTo(vec2 ctrl1, vec2 target) { this.pen_ = target; }
-
-    /**
-        Draws a cubic bezier spline to the given point.
-    */
-    void cubicTo(vec2 ctrl1, vec2 ctrl2, vec2 target) { this.pen_ = target; }
-
-    /**
-        Begins a new path.
-    */
-    abstract void closePath();
-
-    /**
-        Fills and blits the current outline.
+        Blits the given glyph to the canvas.
 
         This should write the final rasterized image to the canvas.
     */
-    abstract void blit(HaCanvas canvas);
-
-    /**
-        Blits a bitmap to the given position.
-
-        This should write the final rasterized image to the canvas.
-    */
-    abstract void blit(HaCanvas canvas, HaGlyphBitmap bitmap);
-
-    /**
-        Blits an SVG document
-
-        This should write the final rasterized image to the canvas.
-    */
-    abstract void blit(HaCanvas canvas, HaGlyphSVG svg);
+    abstract void blit(ref HaGlyph glyph, vec2 offset, HaCanvas canvas);
     
 public:
 
@@ -190,8 +134,8 @@ public:
         vec2 size = vec2(
             0,
             cast(float)(isHorizontal ?
-                (face.faceMetrics.ascender.x-face.faceMetrics.descender.x) :
-                (face.faceMetrics.ascender.y-face.faceMetrics.descender.y)
+                (face.faceMetrics.ascender.x-face.faceMetrics.descender.x)+face.faceMetrics.lineGap.x :
+                (face.faceMetrics.ascender.y-face.faceMetrics.descender.y)+face.faceMetrics.lineGap.y
             )
         );
 
@@ -254,10 +198,13 @@ public:
             // Apply bearing.
             offset.x += cast(float)bearing.x;
             offset.y += cast(float)bearing.y;
+            
             advance = this.render(glyph, offset, canvas);
 
-            accumulator.x += advance.x;
-            accumulator.y += advance.y;
+            if (!isVertical(run.direction))
+                accumulator.x += advance.x;
+            else
+                accumulator.y += advance.y;
         }
         return accumulator;
     }
@@ -281,67 +228,15 @@ public:
 
         if (!this.canRender(glyph))
             return advance;
-
-        this.renderBegin(canvas);
-        this.moveTo(position);
-        final switch(glyph.type) {
-            case HaGlyphType.none:
-                break;
-            
-            case HaGlyphType.outline:
-
-                // TODO: Handle composite outlines.
-			    foreach(HaOutlineOp op; glyph.data.outline.commands) {
-
-                    // Offset the rendering positions.
-                    vec2 target = vec2(
-                        x: position.x+op.target.x, 
-                        y: position.y+op.target.y
-                    );
-                    vec2 ctrl1 = vec2(
-                        x: position.x+op.control1.x, 
-                        y: position.y+op.control1.y
-                    );
-                    vec2 ctrl2 = vec2(
-                        x: position.x+op.control2.x, 
-                        y: position.y+op.control2.y
-                    );
-
-				    final switch(op.opcode) {
-                        case HaOutlineOpCode.moveTo:
-                            this.moveTo(target);
-                            break;
-                            
-                        case HaOutlineOpCode.lineTo:
-                            this.lineTo(target);
-                            break;
-                            
-                        case HaOutlineOpCode.quadTo:
-                            this.quadTo(ctrl1, target);
-                            break;
-                            
-                        case HaOutlineOpCode.cubicTo:
-                            this.cubicTo(ctrl1, ctrl2, target);
-                            break;
-                            
-                        case HaOutlineOpCode.closePath:
-                            this.closePath();
-                            break;
-                    }
-                }
-
-                this.blit(canvas);
-                break;
-                
-            case HaGlyphType.bitmap:
-                this.blit(canvas, glyph.data.bitmap);
-                break;
-                
-            case HaGlyphType.svg:
-                this.blit(canvas, glyph.data.svg);
-                break;
-        }
-
+        
+        this.blit(glyph, position, canvas);
         return advance;
+    }
+
+    /**
+        Creates an instance of the builtin renderer.
+    */
+    static HaRenderer createBuiltin() {
+        return nogc_new!HaBuiltinRenderer();
     }
 }

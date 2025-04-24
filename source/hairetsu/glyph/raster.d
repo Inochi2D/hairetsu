@@ -117,11 +117,11 @@ private:
         }
     }
 
-    void addLine(haline line) {
+    void addLine(haline line, vec2 offset) {
         enum float epsilon = 2.0e-5f;
 
-        vec2 p1 = line.p1;
-        vec2 p2 = line.p2;
+        vec2 p1 = line.p1+offset;
+        vec2 p2 = line.p2+offset;
         if (fabs(p2.y - p1.y) < epsilon) {
             return;
         }
@@ -249,35 +249,50 @@ public:
         Creates a new raster
     */
     this(uint width, uint height) {
-        this.width = width;
-        this.height = height;
-        this.coverage = coverage.nu_resize(width * height);
-        this.coverage[0..$] = 0.0f;
+        this.width = width+4;
+        this.height = height+4;
+        this.coverage = coverage.nu_resize(this.width * this.height);
     }
 
     /**
         Constructs a new raster.
     */
     void draw(ref HaPolyOutline outline) {
-
-        assert(outline.bounds.isValid);
+        if (!outline.bounds.isValid)
+            return;
+        
+        this.coverage[0..$] = 0.0f;
         foreach(line; outline.lines) {
-            this.addLine(line);
+            this.addLine(line, vec2(2, 2));
         }
     }
 
     /**
         Blits the raster data to a glyph bitmap.
     */
-    HaGlyphBitmap blit(bool blitMask = true) {
+    HaGlyphBitmap blit() {
         HaGlyphBitmap bitmap;
         bitmap.width = width;
         bitmap.height = height;
         bitmap.channels = 1;
         bitmap.data = bitmap.data.nu_resize(width * height);
         
-        if (blitMask) this.blitMaskTo(bitmap.data);
-        else this.blitTo(bitmap.data);
+        this.blitTo(bitmap.data);
+        this.clear();
+        return bitmap;
+    }
+
+    /**
+        Blits the raster data to a glyph bitmap.
+    */
+    HaGlyphBitmap blitMask() {
+        HaGlyphBitmap bitmap;
+        bitmap.width = width;
+        bitmap.height = height;
+        bitmap.channels = 1;
+        bitmap.data = bitmap.data.nu_resize(width * height);
+        
+        this.blitMaskTo(bitmap.data);
         this.clear();
         return bitmap;
     }

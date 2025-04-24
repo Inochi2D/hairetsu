@@ -12,7 +12,7 @@ module hairetsu.render.canvas;
 import numem;
 
 import hairetsu.common;
-
+import hairetsu.glyph.bitmap;
 
 /**
     The color format which to use for rendering.
@@ -37,39 +37,79 @@ enum HaColorFormat : uint {
     /**
         ARGB 32-bit anti-aliased color. 
     */
-    ARGB32 = 0x04
+    ARGB32 = 0x08
 }
 
 /**
     An interface for a render canvas.
 */
-abstract
+final
 class HaCanvas : NuRefCounted {
-public:
+private:
 @nogc:
+    // Just reusing our existing glyph bitmap.
+    HaGlyphBitmap bitmap;
+    HaColorFormat format_;
+
+    uint getChannelCount(HaColorFormat format) {
+        final switch(format) {
+            case HaColorFormat.CBPP1:
+            case HaColorFormat.CBPP8:
+                return 1;
+                
+            case HaColorFormat.RGBA32:
+            case HaColorFormat.ARGB32:
+                return 4;
+        }
+    }
+
+public:
+    ~this() {
+        bitmap.reset();
+    }
+
+    this(uint width, uint height, HaColorFormat format) {
+        uint c = getChannelCount(format);
+
+        this.format_ = format;
+        this.bitmap.width = width;
+        this.bitmap.height = height;
+        this.bitmap.channels = c;
+        this.bitmap.data = this.bitmap.data.nu_resize(width*height*c);
+        nogc_zeroinit(bitmap.data[]);
+    }
 
     /**
         The color format used by the canvas.
     */
-    abstract @property HaColorFormat format();
+    @property HaColorFormat format() { return this.format_; }
 
     /**
         The width of the canvas.
     */
-    abstract @property uint width();
+    @property uint width() { return bitmap.width; }
 
     /**
         The height of the canvas.
     */
-    abstract @property uint height();
+    @property uint height() { return bitmap.height; }
 
     /**
         The amount of color channels in the canvas.
     */
-    abstract @property uint channels();
+    @property uint channels() { return bitmap.channels; }
 
     /**
-        The data of the canvas.
+        Gets a slice of the given scanline of the canvas.
     */
-    abstract @property ubyte[] data();
+    void[] scanline(int y) { return bitmap.scanline(y); }
+
+    /**
+        Takes ownership of the internal bitmap.
+    */
+    HaGlyphBitmap take() {
+        auto bitmap = this.bitmap;
+        nogc_initialize(this.bitmap);
+        return bitmap;
+    }
 }

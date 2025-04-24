@@ -3,11 +3,11 @@ import std.stdio;
 import stdfile = std.file;
 import hairetsu;
 import numem;
-import renderer;
 
 import nulib.io.stream.memstream;
 import std.conv : to;
 import hairetsu.shaper.basic;
+import hairetsu.render;
 
 void main(string[] args) {
 	if (args.length != 4) {
@@ -50,14 +50,15 @@ void main(string[] args) {
 
 
 		// Create canvas and renderer.
-		CanvasityRenderer renderer = nogc_new!CanvasityRenderer();
-		HaVec2!float textSize = renderer.measureGlyphRun(face, glyphRun);
-		GamutCanvas canvas = nogc_new!GamutCanvas(cast(uint)textSize.x, cast(uint)textSize.y);
+		HaRenderer renderer = HaRenderer.createBuiltin();
+		vec2 textSize = renderer.measureGlyphRun(face, glyphRun);
+		HaFontMetrics fmetrics = face.faceMetrics();
 
-		HaFontMetrics fmetrics = face.faceMetrics;
-		renderer.render(face, glyphRun, HaVec2!float(0, textSize.y+cast(float)fmetrics.descender.x), canvas);
+		// 12% taller just to account for stuff like commas.
+		HaCanvas canvas = nogc_new!HaCanvas(cast(uint)textSize.x, cast(uint)(textSize.y*1.12), HaColorFormat.CBPP8);
+		renderer.render(face, glyphRun, vec2(0, fmetrics.ascender.x), canvas);
 
-		canvas.saveToPNG("output.png");
+		canvas.dumpToFile();
 
 		glyphRun.release();
 		renderer.release();
@@ -65,4 +66,19 @@ void main(string[] args) {
 		face.release();
 		file.release();
 	ha_shutdown();
+}
+
+/**
+	Dumps the canvas to file using gamut.
+*/
+void dumpToFile(ref HaCanvas canvas) {
+	import gamut : Image, PixelType;
+	Image img = Image(canvas.width, canvas.height, PixelType.l8);
+
+	foreach(y; 0..canvas.height) {
+		ubyte[] source = cast(ubyte[])canvas.scanline(y);
+		ubyte[] destination = cast(ubyte[])img.scanline(y);
+		destination[0..$] = source[0..$];
+	}
+	img.saveToFile("output.png");
 }

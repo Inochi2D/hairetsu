@@ -37,10 +37,6 @@ struct HaGlyphBitmap {
         Slice into the bitmap
     */
     ubyte[] data;
-    
-    ~this() {
-        this.reset();
-    }
 
     /**
         Clears data from the bitmap
@@ -53,12 +49,12 @@ struct HaGlyphBitmap {
         Gets a scanline from the bitmap
     */
     void[] scanline(uint y) {
-        if (y > height)
+        if (y >= height)
             return null;
 
-        uint cwidth = (width*channels);
-        uint line = cwidth*y;
-        return cast(void[])data[line..line+cwidth];
+        uint stride = (width*channels);
+        uint line = y*stride;
+        return cast(void[])data[line..line+stride];
     }
 }
 
