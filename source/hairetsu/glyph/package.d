@@ -12,6 +12,7 @@ module hairetsu.glyph;
 import hairetsu.common;
 import numem;
 
+public import hairetsu.glyph.raster;
 public import hairetsu.glyph.bitmap;
 public import hairetsu.glyph.outline;
 public import hairetsu.glyph.svg;
@@ -44,32 +45,6 @@ enum HaGlyphType : uint {
 }
 
 /**
-    Glyph Metrics
-*/
-struct HaGlyphMetrics {
-
-    /**
-        The size of the glyph
-    */
-    vec2lf size;
-    
-    /**
-        The horizontal bearing for the glyph.
-    */
-    vec2lf bearingH;
-    
-    /**
-        The vertical bearing for the glyph.
-    */
-    vec2lf bearingV;
-    
-    /**
-        The advance for the glyph.
-    */
-    vec2lf advance;
-}
-
-/**
     Position of a glyph
 */
 struct GlyphPosition {
@@ -86,9 +61,37 @@ struct GlyphPosition {
 }
 
 /**
+    Glyph Metrics
+*/
+struct HaGlyphMetrics {
+
+    /**
+        The bounding box of the glyph.
+    */
+    rect bounds;
+    
+    /**
+        The horizontal bearing for the glyph.
+    */
+    vec2 bearingH;
+    
+    /**
+        The vertical bearing for the glyph.
+    */
+    vec2 bearingV;
+    
+    /**
+        The advance for the glyph.
+    */
+    vec2 advance;
+}
+
+/**
     A glyph.
 */
 struct HaGlyph {
+private:
+    
 public:
 @nogc:
     
@@ -169,6 +172,40 @@ public:
         this.type = HaGlyphType.none;
         this.index = 0;
         nogc_zeroinit(data);
+    }
+    
+    /**
+        Rasterizes the glyph outline, first by turning the outline
+        into a series of polylines, then running it through the
+        HaRaster rasterizer.
+    */
+    HaGlyphBitmap rasterizeOutline(uint padding = 4) {
+        if (type != HaGlyphType.outline)
+            return HaGlyphBitmap.init;
+
+        // Build outline
+        HaPolyOutline poutline = data.outline.polygonize(vec2(1, 1), vec2(padding/2, padding/2));
+
+        // Rasterize
+        HaRaster raster = HaRaster(cast(uint)poutline.bounds.width+padding, cast(uint)poutline.bounds.height+padding);
+        raster.draw(poutline);
+        return raster.blit(false);
+    }
+
+    /**
+        Rasterizes the coverage mask used to generate the outline.
+    */
+    HaGlyphBitmap rasterizeOutlineMask(uint padding = 4) {
+        if (type != HaGlyphType.outline)
+            return HaGlyphBitmap.init;
+
+        // Build outline
+        HaPolyOutline poutline = data.outline.polygonize(vec2(1, 1), vec2(padding/2, padding/2));
+
+        // Rasterize
+        HaRaster raster = HaRaster(cast(uint)poutline.bounds.width+padding, cast(uint)poutline.bounds.height+padding);
+        raster.draw(poutline);
+        return raster.blit(true);
     }
 }
 

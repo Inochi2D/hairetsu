@@ -50,7 +50,7 @@ abstract
 class HaRenderer : NuRefCounted {
 private:
 @nogc:
-    HaVec2!float pen_;
+    vec2 pen_;
 
 protected:
 
@@ -58,7 +58,7 @@ protected:
         The position of the pen.
     */
     final
-    @property HaVec2!float pen() { return pen_; }
+    @property vec2 pen() { return pen_; }
 
     /**
         Called when rendering begins.
@@ -72,22 +72,22 @@ protected:
             This function is virtual, call it to update
             the actual pen position.
     */
-    void moveTo(HaVec2!float target) { this.pen_ = target; }
+    void moveTo(vec2 target) { this.pen_ = target; }
 
     /**
         Draws a line to the given point.
     */
-    abstract void lineTo(HaVec2!float target);
+    void lineTo(vec2 target) { this.pen_ = target; }
 
     /**
         Draws a quadratic bezier spline to the given point.
     */
-    abstract void quadTo(HaVec2!float ctrl1, HaVec2!float target);
+    void quadTo(vec2 ctrl1, vec2 target) { this.pen_ = target; }
 
     /**
         Draws a cubic bezier spline to the given point.
     */
-    abstract void cubicTo(HaVec2!float ctrl1, HaVec2!float ctrl2, HaVec2!float target);
+    void cubicTo(vec2 ctrl1, vec2 ctrl2, vec2 target) { this.pen_ = target; }
 
     /**
         Begins a new path.
@@ -182,12 +182,12 @@ public:
             the text run. If the run wasn't shaped, it will 
             instead return a zero vector.
     */
-    HaVec2!float measureGlyphRun(HaFontFace face, ref HaBuffer run) {
+    vec2 measureGlyphRun(HaFontFace face, ref HaBuffer run) {
         if (!run.isShaped())
-            return HaVec2!float(0, 0);
+            return vec2(0, 0);
         
         bool isHorizontal = !run.direction.isVertical;
-        HaVec2!float size = HaVec2!float(
+        vec2 size = vec2(
             0,
             cast(float)(isHorizontal ?
                 (face.faceMetrics.ascender.x-face.faceMetrics.descender.x) :
@@ -204,8 +204,8 @@ public:
             );
 
             // Bump size if something goes outside the general line height.
-            if (cast(float)metrics.size.y > size.y)
-                size.y = cast(float)metrics.size.y;
+            if (metrics.bounds.height > size.y)
+                size.y = metrics.bounds.height;
         }
         return size;
     }
@@ -224,10 +224,10 @@ public:
             The resulting accumulated text advance. If the run wasn't 
             shaped, it will instead return a zero vector.
     */
-    HaVec2!float render(HaFontFace face, ref HaBuffer run, HaVec2!float position, HaCanvas canvas) {
-        HaVec2!float accumulator = position;
-        HaVec2!fixed26_6 bearing;
-        HaVec2!float advance;
+    vec2 render(HaFontFace face, ref HaBuffer run, vec2 position, HaCanvas canvas) {
+        vec2 accumulator = position;
+        vec2 bearing;
+        vec2 advance;
         HaGlyph glyph;
 
         // Early exit, buffer not shaped.
@@ -245,7 +245,7 @@ public:
         accumulator.x -= cast(float)bearing.x;
         accumulator.y -= cast(float)bearing.y;
         foreach(GlyphIndex idx; run.buffer) {
-            HaVec2!float offset = accumulator;
+            vec2 offset = accumulator;
             glyph = face.getGlyph(idx);
             bearing = !isVertical(run.direction) ?
                 glyph.metrics.bearingH :
@@ -273,8 +273,8 @@ public:
         Returns:
             The horizontal and vertical advance of the glyph
     */
-    HaVec2!float render(ref HaGlyph glyph, HaVec2!float position, HaCanvas canvas) {
-        HaVec2!float advance = HaVec2!float(
+    vec2 render(ref HaGlyph glyph, vec2 position, HaCanvas canvas) {
+        vec2 advance = vec2(
             cast(float)glyph.metrics.advance.x,
             cast(float)glyph.metrics.advance.y,
         );
@@ -294,15 +294,15 @@ public:
 			    foreach(HaOutlineOp op; glyph.data.outline.commands) {
 
                     // Offset the rendering positions.
-                    HaVec2!float target = HaVec2!float(
+                    vec2 target = vec2(
                         x: position.x+op.target.x, 
                         y: position.y+op.target.y
                     );
-                    HaVec2!float ctrl1 = HaVec2!float(
+                    vec2 ctrl1 = vec2(
                         x: position.x+op.control1.x, 
                         y: position.y+op.control1.y
                     );
-                    HaVec2!float ctrl2 = HaVec2!float(
+                    vec2 ctrl2 = vec2(
                         x: position.x+op.control2.x, 
                         y: position.y+op.control2.y
                     );

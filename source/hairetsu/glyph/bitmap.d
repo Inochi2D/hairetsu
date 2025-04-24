@@ -17,13 +17,48 @@ import numem;
 */
 struct HaGlyphBitmap {
 @nogc:
+    
+    /**
+        Width of the bitmap
+    */
     uint width;
+    
+    /**
+        Height of the bitmap
+    */
     uint height;
+    
+    /**
+        Amount of channels in the bitmap
+    */
     uint channels;
+    
+    /**
+        Slice into the bitmap
+    */
     ubyte[] data;
     
+    ~this() {
+        this.reset();
+    }
+
+    /**
+        Clears data from the bitmap
+    */
     void reset() {
         data = data.nu_resize(0);
+    }
+
+    /**
+        Gets a scanline from the bitmap
+    */
+    void[] scanline(uint y) {
+        if (y > height)
+            return null;
+
+        uint cwidth = (width*channels);
+        uint line = cwidth*y;
+        return cast(void[])data[line..line+cwidth];
     }
 }
 

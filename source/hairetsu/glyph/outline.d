@@ -98,6 +98,42 @@ public:
             opcode: HaOutlineOpCode.closePath
         ));
     }
+
+    /**
+        Polygonizes the glyph outline.
+    */
+    HaPolyOutline polygonize(vec2 scale, vec2 offset) {
+        HaPolyOutline poutline;
+        poutline.scale = scale;
+        poutline.offset = offset;
+
+        foreach(HaOutlineOp command; commands) {
+            final switch(command.opcode) {
+
+                case HaOutlineOpCode.moveTo:
+                    poutline.moveTo(command.target);
+                    break;
+
+                case HaOutlineOpCode.lineTo:
+                    poutline.lineTo(command.target);
+                    break;
+
+                case HaOutlineOpCode.quadTo:
+                    poutline.quadTo(command.control1, command.target);
+                    break;
+
+                case HaOutlineOpCode.cubicTo:
+                    poutline.cubicTo(command.control1, command.control2, command.target);
+                    break;
+
+                case HaOutlineOpCode.closePath:
+                    poutline.closePath();
+                    break;
+            }
+        }
+        poutline.finalize();
+        return poutline;
+    }
 }
 
 /**
@@ -181,79 +217,82 @@ struct HaOutlineOp {
 struct HaPolyOutline {
 private:
 @nogc:
-    enum segmentCount = 16;
-    enum inf = float.infinity;
+    enum bmax = float.infinity;
 
-    rect aabb = rect(-inf, inf, -inf, inf); 
+    // Segments to split beziers into.
+    enum segmentCount = 4;
+
+    bool shouldReverse = false;
+    float area = 0;
+    rect aabb = rect(bmax, -bmax, bmax, -bmax); 
+    vec2 start = vec2(0, 0);
     vec2 pen = vec2(0, 0);
 
-    /**
-        Gets the current contour being written to.
-    */
-    ref HaPolyContour currentContour() {
-        if (contours.length == 0)
-            this.nextContour();
-        
-        return contours[$-1];
-    }
-
-    /**
-        Adds a new contour.
-    */
-    void nextContour() {
-        contours = contours.nu_resize(contours.length+1);
-    }
-
-    /**
-        Grows the size of the current contour.
-    */
-    void growContour(size_t by) {
-        currentContour = currentContour.nu_resize(currentContour.length+by);
-    }
-
-    /**
-        Moves the pen to the given position
-    */
-    void movePen(vec2 target) {
+    //
+    //      Internal handling
+    //
+    void recalcBounds(vec2 pos) {
 
         // Resize X axis bounds
-        if (pen.x < aabb.xMin)
-            aabb.xMin = pen.x;
-        if (pen.x > aabb.xMax)
-            aabb.xMax = pen.x;
+        if (pos.x < aabb.xMin)
+            aabb.xMin = pos.x;
+        if (pos.x > aabb.xMax)
+            aabb.xMax = pos.x;
 
         // Resize Y axis.
-        if (pen.y < aabb.yMin)
-            aabb.yMin = pen.y;
-        if (pen.y > aabb.yMax)
-            aabb.yMax = pen.y;
+        if (pos.y < aabb.yMin)
+            aabb.yMin = pos.y;
+        if (pos.y > aabb.yMax)
+            aabb.yMax = pos.y;
+    }
 
-        pen = target;
+    void push(vec2 p1, vec2 p2, bool move = true) {
+        this.lines ~= haline(p1 * scale + offset, p2 * scale + offset);
+        this.recalcBounds(p1);
+        this.recalcBounds(p2);
+
+        if (move) this.pen = p2;
     }
 
 public:
+    ~this() { this.reset(); }
 
     /**
-        The list of contours.
+        Lines
     */
-    HaPolyContour[] contours;
+    vector!haline lines;
+
+    /**
+        Offset of the outline
+    */
+    vec2 offset;
+    
+    /**
+        Scale of the outline
+    */
+    vec2 scale;
 
     /**
         The bounds of the outline
     */
     @property rect bounds() { return aabb; }
 
-    // Destructor
-    ~this() { this.reset(); }
+    /**
+        Reset the contours by freeing them.
+    */
+    void reset() {
+        lines.clear();
+        nogc_initialize(this);
+    }
 
     /**
         Moves to the given location.
     */
     void moveTo(vec2 target) {
-        if (currentContour.length > 0)
-            nextContour();
+        this.closePath();
 
-        pen = target;
+        this.start = target;
+        this.pen = target;
     }
 
     /**
@@ -261,10 +300,7 @@ public:
         segment.
     */
     void lineTo(vec2 target) {
-        this.growContour(1);
-        currentContour[$-1] = line(pen, target);
-
-        pen = target;
+        this.push(pen, target);
     }
 
     /**
@@ -272,15 +308,12 @@ public:
         segment.
     */
     void quadTo(vec2 ctrl1, vec2 target) {
-        this.growContour(1);
-
         float step = 1.0/cast(float)segmentCount;
-        vec2 pos;
+        vec2 qstart = pen;
         foreach(i; 1..segmentCount) {
             float t = cast(float)i*step;
-            this.lineTo(quad(pen, ctrl1, target, t));
+            this.lineTo(quad(qstart, ctrl1, target, t));
         }
-        pen = target;
     }
 
     /**
@@ -288,52 +321,44 @@ public:
         segment.
     */
     void cubicTo(vec2 ctrl1, vec2 ctrl2, vec2 target) {
-        this.growContour(1);
-
         float step = 1.0/cast(float)segmentCount;
-        vec2 pos;
-        foreach(i; 1..segmentCount) {
+        vec2 qstart = pen;
+
+        foreach(i; 1..segmentCount+1) {
             float t = cast(float)i*step;
-            this.lineTo(cubic(pen, ctrl1, ctrl2, target, t));
+            this.lineTo(cubic(qstart, ctrl1, ctrl2, target, t));
         }
-        pen = target;
     }
 
     /**
         Closes the current path and starts a new subpath.
     */
     void closePath() {
-        if (currentContour.length == 0)
-            return;
+        if (start != pen)
+            this.push(pen, start);
         
-        this.growContour(1);
-
-        auto contourStart = currentContour[0].p1;
-        currentContour[$-1] = line(pen, contourStart);
-
-        pen = contourStart;
-        this.nextContour();
+        this.start = pen;
     }
 
     /**
-        Reset the contours by freeing them.
+        Finalizes the outline.
     */
-    void reset() {
-        if (contours.length > 0) {
-            foreach(ref contour; contours) {
-                contour = contour.nu_resize(0);
-            }
-
-            contours = contours.nu_resize(0);
+    void finalize() {
+        if (this.lines.empty) {
+            this.aabb = rect.init;
+            return;
         }
 
-        nogc_initialize(this);
-    }
-    
-    /**
-        Rasterizes the poly outline
-    */
-    HaRaster rasterize(vec2 scale, vec2 offset) {
-        return HaRaster(this, scale, offset);
+        // Close any unclosed paths.
+        this.closePath();
+
+        vec2 baseOffset = vec2(
+            -this.aabb.xMin,
+            -this.aabb.yMax + this.aabb.height
+        );        
+        foreach(ref line; lines) {
+            line.p1 += baseOffset;
+            line.p2 += baseOffset;
+        }
     }
 }

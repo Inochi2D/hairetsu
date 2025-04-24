@@ -10,7 +10,7 @@
 */
 module hairetsu.math;
 import nulib.collections.vector;
-public import nulib.math : clamp, min, max, copysign, signbit;
+public import nulib.math : clamp, min, max, copysign, signbit, E, PI, PI_2, PI_4;
 public import nulib.c.math;
 public import nulib.math.fixed;
 
@@ -156,6 +156,37 @@ struct HaVec2(T) {
     }
 
     /**
+        Truncates the values of the vector.
+    */
+    HaVec2!T trunc() {
+        return HaVec2!T(
+            cast(T).trunc(cast(double)x), 
+            cast(T).trunc(cast(double)y)
+        );
+    }
+
+    /**
+        Gets a vector with both axis made absolute.
+    */
+    HaVec2!T abs() {
+        return HaVec2!T(
+            cast(T).fabs(cast(double)x), 
+            cast(T).fabs(cast(double)y)
+        );
+    }
+
+    /**
+        Performs integer subtraction between this vector
+        and another.
+    */
+    HaVec2!T isub(HaVec2!T other) {
+        return HaVec2!T(
+            T(cast(int)x - cast(int)other.x),
+            T(cast(int)y - cast(int)other.y),
+        );
+    }
+
+    /**
         Binary operators
     */
     auto opBinary(string op)(HaVec2!T vt) {
@@ -188,6 +219,13 @@ struct HaVec2(T) {
     auto opOpAssign(string op, T)(T value) {
         this = this.opBinary!(op)(value);
         return this;
+    }
+
+    /**
+        Equality operator
+    */
+    bool opEquals(R)(const R other) const {
+        return (this.x == other.x && this.y == other.y);
     }
 }
 
@@ -225,14 +263,19 @@ struct HaLine(T) {
     HaVec2!T[2] nudge;
 
     /**
-        Adjustment factor
+        Adjustment factor for initial.
     */
-    HaVec2!T[2] adjustment;
+    HaVec2!T adjustment;
 
     /**
-        Params
+        Signed area of the line
     */
-    HaVec2!T[2] params;
+    HaVec2!T area;
+    
+    /**
+        Line delta based off the signed area.
+    */
+    HaVec2!T delta;
 
     /**
         Gets the midpoint of the line.
@@ -251,43 +294,42 @@ struct HaLine(T) {
 
         // Setup nudge factors.
         this.nudge[0].x = end.x >= start.x ? floorNudge : ceilNudge;
-        this.adjustment[0].x = cast(T)(end.x >= start.x ? 1.0 : 0.0);
         this.nudge[0].y = end.y >= start.y ? floorNudge : ceilNudge;
-        this.adjustment[0].y = cast(T)(end.y >= start.y ? 1.0 : 0.0);
         this.nudge[1].x = end.x > start.x ? ceilNudge : floorNudge;
         this.nudge[1].y = end.y > start.y ? ceilNudge : floorNudge;
-        this.params[1] = end - start;
-        this.params[0] = HaVec2!T(
-            params[1].x == 0.0 ? T.max : (T(1.0) / params[1].x),
-            T(1.0) / params[1].y
-        );        
+
+        // Setup adjustments
+        this.adjustment.x = cast(T)(end.x >= start.x ? 1.0 : 0.0);
+        this.adjustment.y = cast(T)(end.y >= start.y ? 1.0 : 0.0);
+
+        // Setup deltas
+        this.area = end - start;
+        this.delta = HaVec2!T(
+            cast(T)(1.0 / cast(float)area.x),
+            cast(T)(1.0 / cast(float)area.y),
+        );
     }
 
     /**
-        Repositions the line to fit within the given bounds,
-        optionally flips the line.
+        Gets the slope at the given point
     */
-    void reposition(HaRect!T bounds, bool reverse) {
-        HaVec2!T tp1 = reverse ? p2 : p1;
-        HaVec2!T tp2 = reverse ? p1 : p2;
-        
-        tp1.x = cast(T)fabs(cast(double)(p1.x - bounds.xMin));
-        tp1.y = cast(T)fabs(cast(double)(p1.y - bounds.yMax));
-        tp2.x = cast(T)fabs(cast(double)(p2.x - bounds.xMin));
-        tp2.y = cast(T)fabs(cast(double)(p2.y - bounds.yMax));
-        this = typeof(this)(tp1, tp2);
+    HaVec2!T slope() {
+        return HaVec2!T(
+            (p2.x - p1.x) / (p2.y - p1.y),
+            (p2.y - p1.y) / (p2.x - p1.x)
+        );
     }
 }
 
 /**
-    32-bit float 2D Vector
+    32-bit float based Line
 */
-alias line = HaLine!float;
+alias haline = HaLine!float;
 
 /**
     A contour of lines.
 */
-alias HaPolyContour = line[];
+alias HaPolyContour = haline[];
 
 /**
     Linearly interpolates between $(D a) and $(D b)
@@ -301,7 +343,12 @@ T lerp(T)(T a, T b, float t) {
     with $(D p1) as a control point.
 */
 T quad(T)(T p0, T p1, T p2, float t) {
-    return p0 * ((1-t) ^^ 2) + (p1*2*(1-t)*t) + p2*t^^2;
+    float tm = 1.0 - t;
+    float a = tm * tm;
+    float b = 2.0 * tm * t;
+    float c = t * t;
+
+    return a * p0 + b * p1 + c * p2;
 }
 
 /**

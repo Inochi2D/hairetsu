@@ -18,9 +18,10 @@
 */
 module hairetsu;
 
+public import hairetsu.fontmgr;
 public import hairetsu.shaper;
 public import hairetsu.common;
-public import hairetsu.fontmgr;
+public import hairetsu.glyph;
 public import hairetsu.font;
 
 /**

@@ -468,8 +468,10 @@ public:
         if (outlineTypes & SFNTOutlineType.trueType) {
             auto header = this.getGlyfHeader(glyph);
 
-            metrics.size.x = (header.xMax - header.xMin);
-            metrics.size.y = (header.yMax - header.yMin);
+            metrics.bounds.xMin = cast(float)header.xMin;
+            metrics.bounds.xMax = cast(float)header.xMax;
+            metrics.bounds.yMin = cast(float)header.yMin;
+            metrics.bounds.yMax = cast(float)header.yMax;
         }
 
         return metrics;

@@ -60,7 +60,6 @@ Language tag mapping is based on the map table created by `jclark`.
 
 https://github.com/jclark/lang-ietf-opentype
 
-The rasterizer is based on the `fontdue` glyph rasterizer, with optional
-SIMD optimizations.
-
-https://github.com/mooman219/fontdue
+Some inspiration has been taken from various renderers, such as fontdue, canvas_ity and others.  
+The glyph rendering algorithm is more or less an amalgamation of them all, with smaller tweaks,
+using signed converage masks (note; NOT SDFs) to effectively render glyphs.

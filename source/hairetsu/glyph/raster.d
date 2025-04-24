@@ -38,6 +38,8 @@ import numem;
 
 version(Have_intel_intrinsics) import inteli;
 
+debug import nulib.c.stdio : printf;
+
 /**
     A rasterized coverage mask
 */
@@ -46,53 +48,179 @@ private:
 @nogc:
 
     version(Have_intel_intrinsics)
-    void blitToSIMD(ref ubyte[] bitmap) {
+    void blitToSIMD(ref ubyte[] bitmap, bool mask) {
 
         // TODO: SIMD Optimize this.
-        this.blitToSimple(bitmap);
+        this.blitToSimple(bitmap, mask);
     }
 
-    void blitToSimple(ref ubyte[] bitmap) {
+    void blitToSimple(ref ubyte[] bitmap, bool mask) {
+        foreach(y; 0..height) {
+            float delta = 0;
+            foreach(x; 0..width) {
+                size_t i = x + y * width;
+                if (i >= bitmap.length)
+                    continue;
 
-        float covHeight = 0.0;
-        foreach(i; 0..coverage.length) {
-            covHeight += coverage[i];
-            bitmap[i] = cast(ubyte)clamp(fabs(covHeight) * 255.9, 0.0, 255.0);
+                if (mask) delta = coverage[i]+0.5;
+                else delta += coverage[i];
+                bitmap[i] = cast(ubyte)clamp(fabs(delta) * 255.0f, 0.0, 255.0);
+            }
         }
     }
 
-    void add(uint i, float covHeight, float midX) {
-        auto m = covHeight * midX;
-        coverage[i] += covHeight - m;
+    void add(vec2 p, float delta, float mid) {
+        auto i = cast(int)(p.x + p.y * width);
+        if (i+1 >= coverage.length) return;
+       
+        float m = delta * mid;
+        coverage[i] += delta - m;
         coverage[i+1] += m;
     }
 
-    void lineV(line line, vec2 p0, vec2 p1) {
-        vec2 start = vec2(
-            trunc(cast(float)cast(int)p0.x - cast(int)line.nudge[0].x),
-            trunc(cast(float)cast(int)p0.y - cast(int)line.nudge[0].y)
-        );
-        vec2 end = vec2(
-            trunc(cast(float)(cast(int)p1.x - cast(int)line.nudge[1].x)),
-            trunc(cast(float)(cast(int)p1.y - cast(int)line.nudge[1].y))
-        );
+    void add(vec2 p, float delta) {
+        auto i = cast(int)(p.x + p.y * width);
+        if (i+1 >= coverage.length) return;
 
-        float targetY = (start.y + line.adjustment[0].y);
-        float sy = copysign(1.0f, p1.y - p0.y);
-        float prevY = p0.y;
-        
-        int index = cast(int)(start.x + start.y * width);
-        int incY = cast(int)(copysign(cast(float)width, sy));
-        int dist = cast(int)(fabs(start.x - end.y));
-        float midX = fract(p0.x);
-        while(dist > 0) {
-            dist--;
-            this.add(index, prevY, midX);
-            index += incY;
-            prevY = targetY;
-            targetY += sy;
+        coverage[i] += delta;
+    }
+
+    // Debug function to draw the outline as just ugly lines.
+    // this is here in case things break again.
+    debug
+    void drawLine(haline line, vec2 scale, vec2 offset) {
+        vec2 pos = (line.p1 * scale + offset).trunc();
+        vec2 end = (line.p2 * scale + offset).trunc();
+        vec2 dir = vec2(
+            fabs(end.x - pos.x),
+            -fabs(end.y - pos.y)
+        );
+        vec2 sign = vec2(
+            copysign(1.0, end.x - pos.x), 
+            copysign(1.0, end.y - pos.y)
+        );
+        float error = dir.x + dir.y;
+
+        while (true) {
+            this.add(pos, 1);
+            float e2 = 2 * error;
+
+            if (e2 >= dir.y) {
+                if (pos.x == end.x) break;
+
+                error = error + dir.y;
+                pos.x += sign.x;
+            } else {
+                if (pos.y == end.y) break;
+
+                error = error + dir.y;
+                pos.y += sign.y;
+            }
         }
-        this.add(cast(int)(end.x + end.y * cast(float)width), prevY- p0.y, midX);
+    }
+
+    void addLine(haline line) {
+        enum float epsilon = 2.0e-5f;
+
+        vec2 p1 = line.p1;
+        vec2 p2 = line.p2;
+        if (fabs(p2.y - p1.y) < epsilon) {
+            return;
+        }
+        
+        // Start and endpoints of the line, snapped to pixels.
+        float sign = copysign(1.0f, line.p2.y - line.p1.y);
+        bool flip = p1.x > p2.x;
+        vec2 from = (flip ? p2 : p1);
+        vec2 to   = (flip ? p1 : p2);
+
+        vec2 pixel = from.trunc();
+        vec2 now = from;
+
+        // Sign, which determines which direction to move across
+        // the line.
+        vec2 corner = pixel + vec2(1.0f, to.y > from.y ? 1.0f : 0.0f);
+        vec2 slope = haline(from, to).slope();
+        
+        // Deltas to move on each axis.
+        bool xneg = to.x - from.x < epsilon;
+        vec2 nextX = xneg ? to : vec2(corner.x, now.y + (corner.x - now.x) * slope.y);
+        vec2 nextY = vec2(now.x + (corner.y - now.y) * slope.x, corner.y);
+
+        // Snap to to to prevent attempts to write out of bounds.
+        if ((from.y < to.y && to.y < nextY.y) || 
+            (from.y > to.y && to.y > nextY.y))
+                nextY = to;
+        
+
+        // We essentially do a souped up bresenham's line algorithm
+        // first by iterating over X, then Y.
+        // using the direction the line is moving to determine whether
+        // it closes or opens the outline.
+        //
+        // This is essentially a signed coverage mask, complying with
+        // the even-odd rule.
+        float strip;
+        float mid;
+        float area;
+        vec2 delta = vec2(1.0, to.y > from.y ? 1.0f : -1.0f);
+        do {
+            float carry = 0.0;
+            while(nextX.x < nextY.x) {
+                strip = clamp((nextX.y - now.y) * delta.y, 0.0, 1.0);
+                mid = (nextX.x + now.x) * 0.5f;
+                area = (mid - pixel.x) * strip;
+                this.add(pixel, (carry + strip - area) * sign);
+
+                carry = area;
+                now = nextX;
+                nextX.x += 1;
+                nextX.y = (nextX.x - from.x) * slope.y + from.y;
+                pixel.x += delta.x;
+            }
+
+            // End of strip
+            strip = clamp((nextY.y - now.y) * delta.y, 0.0, 1.0);
+            mid = (nextY.x + now.x) * 0.5f;
+            area = (mid - pixel.x) * strip;
+            this.add(pixel, (carry + strip - area) * sign);
+            this.add(vec2(pixel.x + 1, pixel.y), area * sign);
+
+            now = nextY;
+            nextY.y += delta.y;
+            nextY.x = (nextY.y - from.y) * slope.x + from.x;
+            pixel.y += delta.y;
+
+            // Snap to to to prevent attempts to write out of bounds.
+            if ((from.y < to.y && to.y < nextY.y) || 
+                (from.y > to.y && to.y > nextY.y))
+                    nextY = to;
+            
+        } while(now.y != to.y);
+    }
+
+    void blitTo(ref ubyte[] bitmap) {
+        assert(bitmap.length >= coverage.length);
+
+        version(Have_intel_intrinsics)
+            this.blitToSIMD(bitmap, false);
+        else
+            this.blitToSimple(bitmap, false);
+    }
+
+    void blitMaskTo(ref ubyte[] bitmap) {
+        assert(bitmap.length >= coverage.length);
+
+        version(Have_intel_intrinsics)
+            this.blitToSIMD(bitmap, true);
+        else
+            this.blitToSimple(bitmap, true);
+    }
+
+    void clear() {
+        this.width = 0;
+        this.height = 0;
+        coverage = coverage.nu_resize(0);
     }
 
 public:
@@ -116,37 +244,43 @@ public:
         Destructor
     */
     ~this() {
-        this.width = 0;
-        this.height = 0;
-        coverage = coverage.nu_resize(0, 4);
+        this.clear();
+    }
+
+    /**
+        Creates a new raster
+    */
+    this(uint width, uint height) {
+        this.width = width;
+        this.height = height;
+        this.coverage = coverage.nu_resize(width * height);
+        this.coverage[0..$] = 0.0f;
     }
 
     /**
         Constructs a new raster.
     */
-    this(HaPolyOutline outline, vec2 scale, vec2 offset) {
+    void draw(ref HaPolyOutline outline) {
+
         assert(outline.bounds.isValid);
-
-        this.width = cast(uint)ceil(outline.bounds.width*scale.x);
-        this.height = cast(uint)ceil(outline.bounds.height*scale.y);
-
-        // Aligned allocation to allow for SIMD.
-        coverage = coverage.nu_resize(width*height, 4);
-        foreach(contour; outline.contours) {
-            foreach(line vline; contour) {
-                this.lineV(vline, vline.p1 * scale + offset, vline.p2 * scale + offset);
-            }
+        foreach(line; outline.lines) {
+            this.addLine(line);
         }
     }
 
-    void blitTo(ref ubyte[] bitmap) {
-        assert(bitmap.length >= coverage.length);
-
-        version(Have_intel_intrinsics)
-            this.blitToSIMD(bitmap);
-        else
-            this.blitToSimple(bitmap);
+    /**
+        Blits the raster data to a glyph bitmap.
+    */
+    HaGlyphBitmap blit(bool blitMask = true) {
+        HaGlyphBitmap bitmap;
+        bitmap.width = width;
+        bitmap.height = height;
+        bitmap.channels = 1;
+        bitmap.data = bitmap.data.nu_resize(width * height);
+        
+        if (blitMask) this.blitMaskTo(bitmap.data);
+        else this.blitTo(bitmap.data);
+        this.clear();
+        return bitmap;
     }
 }
-
-

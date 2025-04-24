@@ -60,15 +60,15 @@ private:
 
     // Internal Glyph information.
     HaGlyph glyph_;
-    fixed32 pt_     = 18;
-    fixed32 dpi_    = 96;
-    fixed32 ppem_;
-    fixed32 scaleFactor_;
+    float pt_     = 18;
+    float dpi_    = 96;
+    float ppem_;
+    float scaleFactor_;
     bool wantHinting_;
 
     void updateGlyph(bool rerender = true) {
         ppem_ = pt_ * dpi_ / BASE_TYPOGRAPHIC_DPI;
-        scaleFactor_ = ppem / upem;
+        scaleFactor_ = cast(float)(ppem_ / upem);
         
         // Reload and scale metrics.
         glyph_.metrics = parent.getMetricsFor(glyph_.index);
@@ -87,8 +87,10 @@ private:
         fmetrics_.maxAdvance.y *= scaleFactor_;
 
         // Scale to pixel grid
-        glyph_.metrics.size.x *= scaleFactor_;
-        glyph_.metrics.size.y *= scaleFactor_;
+        glyph_.metrics.bounds.xMin *= scaleFactor_;
+        glyph_.metrics.bounds.yMin *= scaleFactor_;
+        glyph_.metrics.bounds.xMax *= scaleFactor_;
+        glyph_.metrics.bounds.yMax *= scaleFactor_;
         glyph_.metrics.advance.x *= scaleFactor_;
         glyph_.metrics.advance.y *= scaleFactor_;
         glyph_.metrics.bearingH.x *= scaleFactor_;
@@ -121,14 +123,14 @@ public:
     final @property uint upem() { return parent_.upem; }
 
     /**
-        The pixels-per-EM of the font face.
-    */
-    final @property fixed32 ppem() { return ppem_; }
-
-    /**
         The scaling factor needed to turn font units into pixels/dots.
     */
-    final @property fixed32 scale() { return scaleFactor_; }
+    final @property float scale() { return scaleFactor_; }
+
+    /**
+        The pixels-per-EM of the font face.
+    */
+    final @property float ppem() { return ppem_; }
 
     /**
         The parent font this font face belongs to.
@@ -208,7 +210,7 @@ public:
     */
     final @property float px() { return cast(float)ppem; }
     final @property void px(float px) {
-        this.pt_ = fixed32(px / (cast(float)dpi_ / BASE_TYPOGRAPHIC_DPI));
+        this.pt_ = (px / (cast(float)dpi_ / BASE_TYPOGRAPHIC_DPI));
         this.updateGlyph();
     }
 
@@ -251,8 +253,10 @@ public:
         auto metrics = this.parent.getMetricsFor(glyphIdx);
 
         // Scale to pixel grid
-        metrics.size.x *= scaleFactor_;
-        metrics.size.y *= scaleFactor_;
+        metrics.bounds.xMin *= scaleFactor_;
+        metrics.bounds.yMin *= scaleFactor_;
+        metrics.bounds.xMax *= scaleFactor_;
+        metrics.bounds.yMax *= scaleFactor_;
         metrics.advance.x *= scaleFactor_;
         metrics.advance.y *= scaleFactor_;
         metrics.bearingH.x *= scaleFactor_;
