@@ -21,3 +21,6 @@ __dummy_docs/
 
 # VSCode Junk
 .vscode/
+
+# Output examples
+*.png
