@@ -1,6 +1,8 @@
 <p align="center">
   <img src="hairetsu.png" alt="NuMem" style="height: 50%; max-height: 512px; width: auto;">
-</p>
+</p>  
+
+*Rendered with Hairetsu using Noto Sans JP*
 
 # Hairetsu
 Hairetsu (配列 /haiɾetsɯ/, sequence/arrangement in Japanese) provides cross-platform text 
