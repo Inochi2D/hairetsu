@@ -53,7 +53,7 @@ private:
                 if (antialias)
                     bitmap[i] = cast(ubyte)clamp(fabs(delta) * 255.0f, 0.0, 255.0);
                 else
-                    bitmap[i] = fabs(delta) > 0.01 ? 255 : 0;
+                    bitmap[i] = fabs(delta) > 0.50 ? 255 : 0;
             }
         }
     }
