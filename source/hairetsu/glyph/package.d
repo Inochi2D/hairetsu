@@ -186,7 +186,7 @@ public:
             A bitmap with the rasterized data, if failed
             an empty bitmap will be returned.
     */
-    HaGlyphBitmap rasterize() {
+    HaGlyphBitmap rasterize(bool antialiased = true) {
         final switch(type) {
             
             case HaGlyphType.outline:
@@ -196,6 +196,8 @@ public:
 
                 // Rasterize
                 HaRaster raster = HaRaster(cast(uint)poutline.bounds.width, cast(uint)poutline.bounds.height);
+                raster.antialias = antialiased;
+                
                 raster.draw(poutline);
                 return raster.blit();
 

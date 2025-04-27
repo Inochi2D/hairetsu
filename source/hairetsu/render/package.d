@@ -73,6 +73,11 @@ public:
     abstract @property HaGlyphRendererCapabilityFlags capabilities();
 
     /**
+        Whether to apply anti-aliasing.
+    */
+    bool antialiased = true;
+
+    /**
         Checks whether the renderer can render the given glyph.
 
         Params:

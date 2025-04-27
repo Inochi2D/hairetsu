@@ -62,7 +62,11 @@ private:
 
                 if (mask) delta = coverage[i]+0.5;
                 else delta += coverage[i];
-                bitmap[i] = cast(ubyte)clamp(fabs(delta) * 255.0f, 0.0, 255.0);
+
+                if (antialias)
+                    bitmap[i] = cast(ubyte)clamp(fabs(delta) * 255.0f, 0.0, 255.0);
+                else
+                    bitmap[i] = fabs(delta) > 0.01 ? 255 : 0;
             }
         }
     }
@@ -222,6 +226,11 @@ private:
     }
 
 public:
+
+    /**
+        Whether to enable anti aliasing (default on)
+    */
+    bool antialias = true;
     
     /**
         Width of the raster.

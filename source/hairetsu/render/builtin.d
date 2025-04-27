@@ -35,7 +35,7 @@ protected:
     void blit(ref HaGlyph glyph, vec2 offset, HaCanvas canvas) {
         final switch(glyph.type) {
             case HaGlyphType.outline:
-                HaGlyphBitmap bitmap = glyph.rasterize();
+                HaGlyphBitmap bitmap = glyph.rasterize(antialiased);
                 offset.y -= glyph.metrics.bounds.height + glyph.metrics.bounds.yMin;
 
                 // Outlines are always monochrome, so just apply it to all of the channels.
