@@ -1,35 +1,22 @@
 /**
-    Port of the fontdue outline rasterizer.
-
-    MIT License
-
-    Copyright (c) 2019 Joe C (mooman219)
-
-    Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
-    in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:
-
-    The above copyright notice and this permission notice shall be included in all
-    copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-    SOFTWARE.
+    Hairetsu Glyph Renderer
+    
+    ACKNOWLEDGEMENTS:
+        This code has taken inspiration from multiple sources, canvas_ity, fontdue, 
+        dplug:canvas, dg2d and others.
+        As such, i'd like to acknowledge the creators of the prior work I base my code on, 
+        such as Joe C (mooman219), Andrew Kensler, Chris Jones, Guillaume Piolat and more.
+        While this code started out as a fontdue port, it eventually was scrapped in favor
+        of me learning from these implementations and attempting my own. Nontheless, the 
+        inspiration I've taken from these other projects and their renderers warrants
+        acknowledgement.
 
     Copyright:
-        Copyright © 2019, Joe C (mooman219)
         Copyright © 2023-2025, Kitsunebi Games
         Copyright © 2023-2025, Inochi2D Project
     
     License:   $(LINK2 https://github.com/mooman219/fontdue/blob/master/LICENSE-MIT, MIT License)
-    Authors:   Luna Nielsen, fontdue Contributors
+    Authors:   Luna Nielsen
 */
 module hairetsu.glyph.raster;
 import hairetsu.glyph;
