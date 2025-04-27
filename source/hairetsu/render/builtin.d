@@ -37,6 +37,7 @@ protected:
             case HaGlyphType.outline:
                 HaGlyphBitmap bitmap = glyph.rasterize(antialiased);
                 offset.y -= glyph.metrics.bounds.height + glyph.metrics.bounds.yMin;
+                offset.x -= 2;
 
                 // Outlines are always monochrome, so just apply it to all of the channels.
                 foreach(y; 0..bitmap.height) {

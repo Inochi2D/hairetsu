@@ -190,9 +190,7 @@ public:
         bearing = !isVertical(run.direction) ?
             firstMetrics.bearingH :
             firstMetrics.bearingV;
-
-        accumulator.x -= cast(float)bearing.x;
-        accumulator.y -= cast(float)bearing.y;
+        
         foreach(GlyphIndex idx; run.buffer) {
             vec2 offset = accumulator;
             glyph = face.getGlyph(idx);
@@ -202,7 +200,7 @@ public:
 
             // Apply bearing.
             offset.x += cast(float)bearing.x;
-            offset.y += cast(float)bearing.y;
+            offset.y -= cast(float)bearing.y;
             
             advance = this.render(glyph, offset, canvas);
 

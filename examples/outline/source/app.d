@@ -56,7 +56,6 @@ void main(string[] args) {
 
 		// 12% taller just to account for stuff like commas.
 		HaCanvas canvas = nogc_new!HaCanvas(cast(uint)textSize.x, cast(uint)(textSize.y*1.12), HaColorFormat.CBPP8);
-		renderer.antialiased = false;
 		renderer.render(face, glyphRun, vec2(0, fmetrics.ascender.x), canvas);
 
 		canvas.dumpToFile();
