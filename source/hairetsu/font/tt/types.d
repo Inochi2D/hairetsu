@@ -109,16 +109,16 @@ struct TTGlyfTable {
 
             // Read contours
             simple.endPtsOfContours.resize(header.numberOfCountours);
-            reader.readElementsBE!ushort(simple.endPtsOfContours);
+            reader.readElementsBE!ushort(simple.endPtsOfContours[]);
 
             // Read instructions
-            uint instructionCount = reader.readElementBE!ushort;
+            ushort instructionCount = reader.readElementBE!ushort;
             if (instructionCount > 0) {
                 simple.instructions.resize(instructionCount);
                 reader.read(simple.instructions);
             }
 
-            uint pointCount = simple.endPtsOfContours[$-1]+1;
+            ushort pointCount = cast(ushort)(simple.endPtsOfContours[$-1]+1);
             if (pointCount > 0) {
                 simple.flags.resize(pointCount);
                 simple.contours.resize(pointCount);
@@ -131,6 +131,8 @@ struct TTGlyfTable {
                     if (flag & REPEAT_FLAG) {
                         ubyte repeat = reader.readElementBE!ubyte;
                         foreach(_; 0..repeat) {
+                            if (i+1 >= pointCount) break;
+
                             simple.flags[++i] = flag;
                         }
                     }

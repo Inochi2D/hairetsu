@@ -102,11 +102,11 @@ public:
 
                     foreach(i; 0..table.format4.segCountX2/2) {
                         uint startCode = table.format4.startCode[i];
-                        uint endCode = table.format4.startCode[i];
+                        uint endCode = table.format4.endCode[i];
 
                         // Skip this range.
                         if (code < startCode || code > endCode)
-                            break;
+                            continue;
 
                         if (idRangeOffset[i] == 0) {
 
@@ -162,7 +162,7 @@ public:
                 case 4:
                     foreach(i; 0..table.format4.segCountX2/2) {
                         uint startCode = table.format4.startCode[i];
-                        uint endCode = table.format4.startCode[i];
+                        uint endCode = table.format4.endCode[i];
 
                         // Skip ending codes.
                         if (startCode == endCode)
@@ -209,12 +209,7 @@ struct TTCmapTable {
         ushort tableCount = reader.readElementBE!ushort();
         records = reader.readRecords!TTCmapEncodingRecord(tableCount);
 
-        foreach(ref TTCmapEncodingRecord record; records) {
-            
-            // Skip non-unicode and non-windows platforms
-            if (record.platformId != 0 && record.platformId != 3)
-                continue;
-            
+        foreach(ref TTCmapEncodingRecord record; records) {        
             reader.seek(baseOffset+record.subtableOffset);
             tables ~= reader.readRecord!TTCmapSubTable();
         }

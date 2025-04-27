@@ -268,16 +268,18 @@ public:
         bool hasOutlines;
         ptrdiff_t gHeaderOffset = this.getGlyfOffset(index, hasOutlines);
 
-        if (auto table = entry.findTable(ISO15924!("glyf"))) {
-            reader.seek(entry.offset+table.offset+gHeaderOffset);
+        if (gHeaderOffset >= 0) {
+            if (auto table = entry.findTable(ISO15924!("glyf"))) {
+                reader.seek(entry.offset+table.offset+gHeaderOffset);
 
-            if (hasOutlines)
-                return reader.readRecord!TTGlyfTable();
+                if (hasOutlines)
+                    return reader.readRecord!TTGlyfTable();
 
-            // No outlines, clear contours.
-            auto header = reader.readRecord!TTGlyfTableHeader();
-            header.numberOfCountours = 0;
-            return TTGlyfTable(header: header);
+                // No outlines, clear contours.
+                auto header = reader.readRecord!TTGlyfTableHeader();
+                header.numberOfCountours = 0;
+                return TTGlyfTable(header: header);
+            }
         }
 
         return TTGlyfTable.init;
@@ -291,9 +293,11 @@ public:
         bool hasOutlines;
         ptrdiff_t gHeaderOffset = getGlyfOffset(index, hasOutlines);
 
-        if (auto table = entry.findTable(ISO15924!("glyf"))) {
-            reader.seek(entry.offset+table.offset+gHeaderOffset);
-            return reader.readRecord!TTGlyfTableHeader();
+        if (gHeaderOffset >= 0) {
+            if (auto table = entry.findTable(ISO15924!("glyf"))) {
+                reader.seek(entry.offset+table.offset+gHeaderOffset);
+                return reader.readRecord!TTGlyfTableHeader();
+            }
         }
 
         return TTGlyfTableHeader.init;
@@ -306,8 +310,7 @@ public:
     final
     bool hasGlyfOutline(GlyphIndex index) {
         bool hasOutlines;
-        cast(void)this.getGlyfOffset(index, hasOutlines);
-        return hasOutlines;
+        return this.getGlyfOffset(index, hasOutlines) >= 0 && hasOutlines;
     }
 
     /*

@@ -220,7 +220,7 @@ private:
     enum bmax = float.infinity;
 
     // Segments to split beziers into.
-    enum segmentCount = 4;
+    enum segmentCount = 24;
 
     bool shouldReverse = false;
     float area = 0;

@@ -271,7 +271,6 @@ public:
     */
     final
     nstring readUTF16BE(size_t bytes) @trusted {
-        assert((bytes % 2) == 0, "Unaligned byte read!");
         return toUTF8(reader.readUTF16BE(cast(uint)bytes/2));
     }
 
