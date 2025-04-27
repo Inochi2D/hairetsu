@@ -57,7 +57,7 @@ protected:
 
         This should write the final rasterized image to the canvas.
     */
-    abstract void blit(ref HaGlyph glyph, vec2 offset, HaCanvas canvas);
+    abstract void blit(ref HaGlyph glyph, vec2 offset, HaCanvas canvas, bool horizontal);
     
 public:
 
@@ -137,24 +137,26 @@ public:
         
         bool isHorizontal = !run.direction.isVertical;
         vec2 size = vec2(
-            0,
-            cast(float)(isHorizontal ?
-                (face.faceMetrics.ascender.x-face.faceMetrics.descender.x)+face.faceMetrics.lineGap.x :
-                (face.faceMetrics.ascender.y-face.faceMetrics.descender.y)+face.faceMetrics.lineGap.y
-            )
+            cast(float)(!isHorizontal ? (face.faceMetrics.ascender.y-face.faceMetrics.descender.y)+face.faceMetrics.lineGap.y : 0),
+            cast(float)(isHorizontal ? (face.faceMetrics.ascender.x-face.faceMetrics.descender.x)+face.faceMetrics.lineGap.x : 0)
         );
 
         foreach(GlyphIndex idx; run.buffer) {
 		    HaGlyphMetrics metrics = face.getMetricsFor(idx);
 
-            size.x += cast(float)(isHorizontal ? 
-                metrics.advance.x : 
-                metrics.advance.y
-            );
+            if (isHorizontal) {
+                size.x += metrics.advance.x;
 
-            // Bump size if something goes outside the general line height.
-            if (metrics.bounds.height > size.y)
-                size.y = metrics.bounds.height;
+                // Bump size if something goes outside the general line height.
+                if (metrics.bounds.height > size.y)
+                    size.y = metrics.bounds.height;
+            } else {
+                size.y += cast(float)metrics.advance.y;
+
+                // Bump size if something goes outside the general line height.
+                if (metrics.bounds.width > size.x)
+                    size.x = metrics.bounds.width;
+            }
         }
         return size;
     }
@@ -186,25 +188,27 @@ public:
         if (run.length == 0)
             return accumulator;
         
-        HaGlyphMetrics firstMetrics = face.getMetricsFor(run.buffer[0]);
-        bearing = !isVertical(run.direction) ?
-            firstMetrics.bearingH :
-            firstMetrics.bearingV;
-        
+        bool isHorizontal = !isVertical(run.direction);
         foreach(GlyphIndex idx; run.buffer) {
             vec2 offset = accumulator;
             glyph = face.getGlyph(idx);
-            bearing = !isVertical(run.direction) ?
-                glyph.metrics.bearingH :
-                glyph.metrics.bearingV;
 
             // Apply bearing.
-            offset.x += cast(float)bearing.x;
-            offset.y -= cast(float)bearing.y;
-            
-            advance = this.render(glyph, offset, canvas);
+            if (isHorizontal) {
 
-            if (!isVertical(run.direction))
+                bearing = glyph.metrics.bearingH;
+                offset.x += cast(float)bearing.x;
+                offset.y -= cast(float)bearing.y;
+            } else {
+                
+                bearing = glyph.metrics.bearingV;
+                offset.x -= cast(float)bearing.x;
+                offset.y += cast(float)bearing.y;
+            }
+            
+            advance = this.render(glyph, offset, canvas, isHorizontal);
+
+            if (isHorizontal)
                 accumulator.x += advance.x;
             else
                 accumulator.y += advance.y;
@@ -216,14 +220,15 @@ public:
         Renders the given glyph to a given buffer.
 
         Params:
-            glyph =     The glyph to render
-            position =  The origin position for rendering.
-            canvas =    The destination buffer
+            glyph =         The glyph to render
+            position =      The origin position for rendering.
+            canvas =        The destination buffer
+            horizontal =    Whether to render with horizontal or vertical metrics.
         
         Returns:
             The horizontal and vertical advance of the glyph
     */
-    vec2 render(ref HaGlyph glyph, vec2 position, HaCanvas canvas) {
+    vec2 render(ref HaGlyph glyph, vec2 position, HaCanvas canvas, bool horizontal = true) {
         vec2 advance = vec2(
             cast(float)glyph.metrics.advance.x,
             cast(float)glyph.metrics.advance.y,
@@ -232,7 +237,7 @@ public:
         if (!this.canRender(glyph))
             return advance;
         
-        this.blit(glyph, position, canvas);
+        this.blit(glyph, position, canvas, horizontal);
         return advance;
     }
 

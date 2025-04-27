@@ -34,10 +34,18 @@ public:
     */
     override
     void shape(ref HaFontFace face, ref HaBuffer buffer) {
+        auto dir = buffer.direction;
+        auto lang = buffer.language;
+        auto script = buffer.script;
+
         codepoint[] glyphs = buffer.take();
         foreach(size_t i, codepoint c; glyphs) {
             glyphs[i] = face.parent.charMap.getGlyphIndex(c);
         }
+        
         buffer.giveShaped(glyphs);
+        buffer.direction = dir;
+        buffer.language = lang;
+        buffer.script = script;
     }
 }

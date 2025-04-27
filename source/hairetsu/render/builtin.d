@@ -32,12 +32,18 @@ protected:
         This should write the final rasterized image to the canvas.
     */
     override
-    void blit(ref HaGlyph glyph, vec2 offset, HaCanvas canvas) {
+    void blit(ref HaGlyph glyph, vec2 offset, HaCanvas canvas, bool horizontal) {
         final switch(glyph.type) {
             case HaGlyphType.outline:
                 HaGlyphBitmap bitmap = glyph.rasterize(antialiased);
-                offset.y -= glyph.metrics.bounds.height + glyph.metrics.bounds.yMin;
-                offset.x -= 2;
+
+                if (horizontal) {
+                    offset.y -= glyph.metrics.bounds.height + glyph.metrics.bounds.yMin;
+                    offset.x -= 2;
+                } else {
+                    offset.y -= 2;
+                    offset.x -= glyph.metrics.bounds.width/2;
+                }
 
                 // Outlines are always monochrome, so just apply it to all of the channels.
                 foreach(y; 0..bitmap.height) {
