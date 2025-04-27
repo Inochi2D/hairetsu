@@ -1,7 +1,7 @@
 name "hairetsu"
-description "Cross-platform text layouting library"
-authors "Luna"
-copyright "Copyright © 2025, Luna"
+description "Pure D Font and Text Handling"
+authors "Luna the Foxgirl"
+copyright "Copyright © 2025, Luna, Copyright © 2025, Kitsunebi Games, Copyright © 2025, Inochi2D Project"
 license "BSL-1.0"
 
 dependency "numem" version=">=1.0.5"
@@ -13,7 +13,6 @@ stringImportPaths "res/"
 targetPath "out/"
 
 copyFiles "LICENSE"
-
 buildOptions "debugInfoC"
 
 configuration "static" {
