@@ -5,6 +5,7 @@ copyright "Copyright © 2025, Luna"
 license "BSL-1.0"
 
 dependency "numem" version=">=1.0.5"
+dependency "numem:hookset-libc" version="*"
 dependency "nulib" version=">=0.2.7"
 dependency "intel-intrinsics" version="1.12.0" default=false optional=true
 
