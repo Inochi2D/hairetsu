@@ -77,9 +77,12 @@ private:
             vec2 pen;
 
             // Construct font outline.
-            foreach(ushort endpoint; gtable.simple.endPtsOfContours[]) {
+            mloop: foreach(ushort endpoint; gtable.simple.endPtsOfContours[]) {
                 size_t lptr = 0;
                 do {
+                    if (rptr >= gtable.simple.contours.length)
+                        break mloop;
+
                     lastFlag = flag;
                     lastPen = pen;
                     offset = gtable.simple.contours[rptr];

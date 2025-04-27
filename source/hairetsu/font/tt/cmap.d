@@ -98,11 +98,16 @@ public:
                         table.format0.glyphIdArray[code];
 
                 case 4:
+                    if (code >= 0xFFFF) 
+                        break;
+                    
                     ushort[] idRangeOffset = table.format4.idRangeOffset;
-
                     foreach(i; 0..table.format4.segCountX2/2) {
                         uint startCode = table.format4.startCode[i];
                         uint endCode = table.format4.endCode[i];
+
+                        if (startCode == endCode)
+                            break;
 
                         // Skip this range.
                         if (code < startCode || code > endCode)
@@ -115,7 +120,7 @@ public:
                             return code + table.format4.idDelta[i];
                         } else {
                             assert(idRangeOffset[i] < table.format4.glyphIdArray.length);
-                            return table.format4.glyphIdArray[idRangeOffset[i]];
+                            return table.format4.glyphIdArray[idRangeOffset[i]/2];
                         }
                     }
                     break;
