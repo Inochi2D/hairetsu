@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="hairetsu.png" alt="NuMem" style="height: 50%; max-height: 512px; width: auto;">
+</p>
+
 # Hairetsu
 Hairetsu (配列 /haiɾetsɯ/, sequence/arrangement in Japanese) provides cross-platform text 
 lookup, shaping and blitting services on top of system APIs. 
