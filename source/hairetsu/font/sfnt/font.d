@@ -41,6 +41,7 @@ class SFNTFont : HaFont {
 @nogc:
 private:
     map!(ushort, nstring) names;
+    vector!(string) tableNames;
     SFNTMaxpTable maxp;
     TTHheaTable hhea;
     TTVheaTable vhea;
@@ -49,6 +50,17 @@ private:
     SFNTOutlineType outlineType_;
     SFNTFontEntry entry_;
 
+    //
+    //      INDEXING
+    //
+    void indexTables() {
+        foreach(SFNTTableRecord table; entry.tables) {
+            import nulib.memory.endian : nu_etoh, Endianess;
+
+            char[4] tagCode = nu_etoh(reinterpret_cast!(char[4])(table.tag), Endianess.bigEndian);
+            tableNames ~= (cast(string)tagCode).nu_dup();
+        }
+    }
 
     //
     //      NAME TABLE
@@ -70,7 +82,7 @@ private:
             foreach(ref record; reader.readRecords!SFNTNameRecord(nameRecordCount)) {
 
                 // Non-unicode IDs not supported.
-                if (isUnicodeName(record))
+                if (!isUnicodeName(record))
                     continue;
 
                 // Read UTF16-BE encoded name string.
@@ -83,7 +95,7 @@ private:
     bool isUnicodeName(SFNTNameRecord record) {
         return 
             (record.platformId == 0) ||
-            (record.platformId == 3 && record.encodingId == 10);
+            (record.platformId == 3 && (record.encodingId == 1 || record.encodingId == 10));
     }
 
     //
@@ -170,9 +182,13 @@ private:
     void detectOutlines() {
         if (auto table = entry.findTable(ISO15924!("glyf"))) {
             outlineType_ |= SFNTOutlineType.trueType;
-        } else if (auto table = entry.findTable(ISO15924!("CFF"))) {
+        }
+        
+        if (auto table = entry.findTable(ISO15924!("CFF "))) {
             outlineType_ |= SFNTOutlineType.CFF;
-        } else if (auto table = entry.findTable(ISO15924!("CFF"))) {
+        }
+        
+        if (auto table = entry.findTable(ISO15924!("CFF2"))) {
             outlineType_ |= SFNTOutlineType.CFF2;
         }
     }
@@ -229,6 +245,7 @@ protected:
     override
     void onFontLoad(HaFontReader reader) {
         this.reader = cast(SFNTReader)reader;
+        this.indexTables();
 
         this.parseHeadTable(this.reader);
         this.parseNameTable(this.reader);
@@ -374,6 +391,12 @@ public:
     */
     override
     @property string outlineTypeNames() { return __ha_sfnt_outline_type_names[outlineType_]; }
+    
+    /**
+        List of features the font uses.
+    */
+    override
+    @property string[] fontFeatures() { return cast(string[])tableNames[]; }
 
     /**
         Amount of glyphs within the font.

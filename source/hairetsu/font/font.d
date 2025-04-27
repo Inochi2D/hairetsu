@@ -85,6 +85,11 @@ public:
     abstract @property string outlineTypeNames();
 
     /**
+        List of features the font uses.
+    */
+    abstract @property string[] fontFeatures();
+
+    /**
         Amount of glyphs within the font.
     */
     abstract @property size_t glyphCount();

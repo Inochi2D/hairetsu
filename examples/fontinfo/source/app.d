@@ -3,6 +3,7 @@ import stdfile = std.file;
 import hairetsu;
 import numem;
 import nulib.io.stream.memstream;
+import std.array : join;
 
 void main(string[] args) {
 	if (args.length <= 1) {
@@ -19,7 +20,7 @@ void main(string[] args) {
 			writefln("%u: %s (%s with %u subfonts)", i, file.name, file.type, file.fonts.length);
 			foreach(HaFont font; file.fonts) {
 				writefln(
-					"    %u: %s %s (%u glyphs, %s, %s outlines)", 
+					"    %u: %s %s (%u glyphs, %s with %s outlines)", 
 					font.index, 
 					font.family, 
 					font.subfamily, 
@@ -27,6 +28,7 @@ void main(string[] args) {
 					font.type,
 					font.outlineTypeNames
 				);
+				writefln("      - Features: (%u) '%s'", font.fontFeatures.length, font.fontFeatures().join("', '"));
 			}
 		}
 	}
