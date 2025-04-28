@@ -6,8 +6,7 @@
 
 # Hairetsu
 Hairetsu (配列 /haiɾetsɯ/, sequence/arrangement in Japanese) provides cross-platform text 
-lookup, shaping and blitting services on top of system APIs. 
-Making building D applications with complex font and text shaping support easier.
+lookup, shaping and rasterization with plans for complex text layout and bidi in the pipeline.
 
 Hairetsu is built around reference counted types built ontop of `numem`; despite this the types provided
 by hairetsu should be usable in a GC context.
