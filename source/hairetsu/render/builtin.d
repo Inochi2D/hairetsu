@@ -69,7 +69,6 @@ protected:
                     }
                 }
 
-                bitmap.reset();
                 return;
 
             case HaGlyphType.bitmap:

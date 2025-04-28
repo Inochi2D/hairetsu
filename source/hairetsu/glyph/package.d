@@ -12,8 +12,7 @@ module hairetsu.glyph;
 import hairetsu.common;
 import numem;
 
-public import hairetsu.glyph.raster;
-public import hairetsu.glyph.bitmap;
+public import hairetsu.render.rasterizer;
 public import hairetsu.glyph.outline;
 public import hairetsu.glyph.svg;
 
@@ -163,7 +162,7 @@ public:
                 break;
                 
             case HaGlyphType.bitmap:
-                data.bitmap.reset();
+                nogc_delete(data.bitmap);
                 break;
                 
             case HaGlyphType.svg:
@@ -186,7 +185,7 @@ public:
             A bitmap with the rasterized data, if failed
             an empty bitmap will be returned.
     */
-    HaGlyphBitmap rasterize(bool antialiased = true) {
+    HaBitmap rasterize(bool antialiased = true) {
         final switch(type) {
             
             case HaGlyphType.outline:
@@ -195,24 +194,32 @@ public:
                 HaPolyOutline poutline = data.outline.polygonize(vec2(1, 1), vec2(0, 0));
 
                 // Rasterize
-                HaRaster raster = HaRaster(cast(uint)poutline.bounds.width, cast(uint)poutline.bounds.height);
-                raster.antialias = antialiased;
-                
-                raster.draw(poutline);
-                return raster.blit();
+                HaCoverageMask coverage = HaCoverageMask(cast(uint)poutline.bounds.width, cast(uint)poutline.bounds.height);
+                coverage.draw(poutline);
+
+                HaBitmap bitmap = HaBitmap(coverage.width, coverage.height, 1);
+                if (antialiased) coverage.blitTo!true(bitmap);
+                else coverage.blitTo!false(bitmap);
+
+                return bitmap;
 
             case HaGlyphType.bitmap:
                 return data.bitmap;
             
             case HaGlyphType.svg:
-                return HaGlyphBitmap.init; 
+                return HaBitmap.init; 
             
             case HaGlyphType.none:
-                return HaGlyphBitmap.init; 
+                return HaBitmap.init; 
 
         }
     }
 }
+
+/**
+    Alias for backwards compatibility.
+*/
+alias HaGlyphBitmap = HaBitmap;
 
 /**
     The different kinds of data that can be stored in a glyph.

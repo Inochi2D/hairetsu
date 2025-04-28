@@ -12,7 +12,6 @@ module hairetsu.render.canvas;
 import numem;
 
 import hairetsu.common;
-import hairetsu.glyph.bitmap;
 
 /**
     The color format which to use for rendering.
@@ -48,7 +47,7 @@ class HaCanvas : NuRefCounted {
 private:
 @nogc:
     // Just reusing our existing glyph bitmap.
-    HaGlyphBitmap bitmap;
+    HaBitmap bitmap;
     HaColorFormat format_;
 
     uint getChannelCount(HaColorFormat format) {
@@ -65,18 +64,13 @@ private:
 
 public:
     ~this() {
-        bitmap.reset();
+        nogc_delete(bitmap);
     }
 
     this(uint width, uint height, HaColorFormat format) {
         uint c = getChannelCount(format);
-
+        this.bitmap = HaBitmap(width, height, c);
         this.format_ = format;
-        this.bitmap.width = width;
-        this.bitmap.height = height;
-        this.bitmap.channels = c;
-        this.bitmap.data = this.bitmap.data.nu_resize(width*height*c);
-        nogc_zeroinit(bitmap.data[]);
     }
 
     /**
@@ -107,7 +101,7 @@ public:
     /**
         Takes ownership of the internal bitmap.
     */
-    HaGlyphBitmap take() {
+    HaBitmap take() {
         auto bitmap = this.bitmap;
         nogc_initialize(this.bitmap);
         return bitmap;

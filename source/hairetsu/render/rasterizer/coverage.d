@@ -1,5 +1,5 @@
 /**
-    Hairetsu Glyph Renderer
+    Hairetsu Coverage Mask Generator
     
     ACKNOWLEDGEMENTS:
         This code has taken inspiration from multiple sources, canvas_ity, fontdue, 
@@ -18,55 +18,22 @@
     License:   $(LINK2 https://github.com/mooman219/fontdue/blob/master/LICENSE-MIT, MIT License)
     Authors:   Luna Nielsen
 */
-module hairetsu.glyph.raster;
-import hairetsu.glyph;
+module hairetsu.render.rasterizer.coverage;
+import hairetsu.render.rasterizer.outline;
 import hairetsu.math;
 import numem;
 
 version(Have_intel_intrinsics) import inteli;
+import hairetsu.common;
 
 /**
-    A rasterized coverage mask
+    A signed coverage mask.
 */
-struct HaRaster {
+struct HaCoverageMask {
 private:
 @nogc:
 
-    version(Have_intel_intrinsics)
-    void blitToSIMD(ref ubyte[] bitmap, bool mask) {
-
-        // TODO: SIMD Optimize this.
-        this.blitToSimple(bitmap, mask);
-    }
-
-    void blitToSimple(ref ubyte[] bitmap, bool mask) {
-        foreach(y; 0..height) {
-            float delta = 0;
-            foreach(x; 0..width) {
-                size_t i = x + y * width;
-                if (i >= bitmap.length)
-                    continue;
-
-                if (mask) delta = coverage[i]+0.5;
-                else delta += coverage[i];
-
-                if (antialias)
-                    bitmap[i] = cast(ubyte)clamp(fabs(delta) * 255.0f, 0.0, 255.0);
-                else
-                    bitmap[i] = fabs(delta) > 0.50 ? 255 : 0;
-            }
-        }
-    }
-
-    void add(vec2 p, float delta, float mid) {
-        auto i = cast(int)(p.x + p.y * width);
-        if (i+1 >= coverage.length) return;
-       
-        float m = delta * mid;
-        coverage[i] += delta - m;
-        coverage[i+1] += m;
-    }
-
+    // Adds a coverage delta to the coverage mask.
     void add(vec2 p, float delta) {
         auto i = cast(int)(p.x + p.y * width);
         if (i+1 >= coverage.length) return;
@@ -74,40 +41,7 @@ private:
         coverage[i] += delta;
     }
 
-    // Debug function to draw the outline as just ugly lines.
-    // this is here in case things break again.
-    debug
-    void drawLine(haline line, vec2 scale, vec2 offset) {
-        vec2 pos = (line.p1 * scale + offset).trunc();
-        vec2 end = (line.p2 * scale + offset).trunc();
-        vec2 dir = vec2(
-            fabs(end.x - pos.x),
-            -fabs(end.y - pos.y)
-        );
-        vec2 sign = vec2(
-            copysign(1.0, end.x - pos.x), 
-            copysign(1.0, end.y - pos.y)
-        );
-        float error = dir.x + dir.y;
-
-        while (true) {
-            this.add(pos, 1);
-            float e2 = 2 * error;
-
-            if (e2 >= dir.y) {
-                if (pos.x == end.x) break;
-
-                error = error + dir.y;
-                pos.x += sign.x;
-            } else {
-                if (pos.y == end.y) break;
-
-                error = error + dir.y;
-                pos.y += sign.y;
-            }
-        }
-    }
-
+    // Adds a line segment to the coverage mask.
     void addLine(haline line, vec2 offset) {
         enum float epsilon = 2.0e-5f;
 
@@ -188,36 +122,23 @@ private:
         } while(now.y != to.y);
     }
 
-    void blitTo(ref ubyte[] bitmap) {
-        assert(bitmap.length >= coverage.length);
-
-        version(Have_intel_intrinsics)
-            this.blitToSIMD(bitmap, false);
-        else
-            this.blitToSimple(bitmap, false);
-    }
-
-    void blitMaskTo(ref ubyte[] bitmap) {
-        assert(bitmap.length >= coverage.length);
-
-        version(Have_intel_intrinsics)
-            this.blitToSIMD(bitmap, true);
-        else
-            this.blitToSimple(bitmap, true);
-    }
-
-    void clear() {
-        this.width = 0;
-        this.height = 0;
-        coverage = coverage.nu_resize(0);
-    }
-
 public:
 
     /**
-        Whether to enable anti aliasing (default on)
+        The built-in padding added to the coverage mask.
+
+        This is needed to prevent outline spills with the
+        current algorithm.
     */
-    bool antialias = true;
+    enum uint MASK_PADDING = 4;
+
+    /**
+        The built-in pixel offset added to the coverage mask.
+
+        This is needed to prevent outline spills with the
+        current algorithm.
+    */
+    enum vec2 MASK_OFFSET = vec2(MASK_PADDING/2, MASK_PADDING/2);
     
     /**
         Width of the raster.
@@ -238,58 +159,136 @@ public:
         Destructor
     */
     ~this() {
+        this.width = 0;
+        this.height = 0;
+        this.coverage = coverage.nu_resize(0);
+    }
+
+    /**
+        Creates a new coverage mask.
+
+        Params:
+            width = width of the coverage mask in pixels.
+            height = height of the coverage mask in pixels.
+    */
+    this(uint width, uint height) {
+        this.width = width+MASK_PADDING;
+        this.height = height+MASK_PADDING;
+
+        this.coverage = coverage.nu_resize(this.width * this.height);
         this.clear();
     }
 
     /**
-        Creates a new raster
+        Postblit
     */
-    this(uint width, uint height) {
-        this.width = width+4;
-        this.height = height+4;
-        this.coverage = coverage.nu_resize(this.width * this.height);
+    this(this) {
+        this.width = width;
+        this.height = height;
+        this.coverage = coverage.nu_dup();
     }
 
     /**
-        Constructs a new raster.
+        Draws the outline into the coverage mask, do note that it does
+        NOT clear the current contents of the coverage mask.
+
+        Params:
+            outline = The outline to render.
+
+        See_Also:
+            $(D HaCoverageMask.clear)
     */
     void draw(ref HaPolyOutline outline) {
         if (!outline.bounds.isValid)
             return;
         
-        this.coverage[0..$] = 0.0f;
         foreach(line; outline.lines) {
-            this.addLine(line, vec2(2, 2));
+            this.addLine(line, MASK_OFFSET);
         }
     }
 
     /**
-        Blits the raster data to a glyph bitmap.
+        Draws a single line into the coverage mask.
     */
-    HaGlyphBitmap blit() {
-        HaGlyphBitmap bitmap;
-        bitmap.width = width;
-        bitmap.height = height;
-        bitmap.channels = 1;
-        bitmap.data = bitmap.data.nu_resize(width * height);
-        
-        this.blitTo(bitmap.data);
-        this.clear();
-        return bitmap;
+    void draw(haline line) {
+        this.addLine(line, MASK_OFFSET);
     }
 
     /**
-        Blits the raster data to a glyph bitmap.
+        Clears the coverage mask.
     */
-    HaGlyphBitmap blitMask() {
-        HaGlyphBitmap bitmap;
-        bitmap.width = width;
-        bitmap.height = height;
-        bitmap.channels = 1;
-        bitmap.data = bitmap.data.nu_resize(width * height);
+    void clear() {
+        this.coverage[0..$] = 0.0f;
+    }
+    
+    /**
+        Flattens the coverage mask.
         
-        this.blitMaskTo(bitmap.data);
-        this.clear();
-        return bitmap;
+        This function essentially converts the signed coverage mask into
+        an unsigned floating point mask in the range of 0..1.
+    */
+    void flatten() {
+        float[] line;
+        line = line.nu_resize(width);
+
+        foreach(y; 0..height) {
+            size_t lineY = y * width;
+            float delta = 0;
+
+            foreach(x; 0..width) {
+                delta += coverage[lineY+x];
+                line[lineY+x] = min(fabs(delta), 1.0);
+            }
+
+            // Update the coverage mask with the new flattened values.
+            coverage[lineY..lineY+width] = line[0..width];
+        }
+
+        // Free the temporary buffer
+        line = line.nu_resize(0);
+    }
+
+    /**
+        Blits a single scanline to the given buffer.
+        This is all that's needed for basic glyph rendering.
+
+        Params:
+            scanline =  The scanline to blit the coverage mask to.
+            channels =  The channel count of the scanline.
+            y =         The scanline in the coverage mask to blit.
+    */
+    void blitScanlineTo(bool antialias)(ubyte[] scanline, uint channels, uint y) {
+        if (y >= height)
+            return;
+        
+        float delta = 0;
+        foreach(x; 0..width) {
+            size_t bi = (x*channels);
+            size_t ci = (y * width) + x;
+
+            // Skip if we're running past the bitmap length.
+            if (bi+channels >= scanline.length)
+                continue;
+            
+            delta += coverage[ci];
+            static if (antialias) {
+                scanline[bi..bi+channels] = cast(ubyte)clamp(fabs(delta) * 255.0f, 0.0, 255.0);
+            } else {
+                scanline[bi..bi+channels] = fabs(delta) > 0.50 ? 255 : 0;
+            }
+        }
+    }
+
+    /**
+        Blits the coverage mask directly to a bitmap.
+        This is all that's needed for basic glyph rendering.
+
+        Params:
+            bitmap = The bitmap to blit the coverage mask to.
+    */
+    void blitTo(bool antialias)(ref HaBitmap bitmap) {
+        foreach(y; 0..height) {
+            this.blitScanlineTo!antialias(cast(ubyte[])bitmap.scanline(y), bitmap.channels, y);
+        }
     }
 }
