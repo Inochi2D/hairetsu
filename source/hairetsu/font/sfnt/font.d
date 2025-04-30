@@ -207,7 +207,7 @@ private:
 
     ptrdiff_t getGlyfOffset(GlyphIndex index, ref bool hasOutlines) {
         if (auto table = entry.findTable(ISO15924!("loca"))) {
-            reader.seek(table.offset);;
+            reader.seek(table.offset);
 
             if (head.indexToLocFormat == 1) {
                 reader.skip(index*4);
@@ -294,7 +294,7 @@ public:
 
         if (gHeaderOffset >= 0) {
             if (auto table = entry.findTable(ISO15924!("glyf"))) {
-                reader.seek(entry.offset+table.offset+gHeaderOffset);
+                reader.seek(entry.offset+gHeaderOffset);
 
                 if (hasOutlines)
                     return reader.readRecord!TTGlyfTable();
@@ -319,7 +319,7 @@ public:
 
         if (gHeaderOffset >= 0) {
             if (auto table = entry.findTable(ISO15924!("glyf"))) {
-                reader.seek(entry.offset+table.offset+gHeaderOffset);
+                reader.seek(entry.offset+gHeaderOffset);
                 return reader.readRecord!TTGlyfTableHeader();
             }
         }
@@ -449,7 +449,7 @@ public:
             return metrics;
 
         if (auto table = entry.findTable(ISO15924!("hmtx"))) {
-            reader.seek(table.offset);;
+            reader.seek(table.offset);
 
             // Handle the optimization step.
             if (glyph > hhea.numberOfHMetrics) {
@@ -470,7 +470,7 @@ public:
         }
 
         if (auto table = entry.findTable(ISO15924!("vmtx"))) {
-            reader.seek(table.offset);;
+            reader.seek(table.offset);
 
             // Handle the optimization step.
             if (glyph > vhea.numberOfVMetrics) {
