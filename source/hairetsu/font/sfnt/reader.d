@@ -61,15 +61,15 @@ private:
 
         // Determine font table metadata.
         entry.index = idx;
-        entry.offset = offset;
 
         // Parse rest of header.
         this.seek(offset);
+
         entry.header = this.readRecord!SFNTHeader;
-        
         vector!SFNTTableRecord tables;
         foreach(table; 0..entry.header.tableCount)
             tables ~= this.readRecord!SFNTTableRecord;
+        
         entry.tables = tables[].nu_dup();
         return entry;
     }
@@ -240,11 +240,6 @@ struct SFNTFontEntry {
         Index of the entry.
     */
     uint index;
-
-    /**
-        Offset into the file this table begins.
-    */
-    size_t offset;
     
     /**
         The type of the font

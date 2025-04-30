@@ -294,7 +294,7 @@ public:
 
         if (gHeaderOffset >= 0) {
             if (auto table = entry.findTable(ISO15924!("glyf"))) {
-                reader.seek(entry.offset+gHeaderOffset);
+                reader.seek(table.offset+gHeaderOffset);
 
                 if (hasOutlines)
                     return reader.readRecord!TTGlyfTable();
@@ -319,7 +319,7 @@ public:
 
         if (gHeaderOffset >= 0) {
             if (auto table = entry.findTable(ISO15924!("glyf"))) {
-                reader.seek(entry.offset+gHeaderOffset);
+                reader.seek(table.offset+gHeaderOffset);
                 return reader.readRecord!TTGlyfTableHeader();
             }
         }

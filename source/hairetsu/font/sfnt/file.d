@@ -21,8 +21,6 @@ protected:
     override
     void onIndexFont(ref weak_vector!HaFont fonts) {
         foreach(ref SFNTFontEntry entry; (cast(SFNTReader)reader).fontEntries) {
-            reader.seek(entry.offset);
-            
             switch(entry.type) {
                 case SNFTFontType.openType:
 
