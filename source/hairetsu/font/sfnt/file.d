@@ -20,10 +20,10 @@ protected:
     */
     override
     void onIndexFont(ref weak_vector!HaFont fonts) {
-        import nulib.c.stdio : printf;
-
         foreach(ref SFNTFontEntry entry; (cast(SFNTReader)reader).fontEntries) {
-            final switch(entry.type) {
+            reader.seek(entry.offset);
+            
+            switch(entry.type) {
                 case SNFTFontType.openType:
 
                     import hairetsu.font.ot : OTFont;
@@ -38,6 +38,8 @@ protected:
 
                 // Not supported for now.
                 case SNFTFontType.postScript:
+                default:
+                    fonts ~= nogc_new!SFNTUnknownFont(entry, reader);
                     break;
             }
         }

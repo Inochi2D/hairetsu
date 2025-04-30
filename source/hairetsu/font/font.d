@@ -21,6 +21,22 @@ import numem;
 import hairetsu.common;
 
 /**
+    Types of glyphs stored within the font.
+*/
+enum HaGlyphStoreType {
+    trueType = 0x01,
+    CFF      = 0x02,
+    CFF2     = 0x04,
+    SVG      = 0x08,
+    bitmap   = 0x10,
+}
+
+/**
+    Mask for all glyph types.
+*/
+enum uint HA_GLYPH_TYPE_MASK_ALL = (HaGlyphStoreType.max*2)-1;
+
+/**
     A Font Object
 */
 abstract
@@ -79,20 +95,26 @@ public:
     abstract @property string type();
 
     /**
-        A string describing which outlines are supported
+        Amount of glyphs within the font.
+    */
+    abstract @property size_t glyphCount();
+
+    /**
+        The types of glyphs are supported by the font.
+    */
+    abstract @property HaGlyphStoreType glyphTypes();
+
+    /**
+        A string describing which types of glyphs are supported
         by the font.
     */
-    abstract @property string outlineTypeNames();
+    final
+    @property string glyphTypeNames() { return __ha_glyph_type_names[glyphTypes]; }
 
     /**
         List of features the font uses.
     */
     abstract @property string[] fontFeatures();
-
-    /**
-        Amount of glyphs within the font.
-    */
-    abstract @property size_t glyphCount();
 
     /**
         The character map for the font.
@@ -176,4 +198,37 @@ struct HaFontMetrics {
         The global max advances for glyphs.
     */
     vec2 maxAdvance;
+}
+
+
+
+// LUT containing the different outline type names.
+private __gshared const string[HA_GLYPH_TYPE_MASK_ALL] __ha_glyph_type_names = genOutlineTypeNames!();
+private template genOutlineTypeNames() {
+    string genGlyphMaskName(uint offset) {
+        import std.array : join;
+        string[] elements;
+        if (offset & HaGlyphStoreType.trueType)
+            elements ~= "TrueType";
+        if (offset & HaGlyphStoreType.CFF)
+            elements ~= "CFF";
+        if (offset & HaGlyphStoreType.CFF2)
+            elements ~= "CFF2";
+        if (offset & HaGlyphStoreType.SVG)
+            elements ~= "SVG";
+        if (offset & HaGlyphStoreType.bitmap)
+            elements ~= "Bitmap";
+        
+        return "["~elements.join(", ")~"]";
+    }
+
+    string[HA_GLYPH_TYPE_MASK_ALL] genOutlineTypeNamesImpl() {
+        string[HA_GLYPH_TYPE_MASK_ALL] strings;
+        static foreach(i; 0..HA_GLYPH_TYPE_MASK_ALL) {
+            strings[i] = genGlyphMaskName(i);
+        }
+        return strings;
+    }
+
+    enum string[HA_GLYPH_TYPE_MASK_ALL] genOutlineTypeNames = genOutlineTypeNamesImpl();
 }

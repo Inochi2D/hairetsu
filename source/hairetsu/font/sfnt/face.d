@@ -40,8 +40,8 @@ private:
     HaGlyphOutline getOutline(ref HaGlyph glyph) {
         SFNTFont sfnt = (cast(SFNTFont)parent);
 
-        SFNTOutlineType types = sfnt.outlineTypes();
-        if (types & SFNTOutlineType.trueType) {
+        HaGlyphStoreType types = sfnt.glyphTypes();
+        if (types & HaGlyphStoreType.trueType) {
             if (sfnt.hasGlyfOutline(glyph.index))
                 return getTTFOutline(glyph);
         }

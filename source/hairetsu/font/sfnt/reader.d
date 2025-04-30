@@ -28,7 +28,6 @@ class SFNTReader : HaFontReader {
 private:
 @nogc:
     vector!SFNTFontEntry fonts_;
-    vector!SFNTTableRecord tables_;
 
     SFNTFontEntry parseSFNTEntry(uint tag, uint idx, uint offset) {
         SFNTFontEntry entry;
@@ -60,48 +59,52 @@ private:
                 throw nogc_new!HaFontReadException("Unsupported font format ID!");
         }
 
-        // Parse rest of header.
-        uint tableBegin = cast(uint)tables_.length;
+        // Determine font table metadata.
         entry.index = idx;
         entry.offset = offset;
+
+        // Parse rest of header.
+        this.seek(offset);
         entry.header = this.readRecord!SFNTHeader;
+        
+        vector!SFNTTableRecord tables;
         foreach(table; 0..entry.header.tableCount)
-            tables_ ~= this.readRecord!SFNTTableRecord;
-        entry.tables = tables_[tableBegin..$];
+            tables ~= this.readRecord!SFNTTableRecord;
+        entry.tables = tables[].nu_dup();
         return entry;
     }
 
     void parseHeader(uint idx = 0, uint offset = 0) {
-        size_t rptr = this.tell();
+        this.seek(offset);
 
         // Get tag, then realign.
         uint fileTag = this.readElementBE!uint();
-        this.seek(rptr);
-
         switch(fileTag) {
             
             // TrueType Collections
             case ISO15924!("ttcf"):
-
-                // Read important info
                 this.skip(4);
-                uint faceCount = this.readElementBE!uint();
-                foreach(i; 0..faceCount) {
-                    uint foffset = this.readElementBE!uint();
-                    size_t rptr2 = this.tell();
-                    
-                    this.seek(offset);
-                    this.parseHeader(i, foffset);
-                    this.seek(rptr2);
+
+                // Get subfont count.
+                uint numFonts = this.readElementBE!uint();
+                vector!uint offsets = vector!uint(numFonts);
+                offsets.resize(numFonts);
+                this.readElementsBE(offsets[]);
+
+                // Read the subfonts.
+                foreach(i, uint foffset; offsets) {
+                    this.parseHeader(cast(uint)i, foffset);
                 }
+                break;
+            
+            // Skip DSIG
+            case ISO15924!("DSIG"):
                 break;
             
             default:
                 this.fonts_ ~= this.parseSFNTEntry(fileTag, idx, offset);
                 break;
         }
-    
-        this.seek(rptr);
     }
 
 protected:
@@ -147,7 +150,6 @@ public:
     */
     ~this() {
         if (fonts_) nogc_delete(fonts_);
-        if (tables_) nogc_delete(tables_);
     }
 
     /**
@@ -258,6 +260,10 @@ struct SFNTFontEntry {
         The table records of the font
     */
     SFNTTableRecord[] tables;
+
+    ~this() {
+        nogc_delete(tables);
+    }
 
     /**
         Attempts to find the requested table within the font

@@ -14,21 +14,13 @@ import hairetsu.font.sfnt.font;
 import hairetsu.font.tt.cmap;
 import hairetsu.font.tt.types;
 import hairetsu.font.font;
+import hairetsu.font.face;
 import hairetsu.font.cmap;
 import hairetsu.glyph;
 import hairetsu.common;
 
 import nulib.collections;
 import numem;
-
-/**
-    Outline Types supported by the SFNT container.
-*/
-enum SFNTOutlineType {
-    trueType = 0x01,
-    CFF      = 0x02,
-    CFF2     = 0x04
-}
 
 /**
     SFNT Font Object
@@ -47,7 +39,7 @@ private:
     TTVheaTable vhea;
     TTCharMap charmap;
     HaFontMetrics fmetrics_;
-    SFNTOutlineType outlineType_;
+    HaGlyphStoreType glyphTypes_;
     SFNTFontEntry entry_;
 
     //
@@ -68,15 +60,14 @@ private:
 
     void parseNameTable(SFNTReader reader) {
         if (auto table = entry.findTable(ISO15924!("name"))) {
-            size_t tableOffset = entry.offset+table.offset;
-            reader.seek(tableOffset);
+            reader.seek(table.offset);
 
             ushort format = reader.readElementBE!ushort();
             if (format > 1)
                 return;
 
             ushort nameRecordCount = reader.readElementBE!ushort();
-            size_t stringOffset = tableOffset+reader.readElementBE!ushort();
+            size_t stringOffset = table.offset+reader.readElementBE!ushort();
 
             // Go through records
             foreach(ref record; reader.readRecords!SFNTNameRecord(nameRecordCount)) {
@@ -103,7 +94,7 @@ private:
     //
     void parseHeadTable(SFNTReader reader) {
         if (auto table = entry.findTable(ISO15924!("head"))) {
-            reader.seek(entry.offset+table.offset);
+            reader.seek(table.offset);
             head = reader.readRecord!TTHeadTable();
         }
     }
@@ -114,7 +105,7 @@ private:
     //
     void parseMetricsTables(SFNTReader reader) {
         if (auto table = entry.findTable(ISO15924!("hhea"))) {
-            reader.seek(entry.offset+table.offset);
+            reader.seek(table.offset);
             hhea = reader.readRecord!TTHheaTable();
 
             fmetrics_.ascender.x = hhea.ascender;
@@ -125,7 +116,7 @@ private:
         }
 
         if (auto table = entry.findTable(ISO15924!("vhea"))) {
-            reader.seek(entry.offset+table.offset);
+            reader.seek(table.offset);
             vhea = reader.readRecord!TTVheaTable();
 
             fmetrics_.ascender.y = vhea.ascender;
@@ -142,7 +133,7 @@ private:
     //
     void parseMaxpTable(SFNTReader reader) {
         if (auto table = entry.findTable(ISO15924!("maxp"))) {
-            reader.seek(entry.offset+table.offset);
+            reader.seek(table.offset);
             maxp = reader.readRecord!SFNTMaxpTable();
         }
     }
@@ -156,7 +147,7 @@ private:
         this.charmap = nogc_new!TTCharMap();
 
         if (auto table = entry.findTable(ISO15924!("cmap"))) {
-            reader.seek(entry.offset+table.offset);
+            reader.seek(table.offset);
             charmap.parseCmapTable(reader);
         }
     }
@@ -167,7 +158,7 @@ private:
 
     void parseOS2Table(SFNTReader reader) {
         if (auto table = entry.findTable(ISO15924!("OS/2"))) {
-            reader.seek(entry.offset+table.offset);
+            reader.seek(table.offset);
             os2 = reader.readRecord!SFNTOS2Table;
             
             fmetrics_.ascender.x = os2.sTypoAscender;
@@ -181,15 +172,31 @@ private:
     //
     void detectOutlines() {
         if (auto table = entry.findTable(ISO15924!("glyf"))) {
-            outlineType_ |= SFNTOutlineType.trueType;
+            glyphTypes_ |= HaGlyphStoreType.trueType;
         }
         
         if (auto table = entry.findTable(ISO15924!("CFF "))) {
-            outlineType_ |= SFNTOutlineType.CFF;
+            glyphTypes_ |= HaGlyphStoreType.CFF;
         }
         
         if (auto table = entry.findTable(ISO15924!("CFF2"))) {
-            outlineType_ |= SFNTOutlineType.CFF2;
+            glyphTypes_ |= HaGlyphStoreType.CFF2;
+        }
+        
+        if (auto table = entry.findTable(ISO15924!("SVG"))) {
+            glyphTypes_ |= HaGlyphStoreType.SVG;
+        }
+        
+        if (auto table = entry.findTable(ISO15924!("sbix"))) {
+            glyphTypes_ |= HaGlyphStoreType.bitmap;
+        }
+        
+        if (auto table = entry.findTable(ISO15924!("EBDT"))) {
+            glyphTypes_ |= HaGlyphStoreType.bitmap;
+        }
+        
+        if (auto table = entry.findTable(ISO15924!("CBDT"))) {
+            glyphTypes_ |= HaGlyphStoreType.bitmap;
         }
     }
     
@@ -200,7 +207,7 @@ private:
 
     ptrdiff_t getGlyfOffset(GlyphIndex index, ref bool hasOutlines) {
         if (auto table = entry.findTable(ISO15924!("loca"))) {
-            reader.seek(entry.offset+table.offset);
+            reader.seek(table.offset);;
 
             if (head.indexToLocFormat == 1) {
                 reader.skip(index*4);
@@ -354,14 +361,6 @@ public:
     @property SFNTFontEntry entry() { return entry_; }
 
     /**
-        The types of outline found in the SFNT file.
-
-        This is represented as a bit flag.
-    */
-    final
-    @property SFNTOutlineType outlineTypes() { return outlineType_; }
-
-    /**
         The full name of the font face.
     */
     override
@@ -386,12 +385,13 @@ public:
     @property string type() { return "SFNT derived"; }
 
     /**
-        A string describing which outlines are supported
-        by the font.
+        The types of outline found in the SFNT file.
+
+        This is represented as a bit flag.
     */
     override
-    @property string outlineTypeNames() { return __ha_sfnt_outline_type_names[outlineType_]; }
-    
+    @property HaGlyphStoreType glyphTypes() { return glyphTypes_; }
+
     /**
         List of features the font uses.
     */
@@ -449,7 +449,7 @@ public:
             return metrics;
 
         if (auto table = entry.findTable(ISO15924!("hmtx"))) {
-            reader.seek(entry.offset+table.offset);
+            reader.seek(table.offset);;
 
             // Handle the optimization step.
             if (glyph > hhea.numberOfHMetrics) {
@@ -470,7 +470,7 @@ public:
         }
 
         if (auto table = entry.findTable(ISO15924!("vmtx"))) {
-            reader.seek(entry.offset+table.offset);
+            reader.seek(table.offset);;
 
             // Handle the optimization step.
             if (glyph > vhea.numberOfVMetrics) {
@@ -491,7 +491,7 @@ public:
         }
 
         // TrueType Outlines store size in glyf header.
-        if (outlineTypes & SFNTOutlineType.trueType) {
+        if (glyphTypes & HaGlyphStoreType.trueType) {
             auto header = this.getGlyfHeader(glyph);
 
             metrics.bounds.xMin = cast(float)header.xMin;
@@ -504,14 +504,33 @@ public:
     }
 }
 
-// LUT containing the different outline type names.
-private __gshared const string[8] __ha_sfnt_outline_type_names = [
-    "",
-    "TrueType",
-    "CFF",
-    "TrueType, CFF",
-    "CFF2",
-    "TrueType, CFF2",
-    "CFF, CFF2",
-    "TrueType, CFF, CFF2",
-];
+/**
+    A dummy SFNT font with no faces.
+*/
+class SFNTUnknownFont : SFNTFont {
+private:
+@nogc:
+protected:
+    
+    /**
+        Implemented by the font to create a new font face.
+    */
+    override
+    HaFontFace onCreateFace(HaFontReader reader) {
+        return null;
+    }
+
+public:
+    
+    /**
+        Constructs a new font face from a stream.
+    */
+    this(SFNTFontEntry entry, HaFontReader reader) {
+        super(entry, reader);
+    }
+
+    /**
+        The name of the type of font.
+    */
+    override @property string type() { return "Unknown"; }
+}

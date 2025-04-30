@@ -20,14 +20,14 @@ void main(string[] args) {
 			writefln("%u: %s (%s with %u subfonts)", i, file.name, file.type, file.fonts.length);
 			foreach(HaFont font; file.fonts) {
 				writefln(
-					"    %u: %s %s (%u glyphs, %s with %s outlines)", 
+					"    %u: %s %s (%u glyphs)", 
 					font.index, 
 					font.family, 
 					font.subfamily, 
-					font.glyphCount, 
-					font.type,
-					font.outlineTypeNames
+					font.glyphCount
 				);
+				writefln("      - Format: %s", font.type);
+				writefln("      - Glyph Types: %s", font.glyphTypeNames);
 				writefln("      - Features: (%u) '%s'", font.fontFeatures.length, font.fontFeatures().join("', '"));
 			}
 		}
