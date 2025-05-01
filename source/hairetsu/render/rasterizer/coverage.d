@@ -47,7 +47,7 @@ private:
 
         vec2 p1 = line.p1+offset;
         vec2 p2 = line.p2+offset;
-        if (fabs(p2.y - p1.y) < epsilon) {
+        if (abs(p2.y - p1.y) < epsilon) {
             return;
         }
         
@@ -237,7 +237,7 @@ public:
 
             foreach(x; 0..width) {
                 delta += coverage[lineY+x];
-                line[lineY+x] = min(fabs(delta), 1.0);
+                line[lineY+x] = min(abs(delta), 1.0);
             }
 
             // Update the coverage mask with the new flattened values.
@@ -272,9 +272,9 @@ public:
             
             delta += coverage[ci];
             static if (antialias) {
-                scanline[bi..bi+channels] = cast(ubyte)clamp(fabs(delta) * 255.0f, 0.0, 255.0);
+                scanline[bi..bi+channels] = cast(ubyte)clamp(abs(delta) * 255.0f, 0.0, 255.0);
             } else {
-                scanline[bi..bi+channels] = fabs(delta) > 0.50 ? 255 : 0;
+                scanline[bi..bi+channels] = abs(delta) > 0.50 ? 255 : 0;
             }
         }
     }

@@ -10,9 +10,8 @@
 */
 module hairetsu.math;
 import nulib.collections.vector;
-public import nulib.math : clamp, min, max, copysign, signbit, E, PI, PI_2, PI_4;
-public import nulib.c.math;
 public import nulib.math.fixed;
+public import nulib.math;
 
 /**
     An axis-aligned bounding box
@@ -170,8 +169,8 @@ struct HaVec2(T) {
     */
     HaVec2!T abs() {
         return HaVec2!T(
-            cast(T).fabs(cast(double)x), 
-            cast(T).fabs(cast(double)y)
+            cast(T).abs(cast(double)x), 
+            cast(T).abs(cast(double)y)
         );
     }
 
@@ -330,43 +329,3 @@ alias haline = HaLine!float;
     A contour of lines.
 */
 alias HaPolyContour = haline[];
-
-/**
-    Linearly interpolates between $(D a) and $(D b)
-*/
-T lerp(T)(T a, T b, float t) {
-    return a * (1 - t) + b * t;
-}
-
-/**
-    Quadilaterally interpolates between $(D p0) and $(D p2),
-    with $(D p1) as a control point.
-*/
-T quad(T)(T p0, T p1, T p2, float t) {
-    float tm = 1.0 - t;
-    float a = tm * tm;
-    float b = 2.0 * tm * t;
-    float c = t * t;
-
-    return a * p0 + b * p1 + c * p2;
-}
-
-/**
-    Interpolates between $(D p0) and $(D p3), using a cubic
-    spline with $(D p1) and $(D p2) as control points.
-*/
-T cubic(T)(T p0, T p1, T p2, T p3, float t) {
-    T a = -0.5 * p0 + 1.5 * p1 - 1.5 * p2 + 0.5 * p3;
-    T b = p0 - 2.5 * p1 + 2 * p2 - 0.5 * p3;
-    T c = -0.5 * p0 + 0.5 * p2;
-    T d = p1;
-    
-    return a * (t ^^ 3) + b * (t ^^ 2) + c * t + d;
-}
-
-/**
-    Gets the fractional part of the value.
-*/
-T fract(T)(T value) {
-    return cast(T)(cast(double)value - trunc(cast(double)value));
-}
