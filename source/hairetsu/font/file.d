@@ -16,6 +16,7 @@ import nulib.collections;
 import nulib.io.stream;
 import nulib.string;
 import numem;
+import nulib.io.stream.file;
 
 /**
     A font file
@@ -144,8 +145,11 @@ public:
             $(D null) on failure.
     */
     static HaFontFile fromFile(string path) {
-        
-        // TODO: Implement file loads.
+        auto stream = nogc_new!FileStream(path, "rb");
+        if (HaFontFile file = HaFontFile.fromStream(stream, path))
+            return file;
+
+        nogc_delete(stream);
         return null;
     }
 }

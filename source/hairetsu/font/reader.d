@@ -137,7 +137,7 @@ private:
 
     MemoryStream readAllToMemoryStream(Stream stream, size_t offset, size_t length) {
         ubyte[] buffer;
-        buffer = nu_resize(buffer, length, 1);
+        buffer = buffer.nu_resize(length);
 
         // Read data into buffer
         stream.seek(offset);

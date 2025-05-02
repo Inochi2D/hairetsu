@@ -4,6 +4,7 @@ import hairetsu;
 import numem;
 import nulib.io.stream.memstream;
 import std.array : join;
+import nulib.io.stream.file;
 
 void main(string[] args) {
 	if (args.length <= 1) {
@@ -14,21 +15,20 @@ void main(string[] args) {
 	ha_init();
 	foreach(i, arg; args[1..$]) {
 		if (stdfile.exists(arg)) {
-			auto stream = nogc_new!MemoryStream(cast(ubyte[])stdfile.read(arg).nu_dup);
-			HaFontFile file = HaFontFile.fromStream(stream, arg);
-
-			writefln("%u: %s (%s with %u subfonts)", i, file.name, file.type, file.fonts.length);
-			foreach(HaFont font; file.fonts) {
-				writefln(
-					"    %u: %s %s (%u glyphs)", 
-					font.index, 
-					font.family, 
-					font.subfamily, 
-					font.glyphCount
-				);
-				writefln("      - Format: %s", font.type);
-				writefln("      - Glyph Types: %s", font.glyphTypeNames);
-				writefln("      - Features: (%u) '%s'", font.fontFeatures.length, font.fontFeatures().join("', '"));
+			if (HaFontFile file = HaFontFile.fromFile(arg)) {
+				writefln("%u: %s (%s with %u subfonts)", i, file.name, file.type, file.fonts.length);
+				foreach(HaFont font; file.fonts) {
+					writefln(
+						"    %u: %s %s (%u glyphs)", 
+						font.index, 
+						font.family, 
+						font.subfamily, 
+						font.glyphCount
+					);
+					writefln("      - Format: %s", font.type);
+					writefln("      - Glyph Types: %s", font.glyphTypeNames);
+					writefln("      - Features: (%u) '%s'", font.fontFeatures.length, font.fontFeatures().join("', '"));
+				}
 			}
 		}
 	}
