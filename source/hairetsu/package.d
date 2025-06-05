@@ -27,7 +27,7 @@ public import hairetsu.font;
 /**
     Whether Hairetsu is initialized.
 */
-bool haIsInitialized() @nogc nothrow pure {
+bool haIsInitialized() @nogc nothrow {
     return _ha_initialized;
 }
 

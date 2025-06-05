@@ -7,7 +7,7 @@ targetPath "out/"
 
 dependency "hairetsu" path="../../" version="*"
 dependency "numem:hookset-libc" version="*"
-dependency "canvasity" version="1.0.4"
 dependency "nulib:stdc" version=">=0.2.7"
+dependency "gamut" version=">=3.3.2"
 
 buildRequirements "allowWarnings"

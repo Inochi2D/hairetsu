@@ -21,8 +21,8 @@ public import hairetsu.font.types;
 */
 extern(C)
 bool ha_init_fonts() @nogc {
-    import hairetsu : ha_get_initialized;
-    if (ha_get_initialized) 
+    import hairetsu : haIsInitialized;
+    if (haIsInitialized) 
         return true;
 
     import hairetsu.font.reader : ha_init_fonts_reader;
@@ -36,9 +36,9 @@ bool ha_init_fonts() @nogc {
     Initializes the font loader subsystem.
 */
 extern(C)
-bool ha_shutdown_fonts()  @nogc {
-    import hairetsu : ha_get_initialized;
-    if (!ha_get_initialized) 
+bool ha_shutdown_fonts() @nogc {
+    import hairetsu : haIsInitialized;
+    if (!haIsInitialized) 
         return true;
 
     import hairetsu.font.reader : ha_shutdown_fonts_reader;

@@ -458,5 +458,5 @@ struct TTSimpleGlyphRecord {
     vector!ushort endPtsOfContours;
     vector!ubyte instructions;
     vector!ubyte flags;
-    vector!(HaVec2!float) contours;
+    vector!vec2 contours;
 }

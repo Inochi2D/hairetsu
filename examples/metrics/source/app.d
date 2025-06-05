@@ -12,8 +12,6 @@ void main(string[] args) {
 		writeln("metrics <font> <pt size> <string...>");
 		return;
 	}
-	
-	ha_init();
 
 	// Load font.
 	if (!stdfile.exists(args[1])) {
@@ -74,5 +72,4 @@ void main(string[] args) {
 
 		face.release();
 	}
-	ha_shutdown();
 }

@@ -23,6 +23,7 @@ import nulib.text.unicode;
 import nulib.collections;
 import nulib.string;
 import numem;
+import std.regex;
 
 
 
@@ -37,6 +38,11 @@ private:
     //
     //      Outlines
     //
+    bool hasOutline(ref HaGlyph glyph) {
+        SFNTFont sfnt = (cast(SFNTFont)parent);
+        return sfnt.hasGlyfOutline(glyph.index); 
+    }
+
     HaGlyphOutline getOutline(ref HaGlyph glyph) {
         SFNTFont sfnt = (cast(SFNTFont)parent);
 
@@ -64,6 +70,7 @@ private:
             bool startOnCurve;
             ubyte startFlag;
             vec2 startPen;
+            vec2 firstPen;
             bool endOnCurve;
             ubyte endFlag;
             vec2 endPen;
@@ -78,6 +85,7 @@ private:
 
             // Construct font outline.
             mloop: foreach(ushort endpoint; gtable.simple.endPtsOfContours[]) {
+                bool firstFound = false;
                 size_t lptr = 0;
                 do {
                     if (rptr >= gtable.simple.contours.length)
@@ -96,12 +104,15 @@ private:
 
                     // Handle first position.
                     if (lptr == 0) {
-                        if (onCurve)
-                            outline.moveTo(pen);
-                        
+                        outline.moveTo(pen);
                         startOnCurve = onCurve;
                         startFlag = flag;
                         startPen = pen;
+
+                        if (onCurve) {
+                            firstPen = pen;
+                            firstFound = true;
+                        }
 
                         lastFlag = flag;
                         lastPen = pen;
@@ -113,12 +124,17 @@ private:
                         rptr++;
                         continue;
                     }
+
+                    if (!firstFound) {
+                        firstPen = pen;
+                        firstFound = true;
+                    }
                     
                     // Handle some of the intricacies of the quadratic curves by
                     // shifting them a bit with a lerp.
                     vec2 pen2 = onCurve ? 
                         pen : 
-                        lerp(endPen, pen, 0.5);
+                        lastPen.midpoint(pen);
 
                     if (endOnCurve && onCurve) {
                         outline.lineTo(pen2);
@@ -132,8 +148,15 @@ private:
                     endFlag = flag;
                     endOnCurve = (endFlag & ON_CURVE_POINT);
                 } while(rptr <= endpoint);
-                if (!endOnCurve)
-                    outline.quadTo(pen, startPen);
+
+                if (startOnCurve ^ endOnCurve) {
+                    vec2 pen2 = firstPen;
+                    vec2 ctrl = endOnCurve ? startPen : endPen;
+                    outline.quadTo(ctrl, pen2);
+                } else if (!startOnCurve && !endOnCurve) {
+                    vec2 ctrl = lerp(pen, startPen, 0.5);
+                    outline.quadTo(ctrl, startPen);
+                }
 
                 outline.closePath();
             }

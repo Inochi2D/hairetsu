@@ -402,7 +402,7 @@ public:
         Amount of glyphs within the font.
     */
     override
-    @property size_t glyphCount() { return maxp.numGlyphs; }
+    @property uint glyphCount() { return maxp.numGlyphs; }
 
     /**
         The character map for the font.
@@ -458,13 +458,13 @@ public:
                 metrics.advance.x = metricRecord.advance;
 
                 reader.skip((glyph-hhea.numberOfHMetrics));
-                metrics.bearingH.x = reader.readElementBE!ushort();
+                metrics.bearing.x = reader.readElementBE!ushort();
             } else {
 
                 // Skip to our glyph's entry.
                 reader.skip(TTMetricRecord.sizeof*glyph);
                 metricRecord = reader.readRecord!TTMetricRecord();
-                metrics.bearingH.x = metricRecord.bearing;
+                metrics.bearing.x = metricRecord.bearing;
                 metrics.advance.x = metricRecord.advance;
             }
         }
@@ -479,13 +479,13 @@ public:
                 metrics.advance.y = metricRecord.advance;
 
                 reader.skip((glyph-vhea.numberOfVMetrics));
-                metrics.bearingV.y = reader.readElementBE!ushort();
+                metrics.bearing.y = reader.readElementBE!ushort();
             } else {
 
                 // Skip to our glyph's entry.
                 reader.skip(TTMetricRecord.sizeof*glyph);
                 metricRecord = reader.readRecord!TTMetricRecord();
-                metrics.bearingV.y = metricRecord.bearing;
+                metrics.bearing.y = metricRecord.bearing;
                 metrics.advance.y = metricRecord.advance;
             }
         }

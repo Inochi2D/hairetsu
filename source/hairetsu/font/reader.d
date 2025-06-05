@@ -330,8 +330,8 @@ public:
 */
 extern(C)
 bool ha_init_fonts_reader() @nogc {
-    import hairetsu : ha_get_initialized;
-    if (ha_get_initialized) 
+    import hairetsu : haIsInitialized;
+    if (haIsInitialized) 
         return true;
 
     import hairetsu.font.sfnt.reader : SFNTReader;
@@ -347,8 +347,8 @@ bool ha_init_fonts_reader() @nogc {
 */
 extern(C)
 bool ha_shutdown_fonts_reader() @nogc {
-    import hairetsu : ha_get_initialized;
-    if (!ha_get_initialized) 
+    import hairetsu : haIsInitialized;
+    if (!haIsInitialized) 
         return true;
 
     HaFontReaderFactory.clear();

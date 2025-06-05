@@ -9,10 +9,10 @@
     Authors:   Luna Nielsen
 */
 module hairetsu.glyph;
+import hairetsu.raster;
 import hairetsu.common;
 import numem;
 
-public import hairetsu.render.rasterizer;
 public import hairetsu.glyph.outline;
 public import hairetsu.glyph.svg;
 
@@ -70,14 +70,9 @@ struct HaGlyphMetrics {
     rect bounds;
     
     /**
-        The horizontal bearing for the glyph.
+        The bearing for the glyph.
     */
-    vec2 bearingH;
-    
-    /**
-        The vertical bearing for the glyph.
-    */
-    vec2 bearingV;
+    vec2 bearing;
     
     /**
         The advance for the glyph.

@@ -93,10 +93,8 @@ private:
         glyph_.metrics.bounds.yMax *= scaleFactor_;
         glyph_.metrics.advance.x *= scaleFactor_;
         glyph_.metrics.advance.y *= scaleFactor_;
-        glyph_.metrics.bearingH.x *= scaleFactor_;
-        glyph_.metrics.bearingH.y *= scaleFactor_;
-        glyph_.metrics.bearingV.x *= scaleFactor_;
-        glyph_.metrics.bearingV.y *= scaleFactor_;
+        glyph_.metrics.bearing.x *= scaleFactor_;
+        glyph_.metrics.bearing.y *= scaleFactor_;
         
         if (rerender)
             this.onRenderGlyph(reader_, glyph_);
@@ -140,7 +138,7 @@ public:
     /**
         The amount of glyphs in the font.
     */
-    final @property size_t glyphCount() { return parent_.glyphCount; }
+    final @property uint glyphCount() { return parent_.glyphCount; }
 
     /**
         The fallback face for the font face.
@@ -259,10 +257,8 @@ public:
         metrics.bounds.yMax *= scaleFactor_;
         metrics.advance.x *= scaleFactor_;
         metrics.advance.y *= scaleFactor_;
-        metrics.bearingH.x *= scaleFactor_;
-        metrics.bearingH.y *= scaleFactor_;
-        metrics.bearingV.x *= scaleFactor_;
-        metrics.bearingV.y *= scaleFactor_;
+        metrics.bearing.x *= scaleFactor_;
+        metrics.bearing.y *= scaleFactor_;
         return metrics;
     }
 

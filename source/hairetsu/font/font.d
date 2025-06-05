@@ -97,7 +97,7 @@ public:
     /**
         Amount of glyphs within the font.
     */
-    abstract @property size_t glyphCount();
+    abstract @property uint glyphCount();
 
     /**
         The types of glyphs are supported by the font.

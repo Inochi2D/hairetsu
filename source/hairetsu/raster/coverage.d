@@ -18,8 +18,8 @@
     License:   $(LINK2 https://github.com/mooman219/fontdue/blob/master/LICENSE-MIT, MIT License)
     Authors:   Luna Nielsen
 */
-module hairetsu.render.rasterizer.coverage;
-import hairetsu.render.rasterizer.outline;
+module hairetsu.raster.coverage;
+import hairetsu.glyph.outline;
 import hairetsu.math;
 import numem;
 

@@ -14,58 +14,51 @@ void main(string[] args) {
 		writeln("metrics <font> <pt size> <string>");
 		return;
 	}
+
+	float ptSize;
+	ndstring text;
+
+	if (!stdfile.exists(args[1])) {
+		writeln(args[1], " not found...");
+		return;
+	}
+
+	try {
+		ptSize = args[2].to!float;
+	} catch(Exception ex) {
+		ptSize = 18;
+	}
+
+	// Load font.
+	HaFontFile file = HaFontFile.fromFile(args[1]);
+	HaFont font = file.fonts[0];
+	HaFontFace face = font.createFace();
+	face.pt = ptSize;
+
+	// Create a new run.
+	HaBuffer glyphRun = nogc_new!HaBuffer();
+	glyphRun.addUTF8(args[3]);
 	
-	ha_init();
+	// Shape the text.
+	HaBasicShaper shaper = nogc_new!HaBasicShaper();
+	shaper.shape(face, glyphRun);
+	shaper.release();
 
-		float ptSize;
-		ndstring text;
+	// Create canvas and renderer.
+	HaRenderer renderer = HaRenderer.createBuiltin();
+	vec2 textSize = renderer.measureGlyphRun(face, glyphRun);
+	HaFontMetrics fmetrics = face.faceMetrics();
 
-		if (!stdfile.exists(args[1])) {
-			writeln(args[1], " not found...");
-			return;
-		}
+	HaCanvas canvas = nogc_new!HaCanvas(cast(uint)textSize.x, cast(uint)(textSize.y), HaColorFormat.CBPP8);
+	renderer.render(face, glyphRun, vec2(0, fmetrics.ascender.x), canvas);
 
+	canvas.dumpToFile();
 
-		try {
-			ptSize = args[2].to!float;
-		} catch(Exception ex) {
-			ptSize = 18;
-		}
-
-		// Load font.
-		auto stream = nogc_new!MemoryStream(cast(ubyte[])stdfile.read(args[1]).nu_dup);
-		HaFontFile file = HaFontFile.fromStream(stream, args[1]);
-		HaFont font = file.fonts[0];
-		HaFontFace face = font.createFace();
-		face.pt = ptSize;
-
-		// Create a new run.
-		HaBuffer glyphRun = nogc_new!HaBuffer();
-		glyphRun.addUTF8(args[3]);
-		
-		// Shape the text.
-		HaBasicShaper shaper = nogc_new!HaBasicShaper();
-		shaper.shape(face, glyphRun);
-		shaper.release();
-
-
-		// Create canvas and renderer.
-		HaRenderer renderer = HaRenderer.createBuiltin();
-		vec2 textSize = renderer.measureGlyphRun(face, glyphRun);
-		HaFontMetrics fmetrics = face.faceMetrics();
-
-		// 12% taller just to account for stuff like commas.
-		HaCanvas canvas = nogc_new!HaCanvas(cast(uint)textSize.x, cast(uint)(textSize.y*1.12), HaColorFormat.CBPP8);
-		renderer.render(face, glyphRun, vec2(0, fmetrics.ascender.x), canvas);
-
-		canvas.dumpToFile();
-
-		glyphRun.release();
-		renderer.release();
-		canvas.release();
-		face.release();
-		file.release();
-	ha_shutdown();
+	glyphRun.release();
+	renderer.release();
+	canvas.release();
+	face.release();
+	file.release();
 }
 
 /**

@@ -19,7 +19,10 @@ import hairetsu.font.file;
 import hairetsu.font.font;
 import hairetsu.font.face;
 import hairetsu.font.cmap;
-import hairetsu : isHairetsuInitialized;
+import hairetsu.glyph;
+
+// Extern deps used internally.
+import nulib.string;
 import numem : NuRefCounted;
 
 extern(C) export:
@@ -36,7 +39,8 @@ extern(C) export:
         $(D false) otherwise.
 */
 extern(C)
-bool ha_get_initialized() @nogc nothrow pure {
+bool ha_get_initialized() @nogc nothrow {
+    import hairetsu : haIsInitialized;
     return haIsInitialized();
 }
 
@@ -51,6 +55,7 @@ bool ha_get_initialized() @nogc nothrow pure {
 */
 extern(C)
 bool ha_try_initialize() @nogc {
+    import hairetsu : haTryInitialize;
     return haTryInitialize();
 }
 
@@ -65,6 +70,7 @@ bool ha_try_initialize() @nogc {
 */
 extern(C)
 void ha_try_shutdown() @nogc {
+    import hairetsu : haTryShutdown;
     return haTryShutdown();
 }
 
@@ -93,7 +99,7 @@ void ha_retain(void* obj) {
         $(D null) if the object was freed.
 */
 void* ha_release(void* obj) {
-    return (cast(NuRefCounted)obj).release();
+    return cast(void*)(cast(NuRefCounted)obj).release();
 }
 
 
@@ -112,7 +118,7 @@ struct ha_fontfile_t;
 
     Params:
         data =  The memory slice to read the font data from.
-        name =  The name to give the font.
+        length = The lengty of the memory slice to read the data from.
     
     Returns:
         A $(D ha_fontfile_t*) instance on success,
@@ -124,6 +130,27 @@ struct ha_fontfile_t;
 */
 ha_fontfile_t* ha_fontfile_from_memory(ubyte* data, uint length) {
     return cast(ha_fontfile_t*)HaFontFile.fromMemory(data[0..length]);
+}
+
+/**
+    Creates a new font for the given memory slice with a given name.
+
+    Params:
+        data =  The memory slice to read the font data from.
+        length = The lengty of the memory slice to read the data from.
+        name = The name to give the memory sliced font.
+    
+    Returns:
+        A $(D ha_fontfile_t*) instance on success,
+        $(D null) on failure.
+    
+    Note:
+        This function will copy the memory out of data,
+        this is to ensure ownership of the data is properly handled.
+*/
+ha_fontfile_t* ha_fontfile_from_memory_with_name(ubyte* data, uint length, const(char)* name) {
+    nstring nname = name;
+    return cast(ha_fontfile_t*)HaFontFile.fromMemory(data[0..length], nname);
 }
 
 /**
@@ -321,7 +348,7 @@ HaFontMetrics ha_font_get_global_metrics(ha_font_t* obj) {
         $(D GLYPH_MISSING) if not found.
 */
 uint ha_font_find_glyph(ha_font_t* obj, uint codepoint) {
-    return (cast(HaFont)obj).charMap.getGlyphIndx(codepoint);
+    return (cast(HaFont)obj).charMap.getGlyphIndex(codepoint);
 }
 
 /**
@@ -457,7 +484,7 @@ void ha_face_set_fallback(ha_face_t* obj, ha_face_t* face) {
         Whether hinting is requested.
 */
 bool ha_face_get_hinting(ha_face_t* obj) {
-    return (cast(HaFontFace)obj).wantsHinting;
+    return (cast(HaFontFace)obj).wantHinting;
 }
 
 /**
@@ -557,5 +584,5 @@ void ha_face_set_px(ha_face_t* obj, float value) {
         The scaled global metrics.
 */
 HaFontMetrics ha_face_get_global_metrics(ha_face_t* obj) {
-    return (cast(HaFontFace)obj).fontMetrics;   
+    return (cast(HaFontFace)obj).faceMetrics;   
 }

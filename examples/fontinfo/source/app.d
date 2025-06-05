@@ -12,7 +12,6 @@ void main(string[] args) {
 		return;
 	}
 	
-	ha_init();
 	foreach(i, arg; args[1..$]) {
 		if (stdfile.exists(arg)) {
 			if (HaFontFile file = HaFontFile.fromFile(arg)) {
@@ -32,5 +31,4 @@ void main(string[] args) {
 			}
 		}
 	}
-	ha_shutdown();
 }

@@ -136,27 +136,31 @@ public:
             return vec2(0, 0);
         
         bool isHorizontal = !run.direction.isVertical;
-        vec2 size = vec2(
-            cast(float)(!isHorizontal ? (face.faceMetrics.ascender.y-face.faceMetrics.descender.y)+face.faceMetrics.lineGap.y : 0),
-            cast(float)(isHorizontal ? (face.faceMetrics.ascender.x-face.faceMetrics.descender.x)+face.faceMetrics.lineGap.x : 0)
-        );
-
-        foreach(GlyphIndex idx; run.buffer) {
-		    HaGlyphMetrics metrics = face.getMetricsFor(idx);
-
-            if (isHorizontal) {
+        vec2 size = vec2(0, 0);
+        if (isHorizontal) {
+            float lineHeight = max(face.faceMetrics.ascender.x - face.faceMetrics.descender.x, face.faceMetrics.lineGap.y);
+            foreach(GlyphIndex idx; run.buffer) {
+                HaGlyphMetrics metrics = face.getMetricsFor(idx);
                 size.x += metrics.advance.x;
 
-                // Bump size if something goes outside the general line height.
-                if (metrics.bounds.height > size.y)
-                    size.y = metrics.bounds.height;
-            } else {
-                size.y += cast(float)metrics.advance.y;
-
-                // Bump size if something goes outside the general line height.
-                if (metrics.bounds.width > size.x)
-                    size.x = metrics.bounds.width;
+                if (lineHeight > size.y)
+                    size.y = lineHeight;
+                
+                lineHeight = metrics.bounds.height+metrics.bearing.x;
             }
+
+        } else {
+            float lineHeight = max(face.faceMetrics.ascender.y - face.faceMetrics.descender.y, face.faceMetrics.lineGap.y);
+            foreach(GlyphIndex idx; run.buffer) {
+                HaGlyphMetrics metrics = face.getMetricsFor(idx);
+                size.y += metrics.advance.y;
+
+                if (lineHeight > size.x)
+                    size.x = lineHeight;
+                
+                lineHeight = metrics.bounds.height+metrics.bearing.y;
+            }
+
         }
         return size;
     }
@@ -193,19 +197,12 @@ public:
             vec2 offset = accumulator;
             glyph = face.getGlyph(idx);
 
-            // Apply bearing.
-            if (isHorizontal) {
+            bearing = vec2(
+                isHorizontal ? glyph.metrics.bearing.x : 0,
+                isHorizontal ? 0 : glyph.metrics.bearing.y,
+            );
 
-                bearing = glyph.metrics.bearingH;
-                offset.x += cast(float)bearing.x;
-                offset.y -= cast(float)bearing.y;
-            } else {
-                
-                bearing = glyph.metrics.bearingV;
-                offset.x -= cast(float)bearing.x;
-                offset.y += cast(float)bearing.y;
-            }
-            
+            offset += bearing;
             advance = this.render(glyph, offset, canvas, isHorizontal);
 
             if (isHorizontal)
