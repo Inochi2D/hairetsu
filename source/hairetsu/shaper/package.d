@@ -30,5 +30,5 @@ public:
             face =      The font face to use for shaping.
             buffer =    The buffer to shape.
     */
-    abstract void shape(ref HaFontFace face, ref HaBuffer buffer);
+    abstract void shape(ref FontFace face, ref HaBuffer buffer);
 }

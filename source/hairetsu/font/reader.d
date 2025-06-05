@@ -23,10 +23,10 @@ import numem;
     querying 
 */
 final
-class HaFontReaderFactory {
+class FontReaderFactory {
 private:
 @nogc:
-    __gshared map!(string, HaFontReader) readers;
+    __gshared map!(string, FontReader) readers;
     __gshared weak_vector!string registered_;
 
 public:
@@ -47,11 +47,11 @@ public:
         Threadsafety:
             This can safely be called from any thread.
     */
-    static HaFontReader tryCreateFor(Stream stream) @trusted {
+    static FontReader tryCreateFor(Stream stream) @trusted {
         enforce(stream.canRead(), nogc_new!StreamReadException(stream, "Stream is not readable!"));
         enforce(stream.canSeek(), nogc_new!StreamReadException(stream, "Stream is not seekable!"));
 
-        foreach(HaFontReader reader; readers.byValue) {
+        foreach(FontReader reader; readers.byValue) {
             
             stream.seek(0);
             if (auto newReader = reader.tryCreateReader(stream))
@@ -73,7 +73,7 @@ public:
         Threadsafety:
             This can safely be called from any thread.
     */
-    static HaFontReader tryCreateFor(string name, Stream stream) @trusted {
+    static FontReader tryCreateFor(string name, Stream stream) @trusted {
         return name in readers ? readers[name].tryCreateReader(stream) : null;
     }
 
@@ -122,7 +122,7 @@ public:
     A reader for a font
 */
 abstract
-class HaFontReader : NuObject {
+class FontReader : NuObject {
 private:
 @nogc:
     StreamReader reader;
@@ -152,7 +152,7 @@ protected:
         Called by the internal font factory to query whether the stream
         can be read.
     */
-    abstract HaFontReader tryCreateReader(Stream stream) @system nothrow;
+    abstract FontReader tryCreateReader(Stream stream) @system nothrow;
 
 public:
 
@@ -311,13 +311,13 @@ public:
     /**
         Creates a font instance associated with the reader.
     */
-    abstract HaFontFile createFont(string name);
+    abstract FontFile createFont(string name);
 }
 
 /**
     An exception thrown by the FontFile loader.
 */
-class HaFontReadException : NuException {
+class FontReadException : NuException {
 @nogc:
 public:
     this(string reason, string file = __FILE__, size_t line = __LINE__) {
@@ -335,7 +335,7 @@ bool ha_init_fonts_reader() @nogc {
         return true;
 
     import hairetsu.font.sfnt.reader : SFNTReader;
-    if (!HaFontReaderFactory.register!SFNTReader("sfnt"))
+    if (!FontReaderFactory.register!SFNTReader("sfnt"))
         return false;
 
     return true;
@@ -351,6 +351,6 @@ bool ha_shutdown_fonts_reader() @nogc {
     if (!haIsInitialized) 
         return true;
 
-    HaFontReaderFactory.clear();
+    FontReaderFactory.clear();
     return true;
 }

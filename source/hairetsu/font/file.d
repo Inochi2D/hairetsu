@@ -22,11 +22,11 @@ import nulib.io.stream.file;
     A font file
 */
 abstract
-class HaFontFile : NuRefCounted {
+class FontFile : NuRefCounted {
 @nogc:
 private:
     nstring name_;
-    weak_vector!HaFont faces_;
+    weak_vector!Font faces_;
 
     // Clears and removes a refcount from all faces.
     void clearFaces() {
@@ -43,12 +43,12 @@ protected:
     /**
         The backing font reader
     */
-    HaFontReader reader;
+    FontReader reader;
     
     /**
         Implemented by the font file reader to index the faces.
     */
-    abstract void onIndexFont(ref weak_vector!HaFont faces);
+    abstract void onIndexFont(ref weak_vector!Font faces);
 
 public:
 
@@ -60,7 +60,7 @@ public:
     /**
         Font Objects within the file
     */
-    final @property HaFont[] fonts() { return faces_[]; }
+    final @property Font[] fonts() { return faces_[]; }
 
     /**
         The type of the font file, essentially its container.
@@ -86,7 +86,7 @@ public:
             reader =    The font reader to read the file from.
             name =      (optional) name of the font, usually its file path
     */
-    this(HaFontReader reader, string name) {
+    this(FontReader reader, string name) {
         this.name_ = name;
         this.reader = reader;
         this.onIndexFont(faces_);
@@ -100,11 +100,11 @@ public:
             name =      The name to give the font.
         
         Returns:
-            A $(D HaFontFile) instance on success,
+            A $(D FontFile) instance on success,
             $(D null) on failure.
     */
-    static HaFontFile fromStream(Stream stream, string name = "<memory stream>") {
-        if (HaFontReader reader = HaFontReaderFactory.tryCreateFor(stream)) {
+    static FontFile fromStream(Stream stream, string name = "<memory stream>") {
+        if (FontReader reader = FontReaderFactory.tryCreateFor(stream)) {
             return reader.createFont(name);
         }
         return null;
@@ -118,16 +118,16 @@ public:
             name =  The name to give the font.
         
         Returns:
-            A $(D HaFontFile) instance on success,
+            A $(D FontFile) instance on success,
             $(D null) on failure.
         
         Note:
             This function will copy the memory out of data,
             this is to ensure ownership of the data is properly handled.
     */
-    static HaFontFile fromMemory(ubyte[] data, string name = "<memory stream>") {
+    static FontFile fromMemory(ubyte[] data, string name = "<memory stream>") {
         auto stream = nogc_new!MemoryStream(data.nu_dup);
-        if (HaFontFile file = HaFontFile.fromStream(stream, name))
+        if (FontFile file = FontFile.fromStream(stream, name))
             return file;
 
         nogc_delete(stream);
@@ -141,12 +141,12 @@ public:
             path =  Path to the file containing the font.
         
         Returns:
-            A $(D HaFontFile) instance on success,
+            A $(D FontFile) instance on success,
             $(D null) on failure.
     */
-    static HaFontFile fromFile(string path) {
+    static FontFile fromFile(string path) {
         auto stream = nogc_new!FileStream(path, "rb");
-        if (HaFontFile file = HaFontFile.fromStream(stream, path))
+        if (FontFile file = FontFile.fromStream(stream, path))
             return file;
 
         nogc_delete(stream);

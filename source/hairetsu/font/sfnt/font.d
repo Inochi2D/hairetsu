@@ -29,7 +29,7 @@ import numem;
     SFNT typed fonts.
 */
 abstract
-class SFNTFont : HaFont {
+class SFNTFont : Font {
 @nogc:
 private:
     map!(ushort, nstring) names;
@@ -38,7 +38,7 @@ private:
     TTHheaTable hhea;
     TTVheaTable vhea;
     TTCharMap charmap;
-    HaFontMetrics fmetrics_;
+    FontMetrics fmetrics_;
     HaGlyphStoreType glyphTypes_;
     SFNTFontEntry entry_;
 
@@ -250,7 +250,7 @@ protected:
         Implemented by the font face to read the face.
     */
     override
-    void onFontLoad(HaFontReader reader) {
+    void onFontLoad(FontReader reader) {
         this.reader = cast(SFNTReader)reader;
         this.indexTables();
 
@@ -348,7 +348,7 @@ public:
     /**
         Constructs a new font face from a stream.
     */
-    this(SFNTFontEntry entry, HaFontReader reader) {
+    this(SFNTFontEntry entry, FontReader reader) {
         this.entry_ = entry;
 
         super(entry_.index, reader);
@@ -408,13 +408,13 @@ public:
         The character map for the font.
     */
     override
-    @property HaCharMap charMap() { return charmap; }
+    @property CharMap charMap() { return charmap; }
 
     /**
         Font-wide shared metrics.
     */
     override
-    @property HaFontMetrics fontMetrics() { return fmetrics_; }
+    @property FontMetrics fontMetrics() { return fmetrics_; }
 
     /**
         Units per EM.
@@ -516,7 +516,7 @@ protected:
         Implemented by the font to create a new font face.
     */
     override
-    HaFontFace onCreateFace(HaFontReader reader) {
+    FontFace onCreateFace(FontReader reader) {
         return null;
     }
 
@@ -525,7 +525,7 @@ public:
     /**
         Constructs a new font face from a stream.
     */
-    this(SFNTFontEntry entry, HaFontReader reader) {
+    this(SFNTFontEntry entry, FontReader reader) {
         super(entry, reader);
     }
 

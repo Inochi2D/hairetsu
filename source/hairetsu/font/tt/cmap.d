@@ -19,7 +19,7 @@ import numem;
 /**
     A TrueType character map
 */
-class TTCharMap : HaCharMap {
+class TTCharMap : CharMap {
 private:
 @nogc:
     TTCmapTable cmapTable;
