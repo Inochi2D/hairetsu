@@ -25,26 +25,18 @@ public import hairetsu.glyph;
 public import hairetsu.font;
 
 /**
-    Gets whether hairetsu is initialized.
-
-    Returns:
-        $(D true) if initialized,
-        $(D false) otherwise.
+    Whether Hairetsu is initialized.
 */
-extern(C)
-bool ha_get_initialized() @nogc {
+bool haIsInitialized() @nogc nothrow pure {
     return _ha_initialized;
 }
 
 /**
-    Initializes hairetsu.
-
-    Returns:
-        $(D true) if initialization succeeded,
-        $(D false) otherwise.
+    Attempts to initialize hairetsu manually,
+    should normally not be called, as the C Runtime
+    should call the initializer automatically.
 */
-extern(C)
-bool ha_init() @nogc {
+bool haTryInitialize() @nogc {
     if (!_ha_initialized) {
 
         // Initialize the fonts subsystem.
@@ -57,17 +49,29 @@ bool ha_init() @nogc {
 }
 
 /**
-    Shuts down hairetsu.
+    Attempts to shut down hairetsu manually,
+    should normally not be called, as the C Runtime
+    should call the initializer automatically.
 */
-extern(C)
-void ha_shutdown() @nogc {
+void haTryShutdown() @nogc {
     if (_ha_initialized) {
         cast(void)ha_shutdown_fonts();
         _ha_initialized = false;
     }
 }
 
-private:
+private
+extern(C):
 
 // Whether hairetsu is initialized.
 __gshared bool _ha_initialized = false;
+
+//
+//      CRT Hooks
+//
+
+pragma(crt_constructor)
+void _ha_crt_ctor() @nogc { cast(void)haTryInitialize(); }
+
+pragma(crt_destructor)
+void _ha_crt_dtor() @nogc { haTryShutdown(); }

@@ -19,9 +19,54 @@ import hairetsu.font.file;
 import hairetsu.font.font;
 import hairetsu.font.face;
 import hairetsu.font.cmap;
+import hairetsu : isHairetsuInitialized;
 import numem : NuRefCounted;
 
 extern(C) export:
+
+//
+//      LIBRARY INITIALIZATION.
+//
+
+/**
+    Gets whether hairetsu is initialized.
+
+    Returns:
+        $(D true) if initialized,
+        $(D false) otherwise.
+*/
+extern(C)
+bool ha_get_initialized() @nogc nothrow pure {
+    return haIsInitialized();
+}
+
+/**
+    Attempts to initialize hairetsu manually,
+    should normally not be called, as the C Runtime
+    should call the initializer automatically.
+
+    Returns:
+        $(D true) if initialized,
+        $(D false) otherwise.
+*/
+extern(C)
+bool ha_try_initialize() @nogc {
+    return haTryInitialize();
+}
+
+/**
+    Attempts to shut down hairetsu manually,
+    should normally not be called, as the C Runtime
+    should call the initializer automatically.
+
+    Returns:
+        $(D true) if initialized,
+        $(D false) otherwise.
+*/
+extern(C)
+void ha_try_shutdown() @nogc {
+    return haTryShutdown();
+}
 
 //
 //      MEMORY MANAGMENT.
