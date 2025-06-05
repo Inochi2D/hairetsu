@@ -14,9 +14,9 @@ void main(string[] args) {
 	
 	foreach(i, arg; args[1..$]) {
 		if (stdfile.exists(arg)) {
-			if (HaFontFile file = HaFontFile.fromFile(arg)) {
+			if (FontFile file = FontFile.fromFile(arg)) {
 				writefln("%u: %s (%s with %u subfonts)", i, file.name, file.type, file.fonts.length);
-				foreach(HaFont font; file.fonts) {
+				foreach(Font font; file.fonts) {
 					writefln(
 						"    %u: %s %s (%u glyphs)", 
 						font.index, 

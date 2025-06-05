@@ -19,7 +19,7 @@ import hairetsu.glyph;
 import nulib.collections;
 import numem;
 
-import hairetsu.font.font : HaFont;
+import hairetsu.font.font : Font;
 import hairetsu.common;
 
 /**
@@ -34,7 +34,7 @@ protected:
         Implemented by the font to create a new font face.
     */
     override
-    HaFontFace onCreateFace(HaFontReader reader) {
+    FontFace onCreateFace(FontReader reader) {
         return nogc_new!TTFontFace(this, reader);
     }
 
@@ -43,7 +43,7 @@ public:
     /**
         Constructs a new font face from a stream.
     */
-    this(SFNTFontEntry entry, HaFontReader reader) {
+    this(SFNTFontEntry entry, FontReader reader) {
         super(entry, reader);
     }
 

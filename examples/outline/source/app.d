@@ -30,9 +30,9 @@ void main(string[] args) {
 	}
 
 	// Load font.
-	HaFontFile file = HaFontFile.fromFile(args[1]);
-	HaFont font = file.fonts[0];
-	HaFontFace face = font.createFace();
+	FontFile file = FontFile.fromFile(args[1]);
+	Font font = file.fonts[0];
+	FontFace face = font.createFace();
 	face.pt = ptSize;
 
 	// Create a new run.
@@ -47,7 +47,7 @@ void main(string[] args) {
 	// Create canvas and renderer.
 	HaRenderer renderer = HaRenderer.createBuiltin();
 	vec2 textSize = renderer.measureGlyphRun(face, glyphRun);
-	HaFontMetrics fmetrics = face.faceMetrics();
+	FontMetrics fmetrics = face.faceMetrics();
 
 	HaCanvas canvas = nogc_new!HaCanvas(cast(uint)textSize.x, cast(uint)(textSize.y), HaColorFormat.CBPP8);
 	renderer.render(face, glyphRun, vec2(0, fmetrics.ascender.x), canvas);

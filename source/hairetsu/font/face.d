@@ -50,13 +50,13 @@ enum int BASE_TYPOGRAPHIC_DPI = 72;
     A Font Face Object
 */
 abstract
-class HaFontFace : NuRefCounted {
+class FontFace : NuRefCounted {
 private:
 @nogc:
-    HaFont parent_;
-    HaFontReader reader_;
-    HaFontMetrics fmetrics_;
-    HaFontFace fallback_;
+    Font parent_;
+    FontReader reader_;
+    FontMetrics fmetrics_;
+    FontFace fallback_;
 
     // Internal Glyph information.
     HaGlyph glyph_;
@@ -105,12 +105,12 @@ protected:
     /**
         Implemented by a font face to load a glyph.
     */
-    abstract void onRenderGlyph(HaFontReader reader, ref HaGlyph glyph);
+    abstract void onRenderGlyph(FontReader reader, ref HaGlyph glyph);
     
     /**
         Implemented by the font face to read the face.
     */
-    abstract void onFaceLoad(HaFontReader reader);
+    abstract void onFaceLoad(FontReader reader);
 
 public:
 
@@ -133,7 +133,7 @@ public:
     /**
         The parent font this font face belongs to.
     */
-    final @property HaFont parent() { return parent_; }
+    final @property Font parent() { return parent_; }
 
     /**
         The amount of glyphs in the font.
@@ -153,12 +153,12 @@ public:
             applied. You can check whether this happened by checking whether 
             the fallback after the setter operation is $(D null).
     */
-    final @property HaFontFace fallback() { return fallback_; }
-    final @property void fallback(HaFontFace fallback) { 
+    final @property FontFace fallback() { return fallback_; }
+    final @property void fallback(FontFace fallback) { 
         if (this.fallback_)
             this.fallback_.release();
 
-        HaFontFace iter = fallback;
+        FontFace iter = fallback;
         while (iter) {
             if (iter is this) {
                 this.fallback_ = null;
@@ -216,7 +216,7 @@ public:
         The scaled font-wide metrics of this face.
     */
     final
-    @property HaFontMetrics faceMetrics() { return fmetrics_; }
+    @property FontMetrics faceMetrics() { return fmetrics_; }
 
     /*
         Destructor
@@ -228,7 +228,7 @@ public:
     /**
         Constructs a font face.
     */
-    this(HaFont parent, HaFontReader reader) {
+    this(Font parent, FontReader reader) {
         this.parent_ = parent;
         this.reader_ = reader;
         
@@ -271,8 +271,8 @@ public:
             dstIdx =    The variable to store the resulting glyph index in.
             dstFace =   The variable to store the resulting font face in.
     */
-    void findGlyphFor(codepoint code, ref GlyphIndex dstIdx, ref HaFontFace dstFace) {
-        HaFontFace current = this;
+    void findGlyphFor(codepoint code, ref GlyphIndex dstIdx, ref FontFace dstFace) {
+        FontFace current = this;
         GlyphIndex glyphIdx;
 
         do {

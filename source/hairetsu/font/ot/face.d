@@ -32,7 +32,7 @@ public:
     /**
         Constructs a font face.
     */
-    this(HaFont parent, HaFontReader reader) {
+    this(Font parent, FontReader reader) {
         super(parent, reader);
     }
 }

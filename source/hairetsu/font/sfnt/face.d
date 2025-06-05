@@ -31,7 +31,7 @@ import std.regex;
     A SFNT-derived font face.
 */
 abstract
-class SFNTFontFace : HaFontFace {
+class SFNTFontFace : FontFace {
 private:
 @nogc:
 
@@ -175,7 +175,7 @@ protected:
         Implemented by a font face to load a glyph.
     */
     override
-    void onRenderGlyph(HaFontReader reader, ref HaGlyph glyph) {
+    void onRenderGlyph(FontReader reader, ref HaGlyph glyph) {
         glyph.setOutline(glyph.index, this.getOutline(glyph));
     }
     
@@ -183,7 +183,7 @@ protected:
         Implemented by the font face to read the face.
     */
     override
-    void onFaceLoad(HaFontReader reader) {        
+    void onFaceLoad(FontReader reader) {        
         this.reader = cast(SFNTReader)reader;
     }
     
@@ -198,7 +198,7 @@ public:
     /**
         Constructs a font face.
     */
-    this(HaFont parent, HaFontReader reader) {
+    this(Font parent, FontReader reader) {
         super(parent, reader);
     }
 }

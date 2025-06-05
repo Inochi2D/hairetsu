@@ -131,7 +131,7 @@ public:
             the text run. If the run wasn't shaped, it will 
             instead return a zero vector.
     */
-    vec2 measureGlyphRun(HaFontFace face, ref HaBuffer run) {
+    vec2 measureGlyphRun(FontFace face, ref HaBuffer run) {
         if (!run.isShaped())
             return vec2(0, 0);
         
@@ -179,7 +179,7 @@ public:
             The resulting accumulated text advance. If the run wasn't 
             shaped, it will instead return a zero vector.
     */
-    vec2 render(HaFontFace face, ref HaBuffer run, vec2 position, HaCanvas canvas) {
+    vec2 render(FontFace face, ref HaBuffer run, vec2 position, HaCanvas canvas) {
         vec2 accumulator = position;
         vec2 bearing;
         vec2 advance;

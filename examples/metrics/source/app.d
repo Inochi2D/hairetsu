@@ -19,7 +19,7 @@ void main(string[] args) {
 		return;
 	}
 	auto stream = nogc_new!MemoryStream(cast(ubyte[])stdfile.read(args[1]).nu_dup);
-	HaFontFile file = HaFontFile.fromStream(stream, args[1]);
+	FontFile file = FontFile.fromStream(stream, args[1]);
 
 	// Get point size
 	float ptSize = args[2].to!float;
@@ -30,7 +30,7 @@ void main(string[] args) {
 		strings ~= toUTF32(arg);
 	
 	// Do the listing.
-	foreach(HaFont font; file.fonts) {
+	foreach(Font font; file.fonts) {
 		auto face = font.createFace();
 		face.pt = ptSize;
 		

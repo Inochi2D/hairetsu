@@ -2,7 +2,7 @@ import std.stdio;
 import hairetsu;
 
 void main() {
-	auto fontManager = HaFontManager.create();
+	auto fontManager = FontManager.create();
 
 	writeln(fontManager.fontFamilies());
 	foreach(i, ref family; fontManager.fontFamilies()) {

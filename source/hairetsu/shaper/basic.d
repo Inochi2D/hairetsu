@@ -33,7 +33,7 @@ public:
             buffer =    The buffer to shape.
     */
     override
-    void shape(ref HaFontFace face, ref HaBuffer buffer) {
+    void shape(ref FontFace face, ref HaBuffer buffer) {
         auto dir = buffer.direction;
         auto lang = buffer.language;
         auto script = buffer.script;

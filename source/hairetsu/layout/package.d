@@ -90,9 +90,9 @@ protected:
     // // Iterates through every font and font fallback
     // // to find a face which can render the given glyph.
     // final
-    // ref HaGlyph getRenderableGlyph(ref HaFontFace face, codepoint code) {
+    // ref HaGlyph getRenderableGlyph(ref FontFace face, codepoint code) {
     //     GlyphIndex bestIndex;
-    //     HaFontFace bestFace = face;
+    //     FontFace bestFace = face;
 
     //     do {
     //         bestFace.findGlyphFor(code, bestIndex, bestFace);

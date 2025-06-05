@@ -35,7 +35,7 @@ struct HaCharRange {
     A character mapping table.
 */
 abstract
-class HaCharMap : NuObject {
+class CharMap : NuObject {
 @nogc:
 public:
 

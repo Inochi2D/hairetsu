@@ -40,10 +40,10 @@ enum uint HA_GLYPH_TYPE_MASK_ALL = (HaGlyphStoreType.max*2)-1;
     A Font Object
 */
 abstract
-class HaFont : NuRefCounted {
+class Font : NuRefCounted {
 @nogc:
 private:
-    HaFontReader reader;
+    FontReader reader;
     uint index_;
 
 protected:
@@ -51,12 +51,12 @@ protected:
     /**
         Implemented by the font to read the font.
     */
-    abstract void onFontLoad(HaFontReader reader);
+    abstract void onFontLoad(FontReader reader);
     
     /**
         Implemented by the font to create a new font face.
     */
-    abstract HaFontFace onCreateFace(HaFontReader reader);
+    abstract FontFace onCreateFace(FontReader reader);
     
 public:
 
@@ -68,7 +68,7 @@ public:
     /**
         Constructs a new font face from a stream.
     */
-    this(uint index, HaFontReader reader) {
+    this(uint index, FontReader reader) {
         this.index_ = index;
         this.reader = reader;
         this.onFontLoad(reader);
@@ -119,12 +119,12 @@ public:
     /**
         The character map for the font.
     */
-    abstract @property HaCharMap charMap();
+    abstract @property CharMap charMap();
 
     /**
         Font-wide shared metrics.
     */
-    abstract @property HaFontMetrics fontMetrics();
+    abstract @property FontMetrics fontMetrics();
 
     /**
         Units per EM.
@@ -163,7 +163,7 @@ public:
             A font face.
     */
     final
-    HaFontFace createFace() {
+    FontFace createFace() {
         return this.onCreateFace(reader);
     }
 }
@@ -171,7 +171,7 @@ public:
 /**
     Metrics shared between glyphs in a font.
 */
-struct HaFontMetrics {
+struct FontMetrics {
 @nogc:
 
     /**

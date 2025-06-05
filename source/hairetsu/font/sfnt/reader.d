@@ -24,7 +24,7 @@ import numem;
     A class which handles reading tables and records from a SFNT formatted
     file, such as TrueType or OpenType fonts.
 */
-class SFNTReader : HaFontReader {
+class SFNTReader : FontReader {
 private:
 @nogc:
     vector!SFNTFontEntry fonts_;
@@ -53,10 +53,10 @@ private:
             
             // TrueType Collections
             case ISO15924!("ttcf"):
-                throw nogc_new!HaFontReadException("Nested collections are not supported!");
+                throw nogc_new!FontReadException("Nested collections are not supported!");
 
             default:
-                throw nogc_new!HaFontReadException("Unsupported font format ID!");
+                throw nogc_new!FontReadException("Unsupported font format ID!");
         }
 
         // Determine font table metadata.
@@ -114,7 +114,7 @@ protected:
         can be read.
     */
     override
-    HaFontReader tryCreateReader(Stream stream) @system nothrow {
+    FontReader tryCreateReader(Stream stream) @system nothrow {
         try {
             return nogc_new!SFNTReader(stream);
         } catch(Exception ex) {
@@ -217,7 +217,7 @@ public:
         Creates a font instance using this reader.
     */
     override
-    HaFontFile createFont(string name) {
+    FontFile createFont(string name) {
         import hairetsu.font.sfnt.file : SFNTFontFile;
         return nogc_new!SFNTFontFile(this, name);
     }
