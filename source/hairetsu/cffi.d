@@ -129,7 +129,7 @@ struct ha_fontfile_t;
         this is to ensure ownership of the data is properly handled.
 */
 ha_fontfile_t* ha_fontfile_from_memory(ubyte* data, uint length) {
-    return cast(ha_fontfile_t*)HaFontFile.fromMemory(data[0..length]);
+    return cast(ha_fontfile_t*)FontFile.fromMemory(data[0..length]);
 }
 
 /**
@@ -150,7 +150,7 @@ ha_fontfile_t* ha_fontfile_from_memory(ubyte* data, uint length) {
 */
 ha_fontfile_t* ha_fontfile_from_memory_with_name(ubyte* data, uint length, const(char)* name) {
     nstring nname = name;
-    return cast(ha_fontfile_t*)HaFontFile.fromMemory(data[0..length], nname);
+    return cast(ha_fontfile_t*)FontFile.fromMemory(data[0..length], nname);
 }
 
 /**
@@ -161,12 +161,12 @@ ha_fontfile_t* ha_fontfile_from_memory_with_name(ubyte* data, uint length, const
         null-terminate UTF8 encoding.
     
     Returns:
-        A $(D HaFontFile) instance on success,
+        A $(D FontFile) instance on success,
         $(D null) on failure.
 */
 ha_fontfile_t* ha_fontfile_from_file(const(char)* path) {
     nstring npath = path;
-    return cast(ha_fontfile_t*)HaFontFile.fromFile(npath);
+    return cast(ha_fontfile_t*)FontFile.fromFile(npath);
 }
 
 /**
@@ -183,7 +183,7 @@ const(char)* ha_fontfile_get_type(ha_fontfile_t* obj) {
     if (!obj)
         return null;
     
-    return (cast(HaFontFile)obj).type.ptr;
+    return (cast(FontFile)obj).type.ptr;
 }
 
 /**
@@ -200,7 +200,7 @@ const(char)* ha_fontfile_get_name(ha_fontfile_t* obj) {
     if (!obj)
         return null;
     
-    return (cast(HaFontFile)obj).name.ptr;
+    return (cast(FontFile)obj).name.ptr;
 }
 
 /**
@@ -216,8 +216,8 @@ const(char)* ha_fontfile_get_name(ha_fontfile_t* obj) {
         NOT be freed by the caller.
 */
 uint ha_fontfile_get_fonts(ha_fontfile_t* obj, ha_font_t** target) {
-    *target = cast(ha_font_t*)((cast(HaFontFile)obj).fonts.ptr);
-    return cast(uint)(cast(HaFontFile)obj).fonts.length;
+    *target = cast(ha_font_t*)((cast(FontFile)obj).fonts.ptr);
+    return cast(uint)(cast(FontFile)obj).fonts.length;
 }
 
 
@@ -241,7 +241,7 @@ struct ha_font_t;
         The postscript name in UTF-8 format.
 */
 const(char)* ha_font_get_name(ha_font_t* obj) {
-    return (cast(HaFont)obj).name.ptr;
+    return (cast(Font)obj).name.ptr;
 }
 
 /**
@@ -254,7 +254,7 @@ const(char)* ha_font_get_name(ha_font_t* obj) {
         The family name in UTF-8 format.
 */
 const(char)* ha_font_get_family(ha_font_t* obj) {
-    return (cast(HaFont)obj).family.ptr;
+    return (cast(Font)obj).family.ptr;
 }
 
 /**
@@ -267,7 +267,7 @@ const(char)* ha_font_get_family(ha_font_t* obj) {
         The subfamily name in UTF-8 format.
 */
 const(char)* ha_font_get_subfamily(ha_font_t* obj) {
-    return (cast(HaFont)obj).subfamily.ptr;
+    return (cast(Font)obj).subfamily.ptr;
 }
 
 /**
@@ -280,7 +280,7 @@ const(char)* ha_font_get_subfamily(ha_font_t* obj) {
         The type name in UTF-8 format.
 */
 const(char)* ha_font_get_type(ha_font_t* obj) {
-    return (cast(HaFont)obj).type.ptr;
+    return (cast(Font)obj).type.ptr;
 }
 
 /**
@@ -293,7 +293,7 @@ const(char)* ha_font_get_type(ha_font_t* obj) {
         The amount of glyphs stored within the font.
 */
 uint ha_font_get_glyph_count(ha_font_t* obj) {
-    return cast(uint)(cast(HaFont)obj).glyphCount;
+    return cast(uint)(cast(Font)obj).glyphCount;
 }
 
 /**
@@ -306,7 +306,7 @@ uint ha_font_get_glyph_count(ha_font_t* obj) {
         The Units per EM.
 */
 uint ha_font_get_upem(ha_font_t* obj) {
-    return (cast(HaFont)obj).upem;
+    return (cast(Font)obj).upem;
 }
 
 /**
@@ -319,7 +319,7 @@ uint ha_font_get_upem(ha_font_t* obj) {
         The lowest recommended pixels-per-EM for readability.
 */
 uint ha_font_get_lowest_ppem(ha_font_t* obj) {
-    return (cast(HaFont)obj).lowestPPEM;
+    return (cast(Font)obj).lowestPPEM;
 }
 
 /**
@@ -331,8 +331,8 @@ uint ha_font_get_lowest_ppem(ha_font_t* obj) {
     Returns:
         The global metrics.
 */
-HaFontMetrics ha_font_get_global_metrics(ha_font_t* obj) {
-    return (cast(HaFont)obj).fontMetrics;   
+FontMetrics ha_font_get_global_metrics(ha_font_t* obj) {
+    return (cast(Font)obj).fontMetrics;   
 }
 
 /**
@@ -348,7 +348,7 @@ HaFontMetrics ha_font_get_global_metrics(ha_font_t* obj) {
         $(D GLYPH_MISSING) if not found.
 */
 uint ha_font_find_glyph(ha_font_t* obj, uint codepoint) {
-    return (cast(HaFont)obj).charMap.getGlyphIndex(codepoint);
+    return (cast(Font)obj).charMap.getGlyphIndex(codepoint);
 }
 
 /**
@@ -362,7 +362,7 @@ uint ha_font_find_glyph(ha_font_t* obj, uint codepoint) {
         The base metrics of the given glyph.
 */
 HaGlyphMetrics ha_font_glyph_metrics_for(ha_font_t* obj, uint glyphId) {
-    return (cast(HaFont)obj).getMetricsFor(glyphId);
+    return (cast(Font)obj).getMetricsFor(glyphId);
 }
 
 /**
@@ -376,7 +376,7 @@ HaGlyphMetrics ha_font_glyph_metrics_for(ha_font_t* obj, uint glyphId) {
         or $(D null) on failure.
 */
 ha_face_t* ha_font_create_face(ha_font_t* obj) {
-    return cast(ha_face_t*)((cast(HaFont)obj).createFace());
+    return cast(ha_face_t*)((cast(Font)obj).createFace());
 }
 
 
@@ -400,7 +400,7 @@ struct ha_face_t;
         The Units per EM.
 */
 uint ha_face_get_upem(ha_face_t* obj) {
-    return (cast(HaFontFace)obj).upem;
+    return (cast(FontFace)obj).upem;
 }
 
 /**
@@ -413,7 +413,7 @@ uint ha_face_get_upem(ha_face_t* obj) {
         The scale factor.
 */
 float ha_face_get_scale(ha_face_t* obj) {
-    return (cast(HaFontFace)obj).scale;
+    return (cast(FontFace)obj).scale;
 }
 
 /**
@@ -426,7 +426,7 @@ float ha_face_get_scale(ha_face_t* obj) {
         The pixels-per-EM.
 */
 float ha_face_get_ppem(ha_face_t* obj) {
-    return (cast(HaFontFace)obj).ppem;
+    return (cast(FontFace)obj).ppem;
 }
 
 /**
@@ -439,7 +439,7 @@ float ha_face_get_ppem(ha_face_t* obj) {
         The amount of glyphs stored within the font face.
 */
 uint ha_face_get_glyph_count(ha_face_t* obj) {
-    return (cast(HaFontFace)obj).glyphCount;
+    return (cast(FontFace)obj).glyphCount;
 }
 
 /**
@@ -454,7 +454,7 @@ uint ha_face_get_glyph_count(ha_face_t* obj) {
         $(D null) if no fallback is specified.
 */
 ha_face_t* ha_face_get_fallback(ha_face_t* obj) {
-    return cast(ha_face_t*)(cast(HaFontFace)obj).fallback;
+    return cast(ha_face_t*)(cast(FontFace)obj).fallback;
 }
 
 /**
@@ -471,7 +471,7 @@ ha_face_t* ha_face_get_fallback(ha_face_t* obj) {
         $(D null)!
 */
 void ha_face_set_fallback(ha_face_t* obj, ha_face_t* face) {
-    (cast(HaFontFace)obj).fallback = cast(HaFontFace)face;
+    (cast(FontFace)obj).fallback = cast(FontFace)face;
 }
 
 /**
@@ -484,7 +484,7 @@ void ha_face_set_fallback(ha_face_t* obj, ha_face_t* face) {
         Whether hinting is requested.
 */
 bool ha_face_get_hinting(ha_face_t* obj) {
-    return (cast(HaFontFace)obj).wantHinting;
+    return (cast(FontFace)obj).wantHinting;
 }
 
 /**
@@ -495,7 +495,7 @@ bool ha_face_get_hinting(ha_face_t* obj) {
         value = The value to set.
 */
 void ha_face_set_hinting(ha_face_t* obj, bool value) {
-    (cast(HaFontFace)obj).wantHinting = value;
+    (cast(FontFace)obj).wantHinting = value;
 }
 
 /**
@@ -512,7 +512,7 @@ void ha_face_set_hinting(ha_face_t* obj, bool value) {
         The current set DPI.
 */
 float ha_face_get_dpi(ha_face_t* obj) {
-    return (cast(HaFontFace)obj).dpi;
+    return (cast(FontFace)obj).dpi;
 }
 
 /**
@@ -523,7 +523,7 @@ float ha_face_get_dpi(ha_face_t* obj) {
         value = The value to set.
 */
 void ha_face_set_dpi(ha_face_t* obj, float value) {
-    (cast(HaFontFace)obj).dpi = value;
+    (cast(FontFace)obj).dpi = value;
 }
 
 /**
@@ -536,7 +536,7 @@ void ha_face_set_dpi(ha_face_t* obj, float value) {
         The current set point size.
 */
 float ha_face_get_pt(ha_face_t* obj) {
-    return (cast(HaFontFace)obj).pt;
+    return (cast(FontFace)obj).pt;
 }
 
 /**
@@ -547,7 +547,7 @@ float ha_face_get_pt(ha_face_t* obj) {
         value = The value to set.
 */
 void ha_face_set_pt(ha_face_t* obj, float value) {
-    (cast(HaFontFace)obj).pt = value;
+    (cast(FontFace)obj).pt = value;
 }
 
 /**
@@ -560,7 +560,7 @@ void ha_face_set_pt(ha_face_t* obj, float value) {
         The current set point size.
 */
 float ha_face_get_px(ha_face_t* obj) {
-    return (cast(HaFontFace)obj).px;
+    return (cast(FontFace)obj).px;
 }
 
 /**
@@ -571,7 +571,7 @@ float ha_face_get_px(ha_face_t* obj) {
         value = The value to set.
 */
 void ha_face_set_px(ha_face_t* obj, float value) {
-    (cast(HaFontFace)obj).px = value;
+    (cast(FontFace)obj).px = value;
 }
 
 /**
@@ -583,6 +583,6 @@ void ha_face_set_px(ha_face_t* obj, float value) {
     Returns:
         The scaled global metrics.
 */
-HaFontMetrics ha_face_get_global_metrics(ha_face_t* obj) {
-    return (cast(HaFontFace)obj).faceMetrics;   
+FontMetrics ha_face_get_global_metrics(ha_face_t* obj) {
+    return (cast(FontFace)obj).faceMetrics;   
 }

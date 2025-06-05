@@ -11,7 +11,7 @@ import numem;
 /**
     SFNT-based Font File
 */
-class SFNTFontFile : HaFontFile {
+class SFNTFontFile : FontFile {
 @nogc:
 protected:
 
@@ -19,7 +19,7 @@ protected:
         Implemented by the font file reader to index the faces.
     */
     override
-    void onIndexFont(ref weak_vector!HaFont fonts) {
+    void onIndexFont(ref weak_vector!Font fonts) {
         foreach(ref SFNTFontEntry entry; (cast(SFNTReader)reader).fontEntries) {
             switch(entry.type) {
                 case SNFTFontType.openType:

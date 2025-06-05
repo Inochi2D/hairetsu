@@ -13,18 +13,18 @@ by hairetsu should be usable in a GC context.
 
 ## Loading Fonts
 
-Hairetsu includes its own font reading and rendering mechanism, to load a font you first create a `HaFontFile` instance.
+Hairetsu includes its own font reading and rendering mechanism, to load a font you first create a `FontFile` instance.
 A couple of convenience functions are provided to do this.
 
 Font Files are the top level object of Hairetsu's font ownership hirearchy; ownership is managed internally by hairetsu,
 as such you should not attempt to manually destroy objects unless the documentation tells you to.
 
-From these font files you can create `HaFont` objects, which represent the logical font within a font file container,
+From these font files you can create `Font` objects, which represent the logical font within a font file container,
 some containers can contain **multiple** fonts within a single file, such as TTC containers.
 
 ```d
-HaFontFile myFile = HaFontFile.fromFile("notosans.ttf");
-HaFont myFont = myFile.fonts[0]; // Gets the first font within the file.
+FontFile myFile = FontFile.fromFile("notosans.ttf");
+Font myFont = myFile.fonts[0]; // Gets the first font within the file.
 
 writeln(myFont.type, " ", myFile.type); // Likely would print "TrueType SFNT"
 ```
@@ -35,7 +35,7 @@ Generally you should refer to a text shaper to find glyph IDs for your target la
 but Hairetsu does provide the essentials for looking up glyphs by character, however this
 will be **without** substitutions unless you write code to fetch those.
 
-A `HaCharMap` is provided by fonts which allows looking up glyph indices from eg. the `CMAP`
+A `CharMap` is provided by fonts which allows looking up glyph indices from eg. the `CMAP`
 table in TTF and OTF fonts. If a font does not contain a glyph for the given character code,
 the `.notdef` glyph index will be returned instead, a convenience `GLYPH_MISSING` enum is provided
 to help you check this case.
@@ -46,7 +46,7 @@ GlyphIndex i = myFont.charMap.getGlyphIndex('あ');
 
 ## Faces
 When using a font it's often desired to be able to configure properties about the font without needing
-to repeatedly reload a font to do so; the `HaFontFace` facilitates this by being a type which refers
+to repeatedly reload a font to do so; the `FontFace` facilitates this by being a type which refers
 back in to the parent font that created it.
 
 This allows you to, for example, set style, sizing, hinting requirements, etc. for the glyph data
@@ -55,7 +55,7 @@ you wish to fetch from the font. You can have as many font faces loaded at a tim
 ```d
 
 // Create a font face, scaled to half of the base size.
-HaFontFace myFace = myFont.createFace();
+FontFace myFace = myFont.createFace();
 myFace.scale.x = 0.5;
 myFace.scale.y = 0.5;
 ```
