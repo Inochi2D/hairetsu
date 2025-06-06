@@ -45,7 +45,7 @@ public:
     /**
         Draws an outline to the rasterizer's buffer.
     */
-    abstract void draw(ref HaGlyphOutline outline, vec2 offset);
+    abstract void draw(ref GlyphOutline outline, vec2 offset);
 
     /**
         Clears the rasterizer's buffer.

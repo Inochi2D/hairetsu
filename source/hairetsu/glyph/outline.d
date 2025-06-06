@@ -17,7 +17,7 @@ import numem;
 /**
     An outline stored in a glyph.
 */
-struct HaGlyphOutline {
+struct GlyphOutline {
 private:
 @nogc:
 

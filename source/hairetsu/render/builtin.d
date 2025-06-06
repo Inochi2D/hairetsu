@@ -32,10 +32,10 @@ protected:
         This should write the final rasterized image to the canvas.
     */
     override
-    void blit(ref HaGlyph glyph, vec2 offset, HaCanvas canvas, bool horizontal) {
+    void blit(ref Glyph glyph, vec2 offset, HaCanvas canvas, bool horizontal) {
         final switch(glyph.type) {
-            case HaGlyphType.outline:
-                HaGlyphBitmap bitmap = glyph.rasterize(antialiased);
+            case GlyphType.outline:
+                GlyphBitmap bitmap = glyph.rasterize(antialiased);
 
                 if (horizontal) {
                     offset.y -= glyph.metrics.bounds.height + glyph.metrics.bounds.yMin;
@@ -71,12 +71,12 @@ protected:
 
                 return;
 
-            case HaGlyphType.bitmap:
+            case GlyphType.bitmap:
                 // TODO: Bitmaps require a bit more smarts.
                 return;
 
-            case HaGlyphType.svg:
-            case HaGlyphType.none:
+            case GlyphType.svg:
+            case GlyphType.none:
                 return;
         }
     }
@@ -96,7 +96,7 @@ public:
         Flags indicating the capabilities of the renderer.
     */
     override
-    @property HaGlyphRendererCapabilityFlags capabilities() {
-        return HaGlyphRendererCapabilityFlags.supportsOutlines;
+    @property GlyphRendererCapabilityFlags capabilities() {
+        return GlyphRendererCapabilityFlags.supportsOutlines;
     }
 }

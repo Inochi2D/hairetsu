@@ -59,7 +59,7 @@ private:
     FontFace fallback_;
 
     // Internal Glyph information.
-    HaGlyph glyph_;
+    Glyph glyph_;
     float pt_     = 18;
     float dpi_    = 96;
     float ppem_;
@@ -105,7 +105,7 @@ protected:
     /**
         Implemented by a font face to load a glyph.
     */
-    abstract void onRenderGlyph(FontReader reader, ref HaGlyph glyph);
+    abstract void onRenderGlyph(FontReader reader, ref Glyph glyph);
     
     /**
         Implemented by the font face to read the face.
@@ -245,7 +245,7 @@ public:
         Returns:
             The scaled metrics for the given glyph.
     */
-    HaGlyphMetrics getMetricsFor(GlyphIndex glyphIdx) {
+    GlyphMetrics getMetricsFor(GlyphIndex glyphIdx) {
         
         // Reload and scale metrics.
         auto metrics = this.parent.getMetricsFor(glyphIdx);
@@ -304,7 +304,7 @@ public:
             glyph will be updated.
     */
     final
-    ref HaGlyph getGlyph(GlyphIndex glyphIdx) {
+    ref Glyph getGlyph(GlyphIndex glyphIdx) {
         auto oldIndex = glyph_.index;
         glyph_.index = glyphIdx;
 
