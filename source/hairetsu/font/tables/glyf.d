@@ -34,7 +34,7 @@ struct LocaTable {
             case 0:
                 this.offsets = offsets.nu_resize(maxp.numGlyphs+1);
                 foreach(i; 0..offsets.length) {
-                    this.offsets[i] = reader.readElementBE!ushort();
+                    this.offsets[i] = (cast(uint)reader.readElementBE!ushort())*2;
                 }
                 return;
 
@@ -51,11 +51,11 @@ struct LocaTable {
     /**
         Whether the glyph at the given offset has an outline.
     */
-    bool hasOutline(uint glyphOffset) {
-        if (glyphOffset+1 >= offsets.length)
+    bool hasOutline(uint glyphId) {
+        if (glyphId+1 >= offsets.length)
             return false;
 
-        return offsets[glyphOffset] != offsets[glyphOffset+1];
+        return offsets[glyphId] != offsets[glyphId+1];
     }
 }
 
