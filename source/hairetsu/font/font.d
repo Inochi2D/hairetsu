@@ -23,7 +23,7 @@ import hairetsu.common;
 /**
     Types of glyphs stored within the font.
 */
-enum HaGlyphStoreType {
+enum GlyphStoreType {
     trueType = 0x01,
     CFF      = 0x02,
     CFF2     = 0x04,
@@ -34,7 +34,7 @@ enum HaGlyphStoreType {
 /**
     Mask for all glyph types.
 */
-enum uint HA_GLYPH_TYPE_MASK_ALL = (HaGlyphStoreType.max*2)-1;
+enum uint HA_GLYPH_TYPE_MASK_ALL = (GlyphStoreType.max*2)-1;
 
 /**
     A Font Object
@@ -102,7 +102,7 @@ public:
     /**
         The types of glyphs are supported by the font.
     */
-    abstract @property HaGlyphStoreType glyphTypes();
+    abstract @property GlyphStoreType glyphTypes();
 
     /**
         A string describing which types of glyphs are supported
@@ -149,12 +149,47 @@ public:
 
         Returns:
             The metrics for the glyph in **font units**.
-
-        Note:
-            It is recommended you cache the value returned by
-            this function.
     */
-    abstract HaGlyphMetrics getMetricsFor(GlyphIndex glyph);
+    abstract GlyphMetrics getMetricsFor(GlyphIndex glyph);
+
+    /**
+        Gets the type of data associated with the given glyph.
+
+        Params:
+            glyph = Index of the glyph to get the state for.
+
+        Returns:
+            The types of data associated with the glyph.
+    */
+    abstract GlyphType getGlyphType(GlyphIndex glyph);
+
+    /**
+        Gets whether the given glyph has an outline.
+
+        Params:
+            glyph = Index of the glyph to get the state for.
+
+        Returns:
+            Whether the glyph has a vector outline for rendering.
+    */
+    final
+    bool getGlyphHasOutline(GlyphIndex glyph) {
+        return (getGlyphType(glyph) & GlyphType.outline) == GlyphType.outline;
+    }
+
+    /**
+        Gets whether the given glyph has a bitmap.
+
+        Params:
+            glyph = Index of the glyph to get the state for.
+
+        Returns:
+            Whether the glyph has a bitmap for rendering.
+    */
+    final
+    bool getGlyphHasBitmap(GlyphIndex glyph) {
+        return (getGlyphType(glyph) & GlyphType.bitmap) == GlyphType.bitmap;
+    }
 
     /**
         Creates a face from the font.
@@ -208,15 +243,15 @@ private template genOutlineTypeNames() {
     string genGlyphMaskName(uint offset) {
         import std.array : join;
         string[] elements;
-        if (offset & HaGlyphStoreType.trueType)
+        if (offset & GlyphStoreType.trueType)
             elements ~= "TrueType";
-        if (offset & HaGlyphStoreType.CFF)
+        if (offset & GlyphStoreType.CFF)
             elements ~= "CFF";
-        if (offset & HaGlyphStoreType.CFF2)
+        if (offset & GlyphStoreType.CFF2)
             elements ~= "CFF2";
-        if (offset & HaGlyphStoreType.SVG)
+        if (offset & GlyphStoreType.SVG)
             elements ~= "SVG";
-        if (offset & HaGlyphStoreType.bitmap)
+        if (offset & GlyphStoreType.bitmap)
             elements ~= "Bitmap";
         
         return "["~elements.join(", ")~"]";

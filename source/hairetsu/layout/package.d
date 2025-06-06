@@ -90,7 +90,7 @@ protected:
     // // Iterates through every font and font fallback
     // // to find a face which can render the given glyph.
     // final
-    // ref HaGlyph getRenderableGlyph(ref FontFace face, codepoint code) {
+    // ref Glyph getRenderableGlyph(ref FontFace face, codepoint code) {
     //     GlyphIndex bestIndex;
     //     FontFace bestFace = face;
 
@@ -100,7 +100,7 @@ protected:
     //         if (bestIndex == GLYPH_MISSING)
     //             break;
             
-    //         HaGlyph* glyph = &face.getGlyph(bestIndex);
+    //         Glyph* glyph = &face.getGlyph(bestIndex);
     //         if (canRender(*glyph))
     //             return *glyph;
 

@@ -15,7 +15,7 @@ import numem;
 /**
     Glyph SVG Data
 */
-struct HaGlyphSVG {
+struct GlyphSVG {
 @nogc:
     string[] data;
 

@@ -19,28 +19,28 @@ public import hairetsu.glyph.svg;
 /**
     The type of the glyph.
 */
-enum HaGlyphType : uint {
+enum GlyphType : uint {
 
     /**
         No glyph data is loaded.
     */
-    none,
+    none    = 0x00,
     
     /**
         Bitmap Glyph.
     */
-    bitmap,
+    bitmap  = 0x01,
 
     /**
         A glyph that uses vector outlines.
     */
-    outline,
+    outline = 0x02,
 
     /**
         Glyphs which contain a constrained version of the
         SVG document specification.
     */
-    svg
+    svg     = 0x04,
 }
 
 /**
@@ -62,7 +62,7 @@ struct GlyphPosition {
 /**
     Glyph Metrics
 */
-struct HaGlyphMetrics {
+struct GlyphMetrics {
 
     /**
         The bounding box of the glyph.
@@ -83,7 +83,7 @@ struct HaGlyphMetrics {
 /**
     A glyph.
 */
-struct HaGlyph {
+struct Glyph {
 public:
 @nogc:
     
@@ -95,25 +95,25 @@ public:
     /**
         The type of the glyph.
     */
-    HaGlyphType type;
+    GlyphType type;
     
     /**
         The scaled metrics of the glyph.
     */
-    HaGlyphMetrics metrics;
+    GlyphMetrics metrics;
     
     /**
         The data of the glyph.
     */
-    HaGlyphData data;
+    GlyphData data;
 
     /**
         Sets the bitmap of the glyph
     */
-    void setBitmap(GlyphIndex index, HaGlyphBitmap bitmap) {
+    void setBitmap(GlyphIndex index, GlyphBitmap bitmap) {
         this.reset();
 
-        this.type = HaGlyphType.bitmap;
+        this.type = GlyphType.bitmap;
         this.index = index;
         this.data.bitmap = bitmap;
     }
@@ -121,17 +121,17 @@ public:
     /**
         Sets the outline of the glyph
     */
-    void setOutline(GlyphIndex index, HaGlyphOutline outline) {
+    void setOutline(GlyphIndex index, GlyphOutline outline) {
         this.reset();
 
         // Handle no-outline glyphs.
         if (outline.commands.length == 0) {
-            this.type = HaGlyphType.none;
+            this.type = GlyphType.none;
             this.index = index;
             return;
         }
 
-        this.type = HaGlyphType.outline;
+        this.type = GlyphType.outline;
         this.index = index;
         this.data.outline = outline;
     }
@@ -139,10 +139,10 @@ public:
     /**
         Sets the SVG of the glyph
     */
-    void setSVG(GlyphIndex index, HaGlyphSVG svg) {
+    void setSVG(GlyphIndex index, GlyphSVG svg) {
         this.reset();
 
-        this.type = HaGlyphType.svg;
+        this.type = GlyphType.svg;
         this.index = index;
         this.data.svg = svg;
     }
@@ -152,23 +152,23 @@ public:
     */
     void reset() {
         final switch(type) {
-            case HaGlyphType.outline:
+            case GlyphType.outline:
                 data.outline.reset();
                 break;
                 
-            case HaGlyphType.bitmap:
+            case GlyphType.bitmap:
                 nogc_delete(data.bitmap);
                 break;
                 
-            case HaGlyphType.svg:
+            case GlyphType.svg:
                 data.svg.reset();
                 break;
             
-            case HaGlyphType.none:
+            case GlyphType.none:
                 return;
         }
         
-        this.type = HaGlyphType.none;
+        this.type = GlyphType.none;
         this.index = 0;
         nogc_zeroinit(data);
     }
@@ -183,7 +183,7 @@ public:
     HaBitmap rasterize(bool antialiased = true) {
         final switch(type) {
             
-            case HaGlyphType.outline:
+            case GlyphType.outline:
 
                 // Build outline
                 HaPolyOutline poutline = data.outline.polygonize(vec2(1, 1), vec2(0, 0));
@@ -198,13 +198,13 @@ public:
 
                 return bitmap;
 
-            case HaGlyphType.bitmap:
+            case GlyphType.bitmap:
                 return data.bitmap;
             
-            case HaGlyphType.svg:
+            case GlyphType.svg:
                 return HaBitmap.init; 
             
-            case HaGlyphType.none:
+            case GlyphType.none:
                 return HaBitmap.init; 
 
         }
@@ -214,13 +214,13 @@ public:
 /**
     Alias for backwards compatibility.
 */
-alias HaGlyphBitmap = HaBitmap;
+alias GlyphBitmap = HaBitmap;
 
 /**
     The different kinds of data that can be stored in a glyph.
 */
-union HaGlyphData {
-    HaGlyphBitmap bitmap;
-    HaGlyphOutline outline;
-    HaGlyphSVG svg;
+union GlyphData {
+    GlyphBitmap bitmap;
+    GlyphOutline outline;
+    GlyphSVG svg;
 }

@@ -23,7 +23,7 @@ import hairetsu.render.builtin;
 /**
     Compatibility flags
 */
-enum HaGlyphRendererCapabilityFlags : uint {
+enum GlyphRendererCapabilityFlags : uint {
     
     /**
         Flag indicating that the renderer supports rendering
@@ -57,7 +57,7 @@ protected:
 
         This should write the final rasterized image to the canvas.
     */
-    abstract void blit(ref HaGlyph glyph, vec2 offset, HaCanvas canvas, bool horizontal);
+    abstract void blit(ref Glyph glyph, vec2 offset, HaCanvas canvas, bool horizontal);
     
 public:
 
@@ -70,7 +70,7 @@ public:
     /**
         Flags indicating the capabilities of the renderer.
     */
-    abstract @property HaGlyphRendererCapabilityFlags capabilities();
+    abstract @property GlyphRendererCapabilityFlags capabilities();
 
     /**
         Whether to apply anti-aliasing.
@@ -88,19 +88,19 @@ public:
             render the given glyph, $(D false) otherwise.
     */
     final
-    bool canRender(ref HaGlyph glyph) {
+    bool canRender(ref Glyph glyph) {
         final switch(glyph.type) {
-            case HaGlyphType.none:
+            case GlyphType.none:
                 return false;
             
-            case HaGlyphType.bitmap:
-                return (capabilities & HaGlyphRendererCapabilityFlags.supportsBitmaps) > 0;
+            case GlyphType.bitmap:
+                return (capabilities & GlyphRendererCapabilityFlags.supportsBitmaps) > 0;
             
-            case HaGlyphType.outline:
-                return (capabilities & HaGlyphRendererCapabilityFlags.supportsOutlines) > 0;
+            case GlyphType.outline:
+                return (capabilities & GlyphRendererCapabilityFlags.supportsOutlines) > 0;
             
-            case HaGlyphType.svg:
-                return (capabilities & HaGlyphRendererCapabilityFlags.supportsSVG) > 0;
+            case GlyphType.svg:
+                return (capabilities & GlyphRendererCapabilityFlags.supportsSVG) > 0;
         }
     }
 
@@ -140,7 +140,7 @@ public:
         if (isHorizontal) {
             float lineHeight = max(face.faceMetrics.ascender.x - face.faceMetrics.descender.x, face.faceMetrics.lineGap.y);
             foreach(GlyphIndex idx; run.buffer) {
-                HaGlyphMetrics metrics = face.getMetricsFor(idx);
+                GlyphMetrics metrics = face.getMetricsFor(idx);
                 size.x += metrics.advance.x;
 
                 if (lineHeight > size.y)
@@ -152,7 +152,7 @@ public:
         } else {
             float lineHeight = max(face.faceMetrics.ascender.y - face.faceMetrics.descender.y, face.faceMetrics.lineGap.y);
             foreach(GlyphIndex idx; run.buffer) {
-                HaGlyphMetrics metrics = face.getMetricsFor(idx);
+                GlyphMetrics metrics = face.getMetricsFor(idx);
                 size.y += metrics.advance.y;
 
                 if (lineHeight > size.x)
@@ -183,7 +183,7 @@ public:
         vec2 accumulator = position;
         vec2 bearing;
         vec2 advance;
-        HaGlyph glyph;
+        Glyph glyph;
 
         // Early exit, buffer not shaped.
         if (!run.isShaped())
@@ -225,7 +225,7 @@ public:
         Returns:
             The horizontal and vertical advance of the glyph
     */
-    vec2 render(ref HaGlyph glyph, vec2 position, HaCanvas canvas, bool horizontal = true) {
+    vec2 render(ref Glyph glyph, vec2 position, HaCanvas canvas, bool horizontal = true) {
         vec2 advance = vec2(
             cast(float)glyph.metrics.advance.x,
             cast(float)glyph.metrics.advance.y,

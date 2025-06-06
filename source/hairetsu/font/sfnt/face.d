@@ -25,6 +25,8 @@ import nulib.string;
 import numem;
 import std.regex;
 
+import hairetsu.font.tables.glyf;
+
 
 
 /**
@@ -38,128 +40,93 @@ private:
     //
     //      Outlines
     //
-    bool hasOutline(ref HaGlyph glyph) {
-        SFNTFont sfnt = (cast(SFNTFont)parent);
-        return sfnt.hasGlyfOutline(glyph.index); 
+    bool hasOutline(ref Glyph glyph) {
+        return parent.getGlyphHasOutline(glyph.index); 
     }
 
-    HaGlyphOutline getOutline(ref HaGlyph glyph) {
+    GlyphOutline getOutline(ref Glyph glyph) {
         SFNTFont sfnt = (cast(SFNTFont)parent);
 
-        HaGlyphStoreType types = sfnt.glyphTypes();
-        if (types & HaGlyphStoreType.trueType) {
+        GlyphStoreType types = sfnt.glyphTypes();
+        if (types & GlyphStoreType.trueType) {
             if (sfnt.hasGlyfOutline(glyph.index))
                 return getTTFOutline(glyph);
         }
 
-        return HaGlyphOutline.init;
+        return GlyphOutline.init;
     }
 
     //
     //      TrueType Outlines
     //
 
-    HaGlyphOutline getTTFOutline(ref HaGlyph glyph) {
-        HaGlyphOutline outline;
+    GlyphOutline getTTFOutline(ref Glyph glyph) {
+        GlyphOutline outline;
 
-        TTGlyfTable gtable = (cast(SFNTFont)parent).getGlyfTable(glyph.index);
-        if (gtable.header.numberOfCountours > 0) {
-            float fscale = cast(float)scale;
+        float fscale = cast(float)scale;
+        GlyfRecord record = (cast(SFNTFont)parent).getGlyfRecord(glyph.index);
+        GlyfPoint start;
+        GlyfPoint first;
+        GlyfPoint last;
+        GlyfPoint curr;
+        import std.stdio : printf;
 
-            // Start-end state.
-            bool startOnCurve;
-            ubyte startFlag;
-            vec2 startPen;
-            vec2 firstPen;
-            bool endOnCurve;
-            ubyte endFlag;
-            vec2 endPen;
+        foreach(ref GlyfContour contour; record.contours) {
+            if (contour.points.length == 0)
+                continue;
+            size_t ci = outline.commands.length;
 
-            // Current state.
-            size_t rptr;
-            ubyte lastFlag;
-            ubyte flag;
-            vec2 offset;
-            vec2 lastPen;
-            vec2 pen;
-
-            // Construct font outline.
-            mloop: foreach(ushort endpoint; gtable.simple.endPtsOfContours[]) {
-                bool firstFound = false;
-                size_t lptr = 0;
-                do {
-                    if (rptr >= gtable.simple.contours.length)
-                        break mloop;
-
-                    lastFlag = flag;
-                    lastPen = pen;
-                    offset = gtable.simple.contours[rptr];
-                    flag = gtable.simple.flags[rptr];
-
-                    // Figure out pen positions.
-                    pen.x = lastPen.x + (offset.x * fscale);
-                    pen.y = lastPen.y - (offset.y * fscale);
-
-                    bool onCurve = (flag & ON_CURVE_POINT);
-
-                    // Handle first position.
-                    if (lptr == 0) {
-                        outline.moveTo(pen);
-                        startOnCurve = onCurve;
-                        startFlag = flag;
-                        startPen = pen;
-
-                        if (onCurve) {
-                            firstPen = pen;
-                            firstFound = true;
-                        }
-
-                        lastFlag = flag;
-                        lastPen = pen;
-                        
-                        endPen = pen;
-                        endFlag = flag;
-                        endOnCurve = (endFlag & ON_CURVE_POINT);
-                        lptr++;
-                        rptr++;
-                        continue;
-                    }
-
-                    if (!firstFound) {
-                        firstPen = pen;
-                        firstFound = true;
-                    }
-                    
-                    // Handle some of the intricacies of the quadratic curves by
-                    // shifting them a bit with a lerp.
-                    vec2 pen2 = onCurve ? 
-                        pen : 
-                        lastPen.midpoint(pen);
-
-                    if (endOnCurve && onCurve) {
-                        outline.lineTo(pen2);
-                    } else if (!endOnCurve || onCurve) {
-                        outline.quadTo(lastPen, pen2);
-                    }
-
-                    lptr++; 
-                    rptr++;
-                    endPen = pen;
-                    endFlag = flag;
-                    endOnCurve = (endFlag & ON_CURVE_POINT);
-                } while(rptr <= endpoint);
-
-                if (startOnCurve ^ endOnCurve) {
-                    vec2 pen2 = firstPen;
-                    vec2 ctrl = endOnCurve ? startPen : endPen;
-                    outline.quadTo(ctrl, pen2);
-                } else if (!startOnCurve && !endOnCurve) {
-                    vec2 ctrl = lerp(pen, startPen, 0.5);
-                    outline.quadTo(ctrl, startPen);
+            foreach(i; 0..contour.points.length) {
+                last = curr;
+                curr = contour.points[i];
+                
+                // Calculate absolute point
+                curr.point.x = last.point.x + (curr.point.x * fscale);
+                curr.point.y = last.point.y - (curr.point.y * fscale);
+                
+                if (i == 0) {
+                    start = curr;
+                    outline.moveTo(start.point);
+                    continue;
                 }
 
-                outline.closePath();
+                // First dst.
+                if (i == 1) {
+                    first = curr;
+                }
+
+                if (last.onCurve && curr.onCurve) {
+                    outline.lineTo(curr.point);
+                } else if (!last.onCurve || curr.onCurve) {
+
+                    // Target point for quad spline.
+                    vec2 tgt = curr.onCurve ?
+                        curr.point :
+                        last.point.midpoint(curr.point);
+
+                    outline.quadTo(last.point, tgt);
+                }
             }
+
+            if (start.onCurve ^ curr.onCurve) {
+
+                // Target point for quad spline.
+                vec2 tgt = curr.onCurve ?
+                    start.point :
+                    curr.point.midpoint(start.point);
+
+                outline.quadTo(curr.point, tgt);
+            } else if (!start.onCurve && !curr.onCurve) {
+
+                // Target-to-first
+                vec2 p1 = curr.point.midpoint(start.point);
+                vec2 p2 = start.point.midpoint(first.point);
+
+                outline.quadTo(curr.point, p1);
+                outline.quadTo(start.point, p2);
+            }
+
+            outline.closePath();
         }
         return outline;
     }
@@ -175,7 +142,7 @@ protected:
         Implemented by a font face to load a glyph.
     */
     override
-    void onRenderGlyph(FontReader reader, ref HaGlyph glyph) {
+    void onRenderGlyph(FontReader reader, ref Glyph glyph) {
         glyph.setOutline(glyph.index, this.getOutline(glyph));
     }
     
