@@ -361,7 +361,7 @@ uint ha_font_find_glyph(ha_font_t* obj, uint codepoint) {
     Returns:
         The base metrics of the given glyph.
 */
-HaGlyphMetrics ha_font_glyph_metrics_for(ha_font_t* obj, uint glyphId) {
+GlyphMetrics ha_font_glyph_metrics_for(ha_font_t* obj, uint glyphId) {
     return (cast(Font)obj).getMetricsFor(glyphId);
 }
 

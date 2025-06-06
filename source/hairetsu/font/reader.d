@@ -199,6 +199,8 @@ public:
             return T.init.deserialize(reader);
         else static if (__traits(isScalar, T))
             return reader.readBE!T;
+        else static if (__traits(isUnsigned, T))
+            return reader.readBE!T;
         else static if(isFixed!T)
             return T.fromData(reader.readBE!(typeof(T.data)));
         else static if (__traits(isStaticArray, T)) {
@@ -217,6 +219,8 @@ public:
         static if (is(typeof((T rt) { rt.deserialize(reader); })))
             return T.init.deserialize(reader);
         else static if (__traits(isScalar, T))
+            return reader.readLE!T;
+        else static if (__traits(isUnsigned, T))
             return reader.readLE!T;
         else static if(isFixed!T)
             return T.fromData(reader.readLE!(typeof(T.data)));
