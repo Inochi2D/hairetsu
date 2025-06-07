@@ -11,7 +11,6 @@
 module hairetsu.font.tt.face;
 import hairetsu.font.sfnt.face;
 import hairetsu.font.tt.font;
-import hairetsu.font.tt.types;
 import hairetsu.font.reader;
 import hairetsu.font.font;
 import hairetsu.font.face;

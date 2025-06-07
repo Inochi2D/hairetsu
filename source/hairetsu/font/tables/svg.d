@@ -8,7 +8,7 @@
     License:   $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
     Authors:   Luna Nielsen
 
-    Standards: https://learn.microsoft.com/en-us/typography/opentype/spec/hhea
+    Standards: https://learn.microsoft.com/en-us/typography/opentype/spec/svg
 */
 module hairetsu.font.tables.svg;
 import hairetsu.font.tables.common;

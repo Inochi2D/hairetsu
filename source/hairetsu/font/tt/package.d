@@ -9,6 +9,4 @@
     Authors:   Luna Nielsen
 */
 module hairetsu.font.tt;
-
 public import hairetsu.font.tt.font;
-public import hairetsu.font.tt.types;
