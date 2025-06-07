@@ -23,6 +23,13 @@ public:
     SVGDocumentRecord[] svgDocuments;
 
     /**
+        Whether the glyph at the given offset has an outline.
+    */
+    bool hasGlyph(uint glyphId) {
+        return this.findGlyph(glyphId).isValid;
+    }
+
+    /**
         Finds a glyph within the document records.
 
         Params:

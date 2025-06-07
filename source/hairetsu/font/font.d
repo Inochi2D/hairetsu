@@ -10,31 +10,13 @@
 */
 module hairetsu.font.font;
 import hairetsu.font.reader;
-import hairetsu.font.cmap;
-import hairetsu.font.face;
-import hairetsu.glyph;
+import hairetsu.font;
 import nulib.text.unicode;
 import nulib.collections;
 import nulib.string;
 import numem;
 
 import hairetsu.common;
-
-/**
-    Types of glyphs stored within the font.
-*/
-enum GlyphStoreType {
-    trueType = 0x01,
-    CFF      = 0x02,
-    CFF2     = 0x04,
-    SVG      = 0x08,
-    bitmap   = 0x10,
-}
-
-/**
-    Mask for all glyph types.
-*/
-enum uint HA_GLYPH_TYPE_MASK_ALL = (GlyphStoreType.max*2)-1;
 
 /**
     A Font Object
@@ -102,14 +84,7 @@ public:
     /**
         The types of glyphs are supported by the font.
     */
-    abstract @property GlyphStoreType glyphTypes();
-
-    /**
-        A string describing which types of glyphs are supported
-        by the font.
-    */
-    final
-    @property string glyphTypeNames() { return __ha_glyph_type_names[glyphTypes]; }
+    abstract @property GlyphType glyphTypes();
 
     /**
         List of features the font uses.
@@ -139,13 +114,26 @@ public:
     /**
         The bounding box of the font.
     */
-    abstract @property HaRect!int boundingBox();
+    abstract @property recti boundingBox();
 
     /**
-        Gets the vertical metrics for the given glyph.
+        Gets the given glyph.
 
         Params:
-            glyph =     Index of the glyph to get the metrics for.
+            glyph = ID of the glyph to get.
+            type = Optional type of data to fetch for the glyph.
+
+        Returns:
+            A glyph, or the `.notdef` glyph if no glyph
+            with the given ID was found.
+    */
+    abstract Glyph getGlyph(GlyphIndex glyph, GlyphType type = GlyphType.none);
+
+    /**
+        Gets the metrics for the given glyph.
+
+        Params:
+            glyph = Index of the glyph to get the metrics for.
 
         Returns:
             The metrics for the glyph in **font units**.
@@ -174,7 +162,7 @@ public:
     */
     final
     bool getGlyphHasOutline(GlyphIndex glyph) {
-        return (getGlyphType(glyph) & GlyphType.outline) == GlyphType.outline;
+        return (this.getGlyphType(glyph) & GlyphType.outline) != GlyphType.none;
     }
 
     /**
@@ -233,37 +221,4 @@ struct FontMetrics {
         The global max advances for glyphs.
     */
     vec2 maxAdvance;
-}
-
-
-
-// LUT containing the different outline type names.
-private __gshared const string[HA_GLYPH_TYPE_MASK_ALL] __ha_glyph_type_names = genOutlineTypeNames!();
-private template genOutlineTypeNames() {
-    string genGlyphMaskName(uint offset) {
-        import std.array : join;
-        string[] elements;
-        if (offset & GlyphStoreType.trueType)
-            elements ~= "TrueType";
-        if (offset & GlyphStoreType.CFF)
-            elements ~= "CFF";
-        if (offset & GlyphStoreType.CFF2)
-            elements ~= "CFF2";
-        if (offset & GlyphStoreType.SVG)
-            elements ~= "SVG";
-        if (offset & GlyphStoreType.bitmap)
-            elements ~= "Bitmap";
-        
-        return "["~elements.join(", ")~"]";
-    }
-
-    string[HA_GLYPH_TYPE_MASK_ALL] genOutlineTypeNamesImpl() {
-        string[HA_GLYPH_TYPE_MASK_ALL] strings;
-        static foreach(i; 0..HA_GLYPH_TYPE_MASK_ALL) {
-            strings[i] = genGlyphMaskName(i);
-        }
-        return strings;
-    }
-
-    enum string[HA_GLYPH_TYPE_MASK_ALL] genOutlineTypeNames = genOutlineTypeNamesImpl();
 }

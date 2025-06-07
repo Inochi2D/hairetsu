@@ -9,12 +9,9 @@
     Authors:   Luna Nielsen
 */
 module hairetsu.font.tt.face;
-import hairetsu.font.sfnt.face;
 import hairetsu.font.tt.font;
-import hairetsu.font.reader;
-import hairetsu.font.font;
-import hairetsu.font.face;
-import hairetsu.glyph;
+import hairetsu.font.sfnt;
+import hairetsu.font;
 import nulib.text.unicode;
 import nulib.collections;
 import nulib.string;

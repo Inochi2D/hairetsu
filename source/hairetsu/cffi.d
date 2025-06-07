@@ -19,7 +19,7 @@ import hairetsu.font.file;
 import hairetsu.font.font;
 import hairetsu.font.face;
 import hairetsu.font.cmap;
-import hairetsu.glyph;
+import hairetsu.font.glyph;
 
 // Extern deps used internally.
 import nulib.string;

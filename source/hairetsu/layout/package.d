@@ -10,7 +10,6 @@
 */
 module hairetsu.layout;
 import hairetsu.font.face;
-import hairetsu.glyph;
 import hairetsu.common;
 
 import numem;

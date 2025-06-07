@@ -10,14 +10,15 @@
 */
 module hairetsu.render.builtin;
 import hairetsu.render;
-import hairetsu.font.face;
 import hairetsu.shaper;
-import hairetsu.glyph;
+import hairetsu.font.glyph;
+import hairetsu.font.face;
+import hairetsu.common;
+
 import nulib.io.stream;
 import nulib.collections.vector;
 import numem;
 
-import hairetsu.common;
 
 /**
     The built-in Hairetsu renderer.
@@ -33,51 +34,38 @@ protected:
     */
     override
     void blit(ref Glyph glyph, vec2 offset, HaCanvas canvas, bool horizontal) {
-        final switch(glyph.type) {
-            case GlyphType.outline:
-                GlyphBitmap bitmap = glyph.rasterize(antialiased);
+        HaBitmap bitmap = glyph.rasterize(antialiased);
 
-                if (horizontal) {
-                    offset.y -= glyph.metrics.bounds.height + glyph.metrics.bounds.yMin;
-                    offset.x -= 2;
-                } else {
-                    offset.y -= 2;
-                    offset.x -= glyph.metrics.bounds.width/2;
-                }
+        if (horizontal) {
+            offset.y -= glyph.metrics.bounds.height + glyph.metrics.bounds.yMin;
+            offset.x -= 2;
+        } else {
+            offset.y -= 2;
+            offset.x -= glyph.metrics.bounds.width/2;
+        }
 
-                // Outlines are always monochrome, so just apply it to all of the channels.
-                foreach(y; 0..bitmap.height) {
+        // Outlines are always monochrome, so just apply it to all of the channels.
+        foreach(y; 0..bitmap.height) {
 
-                    int ty = (cast(int)offset.y+cast(int)y);
-                    if (ty < 0)
-                        continue;
-                    
-                    if (ty >= canvas.height)
-                        continue;
+            int ty = (cast(int)offset.y+cast(int)y);
+            if (ty < 0)
+                continue;
+            
+            if (ty >= canvas.height)
+                continue;
 
-                    ubyte[] source = cast(ubyte[])bitmap.scanline(y);
-                    ubyte[] target = cast(ubyte[])canvas.scanline(ty);
-                    foreach(x; 0..bitmap.width) {
-                        int tx = (cast(int)offset.x+cast(int)x)*cast(int)canvas.channels;
-                        if (tx < 0)
-                            continue;
-                        
-                        if (tx >= target.length)
-                            continue;
+            ubyte[] source = cast(ubyte[])bitmap.scanline(y);
+            ubyte[] target = cast(ubyte[])canvas.scanline(ty);
+            foreach(x; 0..bitmap.width) {
+                int tx = (cast(int)offset.x+cast(int)x)*cast(int)canvas.channels;
+                if (tx < 0)
+                    continue;
+                
+                if (tx >= target.length)
+                    continue;
 
-                        target[tx..tx+canvas.channels] += source[x];
-                    }
-                }
-
-                return;
-
-            case GlyphType.bitmap:
-                // TODO: Bitmaps require a bit more smarts.
-                return;
-
-            case GlyphType.svg:
-            case GlyphType.none:
-                return;
+                target[tx..tx+canvas.channels] += source[x];
+            }
         }
     }
 
