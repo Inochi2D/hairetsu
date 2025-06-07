@@ -13,7 +13,6 @@ import hairetsu.font.tables;
 import hairetsu.font.sfnt.reader;
 import hairetsu.font.sfnt.font;
 import hairetsu.font.tt.cmap;
-import hairetsu.font.tt.types;
 import hairetsu.font.types;
 import hairetsu.font.font;
 import hairetsu.font.face;
