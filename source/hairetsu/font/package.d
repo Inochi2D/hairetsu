@@ -13,6 +13,9 @@ module hairetsu.font;
 public import hairetsu.font.file;
 public import hairetsu.font.font;
 public import hairetsu.font.face;
+public import hairetsu.font.cmap;
+public import hairetsu.font.glyph;
+public import hairetsu.font.tables;
 public import hairetsu.font.types;
 
 

@@ -10,8 +10,8 @@
 */
 module hairetsu.render;
 import hairetsu.font.face;
+import hairetsu.font.glyph;
 import hairetsu.shaper;
-import hairetsu.glyph;
 import nulib.io.stream;
 import numem;
 
@@ -89,19 +89,7 @@ public:
     */
     final
     bool canRender(ref Glyph glyph) {
-        final switch(glyph.type) {
-            case GlyphType.none:
-                return false;
-            
-            case GlyphType.bitmap:
-                return (capabilities & GlyphRendererCapabilityFlags.supportsBitmaps) > 0;
-            
-            case GlyphType.outline:
-                return (capabilities & GlyphRendererCapabilityFlags.supportsOutlines) > 0;
-            
-            case GlyphType.svg:
-                return (capabilities & GlyphRendererCapabilityFlags.supportsSVG) > 0;
-        }
+        return glyph.canRasterize;
     }
 
     /**

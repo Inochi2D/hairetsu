@@ -2,7 +2,6 @@
     Hairetsu Rasterization framework
 */
 module hairetsu.raster;
-import hairetsu.glyph.outline;
 import hairetsu.common;
 import numem;
 
@@ -38,14 +37,9 @@ public:
     }
 
     /**
-        Draws a polygonized outline to the rasterizer's buffer.
-    */
-    abstract void draw(ref HaPolyOutline outline, vec2 offset);
-
-    /**
         Draws an outline to the rasterizer's buffer.
     */
-    abstract void draw(ref GlyphOutline outline, vec2 offset);
+    abstract void draw(ref Path outline, vec2 offset);
 
     /**
         Clears the rasterizer's buffer.

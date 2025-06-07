@@ -38,6 +38,25 @@ alias GlyphIndex = uint;
 enum GlyphIndex GLYPH_MISSING = 0x0u;
 
 /**
+    Allocates an array
+*/
+T[] ha_allocarr(T)(size_t size) @nogc {
+    import numem : nogc_initialize;
+
+    T[] buffer;
+    buffer = buffer.nu_resize(size);
+    nogc_initialize(buffer[0..$]);
+    return buffer;
+}
+
+/**
+    Frees an array
+*/
+void ha_freearr(T)(ref T[] arr) @nogc {
+    arr = arr.nu_resize(0);
+}
+
+/**
     A bitmap containing pixel data.
 */
 struct HaBitmap {
@@ -57,39 +76,39 @@ struct HaBitmap {
         Amount of channels in the bitmap
     */
     uint channels;
+
+    /**
+        Bytes-per-channel.
+    */
+    ubyte bpc = 1;
     
     /**
-        Slice into the bitmap
+        Raw view into the bitmap.
     */
     ubyte[] data;
-
-    /*
-        Destructor
-    */
-    ~this() {
-        this.data = data.nu_resize(0);
-    }
-
-    /**
-        Postblit
-    */
-    this(this) {
-        width = width;
-        height = height;
-        channels = channels;
-        data = data.nu_dup();
-    }
 
     /**
         Constructor
     */
-    this(uint width, uint height, uint channels) {
+    this(uint width, uint height, uint channels, ubyte bpc = 1) {
         this.width = width;
         this.height = height;
         this.channels = channels;
 
-        this.data = data.nu_resize(width*height*channels);
+        // Handle bytes-per-pixel w/ clamping.
+        if (bpc == 3) bpc = 4;
+        else bpc = cast(ubyte)clamp(bpc, 1, 4);
+        this.bpc = bpc;
+
+        this.data = ha_allocarr!ubyte(width*height*channels*bpc);
         this.clear();
+    }
+    
+    /**
+        Frees the data associated with the bitmap.
+    */
+    void free() {
+        ha_freearr(data);
     }
 
     /**
@@ -100,14 +119,62 @@ struct HaBitmap {
     }
 
     /**
+        Resizes the allocation of the buffer.
+
+        Note:
+            This will clear the bitmap of its contents.
+
+        Params:
+            width = new width
+            height = new height
+    */
+    void resize(uint width, uint height) {
+        size_t newSize = width*height*channels*bpc;
+        if (newSize < data.length) {
+            this.data = data[0..newSize];
+            this.width = width;
+            this.height = height;
+            this.clear();
+            return;
+        }
+
+        if (newSize > data.length) {
+            this.data = data.nu_resize(newSize);
+            this.width = width;
+            this.height = height;
+            this.clear();
+            return;
+        }
+    }
+
+    /**
         Gets a scanline from the bitmap
+
+        Params:
+            y = The scanline to fetch.
+
+        Returns:
+            A slice of the scanline.
     */
     void[] scanline(uint y) {
         if (y >= height)
             return null;
 
-        uint stride = (width*channels);
+        uint stride = (width*channels*bpc);
         uint line = y*stride;
         return cast(void[])data[line..line+stride];
+    }
+
+    /**
+        Clones the bitmap.
+
+        Returns:
+            A new bitmap with the contents of this bitmap
+            copied over.
+    */
+    HaBitmap clone() {
+        HaBitmap newbmp = HaBitmap(width, height, channels, bpc);
+        newbmp.data[0..$] = this.data[0..$];
+        return newbmp;
     }
 }

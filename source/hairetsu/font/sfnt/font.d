@@ -9,15 +9,8 @@
     Authors:   Luna Nielsen
 */
 module hairetsu.font.sfnt.font;
-import hairetsu.font.tables;
-import hairetsu.font.sfnt.reader;
-import hairetsu.font.sfnt.font;
-import hairetsu.font.tt.cmap;
-import hairetsu.font.types;
-import hairetsu.font.font;
-import hairetsu.font.face;
-import hairetsu.font.cmap;
-import hairetsu.glyph;
+import hairetsu.font.sfnt;
+import hairetsu.font;
 import hairetsu.common;
 
 import nulib.collections;
@@ -28,6 +21,7 @@ import hairetsu.font.tables.name;
 import hairetsu.font.tables.maxp;
 import hairetsu.font.tables.head;
 import hairetsu.font.tables.glyf;
+import hairetsu.font.tables.svg;
 import hairetsu.font.tables.os2;
 
 /**
@@ -51,11 +45,12 @@ private:
     OS2Table os2;
 
     // Font Info
-    GlyphStoreType gtypes;
-    TTCharMap charmap;
+    GlyphType gtypes;
+    SFNTCharMap charmap;
 
     // Glyphs
     GlyfTable glyf;
+    SVGTable svg;
 
     // Metrics
     vector!GlyphMetrics gmetrics;
@@ -92,7 +87,7 @@ private:
     }
 
     void parseCmapTable(SFNTReader reader) {
-        this.charmap = nogc_new!TTCharMap();
+        this.charmap = nogc_new!SFNTCharMap();
 
         if (auto table = entry.findTable(ISO15924!("cmap"))) {
             reader.seek(table.offset);
@@ -172,38 +167,39 @@ private:
     //
     void detectOutlines() {
         if (auto table = entry.findTable(ISO15924!("glyf"))) {
-            this.gtypes |= GlyphStoreType.trueType;
+            this.gtypes |= GlyphType.trueType;
             this.parseGlyfTable(reader);
         }
         
         if (auto table = entry.findTable(ISO15924!("CFF "))) {
-            this.gtypes |= GlyphStoreType.CFF;
+            this.gtypes |= GlyphType.cff;
         }
         
         if (auto table = entry.findTable(ISO15924!("CFF2"))) {
-            this.gtypes |= GlyphStoreType.CFF2;
+            this.gtypes |= GlyphType.cff2;
         }
         
         if (auto table = entry.findTable(ISO15924!("SVG"))) {
-            this.gtypes |= GlyphStoreType.SVG;
+            this.gtypes |= GlyphType.svg;
+            this.parseSVGTable(reader);
         }
         
         if (auto table = entry.findTable(ISO15924!("sbix"))) {
-            this.gtypes |= GlyphStoreType.bitmap;
+            this.gtypes |= GlyphType.sbix;
         }
         
         if (auto table = entry.findTable(ISO15924!("EBDT"))) {
-            this.gtypes |= GlyphStoreType.bitmap;
+            this.gtypes |= GlyphType.ebdt;
         }
         
         if (auto table = entry.findTable(ISO15924!("CBDT"))) {
-            this.gtypes |= GlyphStoreType.bitmap;
+            this.gtypes |= GlyphType.cbdt;
         }
     }
     
 
     //
-    //      TrueType Outlines
+    //      Glyphs
     //
 
     void parseGlyfTable(SFNTReader reader) {
@@ -224,6 +220,12 @@ private:
 
             // Free loca table after we're done.
             loca.free();
+        }
+    }
+
+    void parseSVGTable(SFNTReader reader) {
+        if (auto table = entry.findTable(ISO15924!("SVG "))) {
+            this.svg = reader.readRecord!SVGTable();
         }
     }
 
@@ -272,6 +274,72 @@ protected:
     final
     string getName(ushort nameIdx) {
         return names.findName(nameIdx);
+    }
+
+    //
+    //      Glyf
+    //
+
+    /**
+        Gets whether the given index has a glyf outline.
+
+        Params:
+            index = The glyph to query.
+        
+        Returns:
+            $(D true) if the glyph has a glyf outline,
+            $(D false) otherwise.
+    */
+    final
+    bool hasGlyfOutline(GlyphIndex index) {
+        return glyf.hasGlyph(index);
+    }
+
+    /**
+        Gets the glyf record for the given index.
+
+        Params:
+            glyphId = The glyph to query.
+        
+        Returns:
+            A glyf record reference or $(D null).
+    */
+    final
+    GlyfRecord* getGlyfRecord(GlyphIndex glyphId) {
+        return glyf.findGlyf(glyphId);
+    }
+
+    //
+    //      SVG
+    //
+
+    /**
+        Gets whether the given index has an SVG document.
+
+        Params:
+            index = The glyph to query.
+        
+        Returns:
+            $(D true) if the glyph has an SVG document,
+            $(D false) otherwise.
+    */
+    final
+    bool hasSVG(GlyphIndex index) {
+        return svg.hasGlyph(index);
+    }
+
+    /**
+        Gets the SVG document for the given glyph index.
+
+        Params:
+            index = The glyph to query.
+        
+        Returns:
+            A UTF8 encoded SVG document, or $(D null).
+    */
+    final
+    string getSVG(GlyphIndex index) {
+        return svg.getDocument(index);
     }
 
 public:
@@ -334,7 +402,7 @@ public:
         This is represented as a bit flag.
     */
     override
-    @property GlyphStoreType glyphTypes() { return gtypes; }
+    @property GlyphType glyphTypes() { return gtypes; }
 
     /**
         List of features the font uses.
@@ -376,12 +444,12 @@ public:
         The bounding box of the font.
     */
     override
-    @property HaRect!int boundingBox() {
-        return HaRect!int(head.xMin, head.xMax, head.yMin, head.yMax);
+    @property recti boundingBox() {
+        return recti(head.xMin, head.xMax, head.yMin, head.yMax);
     }
 
     /**
-        Gets the vertical metrics for the given glyph.
+        Gets the metrics for the given glyph.
     */
     override
     GlyphMetrics getMetricsFor(GlyphIndex glyph) {
@@ -393,6 +461,57 @@ public:
             return gmetrics[0];
         
         return gmetrics[glyph];
+    }
+
+    /**
+        Gets the given glyph.
+
+        Params:
+            glyphId = ID of the glyph to get.
+            type = The type of glyph data to fetch.
+
+        Returns:
+            A glyph, or the `.notdef` glyph if no glyph
+            with the given ID was found.
+    */
+    override
+    Glyph getGlyph(GlyphIndex glyphId, GlyphType type) {
+        Glyph glyph;
+
+        glyph.id = glyphId;
+        glyph.metrics = this.getMetricsFor(glyphId);
+        switch(type) {
+
+            // TTF Glyf Outlines.
+            case GlyphType.trueType:
+                if (auto record = this.getGlyfRecord(glyphId)) {
+                    glyph.data.argHandles = [
+                        cast(void*)record,
+                        null,
+                        null,
+                        null
+                    ];
+                    glyph.data.drawFunc = &__ha_glyf_draw_function;
+                }
+                break;
+
+            // SVG
+            case GlyphType.svg:
+                if (auto record = this.getSVG(glyphId)) {
+                    glyph.data.argHandles = [
+                        cast(void*)record.ptr,
+                        cast(void*)record.length,
+                        null,
+                        null
+                    ];
+                }
+                break;
+            
+            default:
+                break;
+        }
+
+        return glyph;
     }
 
     /**
@@ -409,33 +528,14 @@ public:
         GlyphType gtype;
 
         // Glyf (TTF)
-        if (glyf.hasOutline(glyph))
-            gtype |= GlyphType.outline;
+        if (glyf.hasGlyph(glyph))
+            gtype |= GlyphType.trueType;
+
+        // Glyf (TTF)
+        if (svg.hasGlyph(glyph))
+            gtype |= GlyphType.svg;
 
         return gtype;
-    }
-
-    //
-    //      Glyf
-    //
-
-    /**
-        Gets whether the given index has a glyf outline.
-    */
-    final
-    bool hasGlyfOutline(GlyphIndex index) {
-        return glyf.hasOutline(index);
-    }
-
-    /**
-        Gets the glyf record for the given index.
-    */
-    final
-    GlyfRecord getGlyfRecord(GlyphIndex index) {
-        return 
-            index < glyf.glyphs.length ? 
-            glyf.glyphs[index] : 
-            GlyfRecord.init;
     }
 }
 

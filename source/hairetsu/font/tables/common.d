@@ -22,25 +22,6 @@ public import numem : nu_resize;
 alias Tag = uint;
 
 /**
-    Allocates an array
-*/
-T[] ha_allocarr(T)(size_t size) @nogc {
-    import numem : nogc_initialize;
-
-    T[] buffer;
-    buffer = buffer.nu_resize(size);
-    nogc_initialize(buffer[0..$]);
-    return buffer;
-}
-
-/**
-    Frees an array
-*/
-void ha_freearr(T)(ref T[] arr) @nogc {
-    arr = arr.nu_resize(0);
-}
-
-/**
     Hmtx/Vmtx Metrics record
 */
 struct MtxRecord {

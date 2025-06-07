@@ -10,11 +10,8 @@
 */
 module hairetsu.font.tt.font;
 import hairetsu.font.tt.face;
-import hairetsu.font.sfnt.reader;
-import hairetsu.font.sfnt.font;
-import hairetsu.font.font;
-import hairetsu.font.face;
-import hairetsu.glyph;
+import hairetsu.font.sfnt;
+import hairetsu.font;
 import nulib.collections;
 import numem;
 

@@ -12,4 +12,7 @@ module hairetsu.font.sfnt;
 
 public import hairetsu.font.sfnt.file;
 public import hairetsu.font.sfnt.font;
+public import hairetsu.font.sfnt.face;
+public import hairetsu.font.sfnt.cmap;
+public import hairetsu.font.sfnt.reader;
 public import hairetsu.font.sfnt.types;

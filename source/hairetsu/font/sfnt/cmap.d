@@ -8,21 +8,23 @@
     License:   $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
     Authors:   Luna Nielsen
 */
-module hairetsu.font.tt.cmap;
-import hairetsu.font.sfnt.reader;
-import hairetsu.font.cmap;
+module hairetsu.font.sfnt.cmap;
+import hairetsu.font.sfnt;
+import hairetsu.font;
 import nulib.collections;
 import nulib.text.unicode;
 import hairetsu.common;
 import numem;
 
+import hairetsu.font.tables.cmap;
+
 /**
-    A TrueType character map
+    A SFNT character map
 */
-class TTCharMap : CharMap {
+class SFNTCharMap : CharMap {
 private:
 @nogc:
-    TTCmapTable cmapTable;
+    CmapTable cmapTable;
     vector!HaCharRange charRanges;
 
 public:
@@ -88,7 +90,7 @@ public:
         //          it may end up being very slow.
         //          This should be optimized by caching ranges and the
         //          best table indices that have a certain char range.
-        foreach(TTCmapSubTable table; cmapTable.tables) {
+        foreach(CmapSubTable table; cmapTable.subtables) {
             switch(table.format) {
                 case 0:
                     if (code >= 256) 
@@ -156,9 +158,9 @@ public:
         Parses CMAP table.
     */
     void parseCmapTable(SFNTReader reader) {
-        this.cmapTable = reader.readRecord!TTCmapTable();
+        this.cmapTable = reader.readRecord!CmapTable();
 
-        foreach(TTCmapSubTable table; cmapTable.tables) {
+        foreach(CmapSubTable table; cmapTable.subtables) {
             switch(table.format) {
                 case 0:
                     charRanges ~= HaCharRange(0, 255);
@@ -193,172 +195,6 @@ public:
                 default:
                     break;    
             }
-        }
-    }
-}
-
-/**
-    CMap Table
-*/
-struct TTCmapTable {
-@nogc:
-    ushort tableVersion;
-    vector!TTCmapEncodingRecord records;
-    vector!TTCmapSubTable tables;
-
-    void deserialize(SFNTReader reader) {
-        size_t baseOffset = reader.tell();
-
-        this.tableVersion = reader.readElementBE!ushort();
-        
-        ushort tableCount = reader.readElementBE!ushort();
-        records = reader.readRecords!TTCmapEncodingRecord(tableCount);
-
-        foreach(ref TTCmapEncodingRecord record; records) {        
-            reader.seek(baseOffset+record.subtableOffset);
-            tables ~= reader.readRecord!TTCmapSubTable();
-        }
-    }
-}
-
-/**
-    CMap Encoding Record
-*/
-struct TTCmapEncodingRecord {
-@nogc:
-    ushort platformId;
-    ushort encodingId;
-    uint subtableOffset;
-}
-
-/**
-    The subtable
-*/
-struct TTCmapSubTable {
-@nogc:
-
-    // NOTE:    This one is simple enough to be decoded
-    //          automatically.
-    struct Format0 {
-    @nogc:
-        ushort length;
-        ushort language;
-        ubyte[255] glyphIdArray;
-    }
-
-    struct Format4 {
-    @nogc:
-        ushort length;
-        ushort language;
-        ushort segCountX2;
-        ushort searchRange;
-        ushort entrySelector;
-        ushort rangeShift;
-        vector!ushort endCode;
-        vector!ushort startCode;
-        vector!short idDelta;
-        vector!ushort idRangeOffset;
-        vector!ushort glyphIdArray;
-
-        void deserialize(SFNTReader reader) {
-            length = reader.readElementBE!ushort();
-            language = reader.readElementBE!ushort();
-            segCountX2 = reader.readElementBE!ushort();
-            searchRange = reader.readElementBE!ushort();
-            entrySelector = reader.readElementBE!ushort();
-            rangeShift = reader.readElementBE!ushort();
-
-            ushort segCount = segCountX2/2;
-            size_t glyphIdArrayLength = 
-                length - (
-                    14 // length..rangeShift + reservedPad
-                    + segCountX2  // endCode..idRangeOffset
-            ) / 2;
-
-            // Prepare arrays
-            endCode.resize(segCount);
-            startCode.resize(segCount);
-            idDelta.resize(segCount);
-            idRangeOffset.resize(segCount);
-            glyphIdArray.resize(glyphIdArrayLength);
-
-            reader.readElementsBE(endCode);
-            reader.skip(2); // reservedPad
-            reader.readElementsBE(startCode);
-            reader.readElementsBE(idDelta);
-            reader.readElementsBE(idRangeOffset);
-            reader.readElementsBE(glyphIdArray);            
-        }
-    }
-
-    struct Format6 {
-    @nogc:
-        ushort length;
-        ushort language;
-        ushort firstCode;
-        vector!ushort glyphIdArray;
-
-        void deserialize(SFNTReader reader) {
-            length = reader.readElementBE!ushort();
-            language = reader.readElementBE!ushort();
-            firstCode = reader.readElementBE!ushort();
-
-            glyphIdArray.resize(reader.readElementBE!ushort());
-            reader.readElementsBE(glyphIdArray);
-        }
-    }
-
-    struct Format12 {
-    @nogc:
-        struct SequentialMapGroup {
-            uint startCharCode;
-            uint endCharCode;
-            uint startGlyphId;
-        }
-
-        uint length;
-        uint language;
-        vector!SequentialMapGroup groups;
-
-        void deserialize(SFNTReader reader) {
-            reader.skip(2); // reserved
-            length = reader.readElementBE!uint();
-            language = reader.readElementBE!uint();
-            groups = reader.readRecords!SequentialMapGroup(reader.readElementBE!uint());
-        }
-    }
-
-    // Entries
-    ushort format;
-    union {
-        Format0 format0;
-        Format4 format4;
-        Format6 format6;
-        Format12 format12;
-    }
-
-    void deserialize(SFNTReader reader) {
-        format = reader.readElementBE!ushort();
-
-        switch(format) {
-            case 0:
-                format0 = reader.readRecord!Format0();
-                break;
-
-            case 4:
-                format4 = reader.readRecord!Format4();
-                break;
-
-            case 6:
-                format6 = reader.readRecord!Format6();
-                break;
-
-            case 12:
-                format12 = reader.readRecord!Format12();
-                break;
-
-            default:
-                break;    
         }
     }
 }

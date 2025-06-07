@@ -12,7 +12,7 @@ module hairetsu.font.face;
 import hairetsu.font.reader;
 import hairetsu.font.font;
 import hairetsu.font.cmap;
-import hairetsu.glyph;
+import hairetsu.font.glyph;
 import nulib.text.unicode;
 import nulib.collections;
 import nulib.string;
@@ -59,53 +59,31 @@ private:
     FontFace fallback_;
 
     // Internal Glyph information.
-    Glyph glyph_;
     float pt_     = 18;
     float dpi_    = 96;
     float ppem_;
     float scaleFactor_;
     bool wantHinting_;
 
-    void updateGlyph(bool rerender = true) {
-        ppem_ = pt_ * dpi_ / BASE_TYPOGRAPHIC_DPI;
-        scaleFactor_ = cast(float)(ppem_ / upem);
-        
-        // Reload and scale metrics.
-        glyph_.metrics = parent.getMetricsFor(glyph_.index);
-        fmetrics_ = parent.fontMetrics();
+    void updateState() {
 
-        // Scale font metrics to pixel grid
-        fmetrics_.ascender.x *= scaleFactor_;
-        fmetrics_.ascender.y *= scaleFactor_;
-        fmetrics_.descender.x *= scaleFactor_;
-        fmetrics_.descender.y *= scaleFactor_;
-        fmetrics_.lineGap.x *= scaleFactor_;
-        fmetrics_.lineGap.y *= scaleFactor_;
-        fmetrics_.maxExtent.x *= scaleFactor_;
-        fmetrics_.maxExtent.y *= scaleFactor_;
-        fmetrics_.maxAdvance.x *= scaleFactor_;
-        fmetrics_.maxAdvance.y *= scaleFactor_;
-
-        // Scale to pixel grid
-        glyph_.metrics.bounds.xMin *= scaleFactor_;
-        glyph_.metrics.bounds.yMin *= scaleFactor_;
-        glyph_.metrics.bounds.xMax *= scaleFactor_;
-        glyph_.metrics.bounds.yMax *= scaleFactor_;
-        glyph_.metrics.advance.x *= scaleFactor_;
-        glyph_.metrics.advance.y *= scaleFactor_;
-        glyph_.metrics.bearing.x *= scaleFactor_;
-        glyph_.metrics.bearing.y *= scaleFactor_;
-        
-        if (rerender)
-            this.onRenderGlyph(reader_, glyph_);
+        // Reload and scale face metrics metrics.
+        this.ppem_ = pt_ * dpi_ / BASE_TYPOGRAPHIC_DPI;
+        this.scaleFactor_ = cast(float)(ppem_ / upem);
+        this.fmetrics_ = parent.fontMetrics();
+        this.fmetrics_.ascender.x *= scaleFactor_;
+        this.fmetrics_.ascender.y *= scaleFactor_;
+        this.fmetrics_.descender.x *= scaleFactor_;
+        this.fmetrics_.descender.y *= scaleFactor_;
+        this.fmetrics_.lineGap.x *= scaleFactor_;
+        this.fmetrics_.lineGap.y *= scaleFactor_;
+        this.fmetrics_.maxExtent.x *= scaleFactor_;
+        this.fmetrics_.maxExtent.y *= scaleFactor_;
+        this.fmetrics_.maxAdvance.x *= scaleFactor_;
+        this.fmetrics_.maxAdvance.y *= scaleFactor_;
     }
 
 protected:
-
-    /**
-        Implemented by a font face to load a glyph.
-    */
-    abstract void onRenderGlyph(FontReader reader, ref Glyph glyph);
     
     /**
         Implemented by the font face to read the face.
@@ -175,7 +153,7 @@ public:
         Whether hinting is requested enabled for the font face.
     */
     final @property bool wantHinting() { return wantHinting_; }
-    final @property void wantHinting(bool hinting) { this.wantHinting_ = hinting; this.updateGlyph(); }
+    final @property void wantHinting(bool hinting) { this.wantHinting_ = hinting; this.updateState(); }
 
     /**
         The dots-per-inch of the font face, defaults to 96.
@@ -185,7 +163,7 @@ public:
         this value needs to be changed.
     */
     final @property float dpi() { return cast(float)dpi_; }
-    final @property void dpi(float dpi) { this.dpi_ = dpi; this.updateGlyph(); }
+    final @property void dpi(float dpi) { this.dpi_ = dpi; this.updateState(); }
 
     /**
         The point size of the font face, defaults to 18.
@@ -194,7 +172,7 @@ public:
         rendered to.
     */
     final @property float pt() { return cast(float)pt_; }
-    final @property void pt(float pt) { this.pt_ = pt; this.updateGlyph(); }
+    final @property void pt(float pt) { this.pt_ = pt; this.updateState(); }
 
     /**
         The pixel size of the font face, defaults to 24.
@@ -209,7 +187,7 @@ public:
     final @property float px() { return cast(float)ppem; }
     final @property void px(float px) {
         this.pt_ = (px / (cast(float)dpi_ / BASE_TYPOGRAPHIC_DPI));
-        this.updateGlyph();
+        this.updateState();
     }
 
     /**
@@ -221,9 +199,7 @@ public:
     /*
         Destructor
     */
-    ~this() {
-        glyph_.reset();
-    }
+    ~this() { }
 
     /**
         Constructs a font face.
@@ -233,7 +209,7 @@ public:
         this.reader_ = reader;
         
         this.onFaceLoad(reader);
-        this.updateGlyph(false);
+        this.updateState();
     }
 
     /**
@@ -296,7 +272,8 @@ public:
         Gets a glyph from the font face.
 
         Params:
-            glyphIdx = Index of the glyph.
+            glyphIdx =  Index of the glyph.
+            type =      Optional type of data to fetch for the glyph.
 
         Returns:
             The glyph stored in the font face, if the glyph id 
@@ -304,11 +281,18 @@ public:
             glyph will be updated.
     */
     final
-    ref Glyph getGlyph(GlyphIndex glyphIdx) {
-        auto oldIndex = glyph_.index;
-        glyph_.index = glyphIdx;
-
-        this.updateGlyph(glyph_.index != oldIndex);
-        return glyph_;
+    Glyph getGlyph(GlyphIndex glyphIdx, GlyphType type = GlyphType.none) {
+        this.updateState();
+        
+        Glyph glyph = parent.getGlyph(glyphIdx, type);
+        glyph.metrics.bounds.xMin *= scaleFactor_;
+        glyph.metrics.bounds.yMin *= scaleFactor_;
+        glyph.metrics.bounds.xMax *= scaleFactor_;
+        glyph.metrics.bounds.yMax *= scaleFactor_;
+        glyph.metrics.advance.x *= scaleFactor_;
+        glyph.metrics.advance.y *= scaleFactor_;
+        glyph.metrics.bearing.x *= scaleFactor_;
+        glyph.metrics.bearing.y *= scaleFactor_;
+        return glyph;
     }
 }

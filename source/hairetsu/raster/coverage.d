@@ -19,7 +19,6 @@
     Authors:   Luna Nielsen
 */
 module hairetsu.raster.coverage;
-import hairetsu.glyph.outline;
 import hairetsu.math;
 import numem;
 
@@ -42,17 +41,17 @@ private:
     }
 
     // Adds a line segment to the coverage mask.
-    void addLine(haline line, vec2 offset) {
+    void addLine(line line_, vec2 offset) {
         enum float epsilon = 2.0e-5f;
 
-        vec2 p1 = line.p1+offset;
-        vec2 p2 = line.p2+offset;
+        vec2 p1 = line_.p1+offset;
+        vec2 p2 = line_.p2+offset;
         if (abs(p2.y - p1.y) < epsilon) {
             return;
         }
         
         // Start and endpoints of the line, snapped to pixels.
-        float sign = copysign(1.0f, line.p2.y - line.p1.y);
+        float sign = copysign(1.0f, line_.p2.y - line_.p1.y);
         bool flip = p1.x > p2.x;
         vec2 from = (flip ? p2 : p1);
         vec2 to   = (flip ? p1 : p2);
@@ -63,7 +62,7 @@ private:
         // Sign, which determines which direction to move across
         // the line.
         vec2 corner = pixel + vec2(1.0f, to.y > from.y ? 1.0f : 0.0f);
-        vec2 slope = haline(from, to).slope();
+        vec2 slope = line(from, to).slope();
         
         // Deltas to move on each axis.
         bool xneg = to.x - from.x < epsilon;
@@ -198,20 +197,22 @@ public:
         See_Also:
             $(D HaCoverageMask.clear)
     */
-    void draw(ref HaPolyOutline outline) {
+    void draw(ref Path outline) {
         if (!outline.bounds.isValid)
             return;
         
-        foreach(line; outline.lines) {
-            this.addLine(line, MASK_OFFSET);
+        foreach(ref subpath; outline.subpaths[]) {
+            foreach(line; subpath.lines[]) {
+                this.addLine(line, MASK_OFFSET);
+            }
         }
     }
 
     /**
         Draws a single line into the coverage mask.
     */
-    void draw(haline line) {
-        this.addLine(line, MASK_OFFSET);
+    void draw(line ln) {
+        this.addLine(ln, MASK_OFFSET);
     }
 
     /**
