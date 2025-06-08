@@ -651,6 +651,45 @@ void ha_glyph_free(ha_glyph_t* obj) {
 }
 
 /**
+    Gets the metrics for the glyph.
+    
+    Params:
+        obj = The object to query.
+    
+    Returns:
+        The metrics of the glyph.
+*/
+GlyphMetrics ha_glyph_get_metrics(ha_glyph_t* obj) {
+    return (cast(Glyph*)obj).metrics;
+}
+
+/**
+    Gets the ID of the glyph.
+    
+    Params:
+        obj = The object to query.
+    
+    Returns:
+        The ID of the glyph.
+*/
+uint ha_glyph_get_id(ha_glyph_t* obj) {
+    return (cast(Glyph*)obj).id;
+}
+
+/**
+    Gets the type of data associated with the glyph.
+    
+    Params:
+        obj = The object to query.
+    
+    Returns:
+        The type of the data associated with the glyph.
+*/
+GlyphType ha_glyph_get_type(ha_glyph_t* obj) {
+    return (cast(Glyph*)obj).data.type;
+}
+
+/**
     Gets whether the glyph has any data associated with it.
     
     Params:
@@ -664,7 +703,7 @@ bool ha_glyph_get_has_data(ha_glyph_t* obj) {
 }
 
 /**
-    Gets whether the glyph has any data associated with it.
+    Gets the SVG data associated with the glyph (if any)
     
     Params:
         obj = The object to query.
@@ -674,9 +713,15 @@ bool ha_glyph_get_has_data(ha_glyph_t* obj) {
     Note:
         The SVG data is owned by the parent font, you should
         NOT free the SVG data. The data is encoded in UTF-8.
+        If no SVG is associated with the glyph, $(D svg) is set to
+        $(D null) and $(D length) is set to $(D 0). 
 */
 void ha_glyph_get_svg(ha_glyph_t* obj, const(char)** svg, uint* length) {
-    if (!svg) return;
+    if (!svg) {
+        *svg = null;
+        *length = 0;
+        return;
+    }
 
     *svg = (cast(Glyph*)obj).svg.ptr;
     *length = cast(uint)(cast(Glyph*)obj).svg.length;
