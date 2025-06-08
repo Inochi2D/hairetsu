@@ -17,7 +17,7 @@ import numem;
 /**
     A unicode character range.
 */
-struct HaCharRange {
+struct CharRange {
 @nogc:
     
     /**
@@ -61,7 +61,7 @@ public:
             $(D true) if the range is within the supported ranges
             of the charmap, $(D false) otherwise.
     */
-    abstract bool hasCodeRange(HaCharRange range);
+    abstract bool hasCodeRange(CharRange range);
 
     /**
         Gets the glyph index for the specified code point.

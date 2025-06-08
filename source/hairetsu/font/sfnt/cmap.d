@@ -25,7 +25,7 @@ class SFNTCharMap : CharMap {
 private:
 @nogc:
     CmapTable cmapTable;
-    vector!HaCharRange charRanges;
+    vector!CharRange charRanges;
 
 public:
 
@@ -62,7 +62,7 @@ public:
             of the charmap, $(D false) otherwise.
     */
     override
-    bool hasCodeRange(HaCharRange range) {
+    bool hasCodeRange(CharRange range) {
         foreach(charRange; charRanges) {
             if (range.start >= charRange.start && range.end <= charRange.end) {
                 return true;
@@ -163,7 +163,7 @@ public:
         foreach(CmapSubTable table; cmapTable.subtables) {
             switch(table.format) {
                 case 0:
-                    charRanges ~= HaCharRange(0, 255);
+                    charRanges ~= CharRange(0, 255);
                     break;
 
                 case 4:
@@ -175,7 +175,7 @@ public:
                         if (startCode == endCode)
                             continue;
 
-                        charRanges ~= HaCharRange(startCode, endCode);
+                        charRanges ~= CharRange(startCode, endCode);
                     }
                     break;
 
@@ -183,12 +183,12 @@ public:
                     uint start = table.format6.firstCode;
                     uint length = cast(uint)table.format6.glyphIdArray.length;
 
-                    charRanges ~= HaCharRange(start, start+length);
+                    charRanges ~= CharRange(start, start+length);
                     break;
 
                 case 12:
                     foreach(group; table.format12.groups) {
-                        charRanges ~= HaCharRange(group.startCharCode, group.endCharCode);
+                        charRanges ~= CharRange(group.startCharCode, group.endCharCode);
                     }
                     break;
 
