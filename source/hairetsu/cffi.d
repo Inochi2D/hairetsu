@@ -686,7 +686,7 @@ uint ha_glyph_get_id(ha_glyph_t* obj) {
         The type of the data associated with the glyph.
 */
 GlyphType ha_glyph_get_type(ha_glyph_t* obj) {
-    return (cast(Glyph*)obj).data.type;
+    return (cast(Glyph*)obj).rawData.type;
 }
 
 /**
