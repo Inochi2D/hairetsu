@@ -16,7 +16,7 @@ import nulib.text.unicode;
 import hairetsu.common;
 import numem;
 
-import hairetsu.font.tables.cmap;
+import hairetsu.ot.tables.cmap;
 
 /**
     A SFNT character map

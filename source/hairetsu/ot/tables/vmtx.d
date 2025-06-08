@@ -10,9 +10,9 @@
 
     Standards: https://learn.microsoft.com/en-us/typography/opentype/spec/vmtx
 */
-module hairetsu.font.tables.vmtx;
-import hairetsu.font.tables.vhea;
-import hairetsu.font.tables.common;
+module hairetsu.ot.tables.vmtx;
+import hairetsu.ot.tables.vhea;
+import hairetsu.ot.tables.common;
 import hairetsu.font.sfnt.reader;
 
 /**

@@ -22,22 +22,20 @@ protected:
     void onIndexFont(ref weak_vector!Font fonts) {
         foreach(ref SFNTFontEntry entry; (cast(SFNTReader)reader).fontEntries) {
             switch(entry.type) {
-                case SNFTFontType.openType:
-
-                    import hairetsu.font.ot : OTFont;
-                    fonts ~= nogc_new!OTFont(entry, reader);
+                case SFNTFontType.openType:
+                    fonts ~= nogc_new!SFNTFont(entry, reader, SFNTFontType.openType);
                     break;
 
-                case SNFTFontType.trueType:
-
-                    import hairetsu.font.tt : TTFont;
-                    fonts ~= nogc_new!TTFont(entry, reader);
+                case SFNTFontType.trueType:
+                    fonts ~= nogc_new!SFNTFont(entry, reader, SFNTFontType.trueType);
                     break;
 
-                // Not supported for now.
-                case SNFTFontType.postScript:
+                case SFNTFontType.postScript:
+                    fonts ~= nogc_new!SFNTFont(entry, reader, SFNTFontType.postScript);
+                    break;
+
                 default:
-                    fonts ~= nogc_new!SFNTUnknownFont(entry, reader);
+                    fonts ~= nogc_new!SFNTFont(entry, reader, SFNTFontType.unknown);
                     break;
             }
         }

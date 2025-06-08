@@ -10,8 +10,8 @@
 
     Standards: https://learn.microsoft.com/en-us/typography/opentype/spec/head
 */
-module hairetsu.font.tables.head;
-import hairetsu.font.tables.common;
+module hairetsu.ot.tables.head;
+import hairetsu.ot.tables.common;
 import hairetsu.font.sfnt.reader;
 
 /**

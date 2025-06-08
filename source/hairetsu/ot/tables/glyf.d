@@ -12,11 +12,11 @@
         https://learn.microsoft.com/en-us/typography/opentype/spec/glyf
         https://learn.microsoft.com/en-us/typography/opentype/spec/loca
 */
-module hairetsu.font.tables.glyf;
-import hairetsu.font.tables.common;
+module hairetsu.ot.tables.glyf;
+import hairetsu.ot.tables.common;
 import hairetsu.font.sfnt.reader;
-import hairetsu.font.tables.head;
-import hairetsu.font.tables.maxp;
+import hairetsu.ot.tables.head;
+import hairetsu.ot.tables.maxp;
 import hairetsu.font.glyph;
 
 /**

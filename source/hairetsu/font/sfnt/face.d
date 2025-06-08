@@ -13,20 +13,10 @@ import hairetsu.font.sfnt;
 import hairetsu.common;
 import hairetsu.font;
 
-import nulib.text.unicode;
-import nulib.collections;
-import nulib.string;
-import numem;
-import std.regex;
-
-import hairetsu.font.tables.glyf;
-
-
 
 /**
     A SFNT-derived font face.
 */
-abstract
 class SFNTFontFace : FontFace {
 protected:
 @nogc:

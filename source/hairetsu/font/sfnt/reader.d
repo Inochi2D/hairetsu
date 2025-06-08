@@ -9,7 +9,7 @@
     Authors:   Luna Nielsen
 */
 module hairetsu.font.sfnt.reader;
-public import hairetsu.font.sfnt.types;
+public import hairetsu.font.sfnt.font;
 public import hairetsu.font.reader;
 import hairetsu.common;
 import hairetsu.font;
@@ -19,6 +19,27 @@ import nulib.io.stream.rw;
 import nulib.io.stream;
 import numem.core.traits : Fields, isStructLike;
 import numem;
+
+/**
+    The header of a SFNT
+*/
+struct SFNTHeader {
+    uint sfntVersion;
+    ushort tableCount;
+    ushort searchRange;
+    ushort entrySelector;
+    ushort rangeShift;
+}
+
+/**
+    A table record of a SFNT
+*/
+struct SFNTTableRecord {
+    uint tag;
+    uint checksum;
+    uint offset;
+    uint length;
+}
 
 /**
     A class which handles reading tables and records from a SFNT formatted
@@ -38,17 +59,17 @@ private:
             // OpenType
             case ISO15924!("OTTO"):
             case 0x00010000:
-                entry.type = SNFTFontType.openType;
+                entry.type = SFNTFontType.openType;
                 break;
             
             // TrueType
             case ISO15924!("true"):
-                entry.type = SNFTFontType.trueType;
+                entry.type = SFNTFontType.trueType;
                 break;
             
             // Type 1
             case ISO15924!("typ1"):
-                entry.type = SNFTFontType.postScript;
+                entry.type = SFNTFontType.postScript;
                 break;
             
             // TrueType Collections
@@ -244,7 +265,7 @@ struct SFNTFontEntry {
     /**
         The type of the font
     */
-    SNFTFontType type;
+    SFNTFontType type;
     
     /**
         The header of the font

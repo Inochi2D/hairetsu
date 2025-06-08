@@ -10,8 +10,8 @@
 
     Standards: https://learn.microsoft.com/en-us/typography/opentype/spec/svg
 */
-module hairetsu.font.tables.svg;
-import hairetsu.font.tables.common;
+module hairetsu.ot.tables.svg;
+import hairetsu.ot.tables.common;
 import hairetsu.font.sfnt.reader;
 
 /**

@@ -17,12 +17,39 @@ import nulib.collections;
 import numem;
 
 // Tables
-import hairetsu.font.tables.name;
-import hairetsu.font.tables.maxp;
-import hairetsu.font.tables.head;
-import hairetsu.font.tables.glyf;
-import hairetsu.font.tables.svg;
-import hairetsu.font.tables.os2;
+import hairetsu.ot.tables.name;
+import hairetsu.ot.tables.maxp;
+import hairetsu.ot.tables.head;
+import hairetsu.ot.tables.glyf;
+import hairetsu.ot.tables.svg;
+import hairetsu.ot.tables.os2;
+
+/**
+    The type of the SFNT
+*/
+enum SFNTFontType {
+
+    /**
+        A CFF1/2 OpenType Font
+    */
+    openType,
+    
+    /**
+        A TrueType font
+    */
+    trueType,
+    
+    /**
+        A PostScript font
+    */
+    postScript,
+
+    /**
+        Unknown font file which uses the SFNT
+        format.
+    */
+    unknown
+}
 
 /**
     SFNT Font Object
@@ -30,10 +57,11 @@ import hairetsu.font.tables.os2;
     Implements shared functionality between different
     SFNT typed fonts.
 */
-abstract
 class SFNTFont : Font {
 @nogc:
 private:
+    SFNTFontType fontType;
+
     /// Entry info.
     vector!(string) tableNames;
     SFNTFontEntry entry_;
@@ -99,10 +127,10 @@ private:
     //     METRICS TABLES
     //
     void parseMetricsTables(SFNTReader reader) {
-        import hairetsu.font.tables.hhea : HheaTable;
-        import hairetsu.font.tables.hmtx : HmtxTable;
-        import hairetsu.font.tables.vhea : VheaTable;
-        import hairetsu.font.tables.vmtx : VmtxTable;
+        import hairetsu.ot.tables.hhea : HheaTable;
+        import hairetsu.ot.tables.hmtx : HmtxTable;
+        import hairetsu.ot.tables.vhea : VheaTable;
+        import hairetsu.ot.tables.vmtx : VmtxTable;
         
         // Horizontal Metrics
         HheaTable hhea;
@@ -262,6 +290,14 @@ protected:
     }
 
     /**
+        Implemented by the font to create a new font face.
+    */
+    override
+    FontFace onCreateFace(FontReader reader) {
+        return nogc_new!SFNTFontFace(this, reader);
+    }
+
+    /**
         Gets a name with the given index from the name table.
 
         Params:
@@ -360,8 +396,9 @@ public:
     /**
         Constructs a new font face from a stream.
     */
-    this(SFNTFontEntry entry, FontReader reader) {
+    this(SFNTFontEntry entry, FontReader reader, SFNTFontType fontType) {
         this.entry_ = entry;
+        this.fontType = fontType;
         super(entry_.index, reader);
     }
     
@@ -393,7 +430,18 @@ public:
         The name of the type of font.
     */
     override
-    @property string type() { return "SFNT derived"; }
+    @property string type() {
+        final switch(fontType) {
+            case SFNTFontType.openType:
+                return "OpenType";
+            case SFNTFontType.trueType:
+                return "TrueType";
+            case SFNTFontType.postScript:
+                return "PostScript";
+            case SFNTFontType.unknown:
+                return "SFNT derived"; 
+        }
+    }
 
     /**
         The types of outline found in the SFNT file.
@@ -533,35 +581,4 @@ public:
 
         return gtype;
     }
-}
-
-/**
-    A dummy SFNT font with no faces.
-*/
-class SFNTUnknownFont : SFNTFont {
-private:
-@nogc:
-protected:
-    
-    /**
-        Implemented by the font to create a new font face.
-    */
-    override
-    FontFace onCreateFace(FontReader reader) {
-        return null;
-    }
-
-public:
-    
-    /**
-        Constructs a new font face from a stream.
-    */
-    this(SFNTFontEntry entry, FontReader reader) {
-        super(entry, reader);
-    }
-
-    /**
-        The name of the type of font.
-    */
-    override @property string type() { return "Unknown"; }
 }

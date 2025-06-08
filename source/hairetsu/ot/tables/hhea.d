@@ -10,8 +10,8 @@
 
     Standards: https://learn.microsoft.com/en-us/typography/opentype/spec/hhea
 */
-module hairetsu.font.tables.hhea;
-import hairetsu.font.tables.common;
+module hairetsu.ot.tables.hhea;
+import hairetsu.ot.tables.common;
 import hairetsu.font.sfnt.reader;
 
 /**

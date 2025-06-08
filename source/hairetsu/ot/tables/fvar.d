@@ -10,8 +10,8 @@
 
     Standards: https://learn.microsoft.com/en-us/typography/opentype/spec/fvar
 */
-module hairetsu.font.tables.fvar;
-import hairetsu.font.tables.common;
+module hairetsu.ot.tables.fvar;
+import hairetsu.ot.tables.common;
 import hairetsu.font.sfnt.reader;
 
 /**

@@ -10,9 +10,9 @@
 
     Standards: https://learn.microsoft.com/en-us/typography/opentype/spec/hmtx
 */
-module hairetsu.font.tables.hmtx;
-import hairetsu.font.tables.hhea;
-import hairetsu.font.tables.common;
+module hairetsu.ot.tables.hmtx;
+import hairetsu.ot.tables.hhea;
+import hairetsu.ot.tables.common;
 import hairetsu.font.sfnt.reader;
 
 /**

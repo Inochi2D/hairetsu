@@ -11,8 +11,8 @@
     Standards: 
         https://learn.microsoft.com/en-us/typography/opentype/spec/cmap
 */
-module hairetsu.font.tables.cmap;
-import hairetsu.font.tables.common;
+module hairetsu.ot.tables.cmap;
+import hairetsu.ot.tables.common;
 import hairetsu.font.sfnt.reader;
 
 /**

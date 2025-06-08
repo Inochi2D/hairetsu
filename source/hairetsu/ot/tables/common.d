@@ -12,7 +12,7 @@
         https://learn.microsoft.com/en-us/typography/opentype/spec/otff, 
         https://learn.microsoft.com/en-us/typography/opentype/spec/chapter2
 */
-module hairetsu.font.tables.common;
+module hairetsu.ot.tables.common;
 public import hairetsu.common;
 public import numem : nu_resize;
 
