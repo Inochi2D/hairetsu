@@ -253,17 +253,17 @@ private:
 
     void parseSVGTable(SFNTReader reader) {
         if (auto table = entry.findTable(ISO15924!("SVG "))) {
-            this.svg = reader.readRecord!SVGTable();
+            this.svg = reader.readRecordBE!SVGTable();
         }
     }
 
 protected:
 
     /// Helper for parsing tables.
-    bool parseTable(T)(SFNTReader reader, Tag tag, ref T target) {
+    bool parseTable(T)(FontReader reader, Tag tag, ref T target) {
         if (auto table = entry.findTable(tag)) {
             reader.seek(table.offset);
-            target = reader.readRecord!T;
+            target = reader.readRecordBE!T;
             return true;
         }
         return false;

@@ -55,7 +55,7 @@ struct GlyfTable {
     /**
         Deserializes the Glyf table
     */
-    void deserialize(SFNTReader reader, ref LocaTable loca) {
+    void deserialize(FontReader reader, ref LocaTable loca) {
         size_t start = reader.tell();
 
         this.glyphs = ha_allocarr!GlyfRecord(loca.offsets.length);
@@ -96,7 +96,7 @@ public:
     /**
         Deserializes the Glyf table
     */
-    void deserialize(SFNTReader reader, GlyphIndex glyphId, bool hasOutlines) {
+    void deserialize(FontReader reader, GlyphIndex glyphId, bool hasOutlines) {
         short numberOfCountours = reader.readElementBE!short;
         short xMin = reader.readElementBE!short;
         short yMin = reader.readElementBE!short;
@@ -263,7 +263,7 @@ struct SimpleGlyfContour {
     /**
         Deserializes the Glyf table
     */
-    void deserialize(SFNTReader reader, ushort contourCount) {
+    void deserialize(FontReader reader, ushort contourCount) {
         
         // endPtsOfContours
         this.endPtsOfContours = ha_allocarr!ushort(contourCount);
@@ -373,7 +373,7 @@ struct LocaTable {
     /**
         Deserializes the Loca table.
     */
-    void deserialize(SFNTReader reader, HeadTable head, MaxpTable maxp) {
+    void deserialize(FontReader reader, HeadTable head, MaxpTable maxp) {
         switch(head.indexToLocFormat) {
             case 0:
                 this.offsets = offsets.nu_resize(maxp.numGlyphs+1);

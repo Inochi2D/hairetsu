@@ -24,14 +24,14 @@ struct NameTable {
 private:
 @nogc:
     
-    void deserializeV0(SFNTReader reader, size_t start) {
+    void deserializeV0(FontReader reader, size_t start) {
         ushort count = reader.readElementBE!ushort;
         uint storageOffset = reader.readElementBE!ushort;
 
         this.records = records.nu_resize(count);
         reader.seek(start+storageOffset);
         foreach(i; 0..count) {
-            this.records[i].header = reader.readRecord!NameRecordHeader;
+            this.records[i].header = reader.readRecordBE!NameRecordHeader;
 
             // Skip parsing non-unicode names.
             if (!this.records[i].header.isUnicodeName()) {
@@ -43,7 +43,7 @@ private:
         }
     }
 
-    void deserializeV1(SFNTReader reader, size_t start) {
+    void deserializeV1(FontReader reader, size_t start) {
         ushort count = reader.readElementBE!ushort;
         uint storageOffset = reader.readElementBE!ushort;
 
@@ -63,7 +63,7 @@ public:
         this.languageTags = languageTags.nu_resize(0);
     }
 
-    void deserialize(SFNTReader reader) {
+    void deserialize(FontReader reader) {
         size_t start = reader.tell();
         ushort version_ = reader.readElementBE!ushort;
 
@@ -131,7 +131,7 @@ struct NameRecord {
         return header.languageId;
     }
 
-    void deserialize(SFNTReader reader, size_t start) {
+    void deserialize(FontReader reader, size_t start) {
         ushort strlen = reader.readElementBE!ushort;
         ushort tblOffset = reader.readElementBE!ushort;
         size_t dataEnd = reader.tell();
@@ -150,7 +150,7 @@ struct LanguageTagRecord {
 @nogc:
     nstring name;
 
-    void deserialize(SFNTReader reader, size_t start) {
+    void deserialize(FontReader reader, size_t start) {
         ushort strlen = reader.readElementBE!ushort;
         ushort tblOffset = reader.readElementBE!ushort;
         size_t dataEnd = reader.tell();

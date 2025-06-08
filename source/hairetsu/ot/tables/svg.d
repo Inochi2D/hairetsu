@@ -88,7 +88,7 @@ public:
         Params:
             reader = The font data reader.
     */
-    void deserialize(SFNTReader reader) {
+    void deserialize(FontReader reader) {
         size_t start = reader.tell();
 
         ushort version_ = reader.readElementBE!ushort;

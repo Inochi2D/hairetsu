@@ -16,6 +16,8 @@ import nulib.io.stream;
 import nulib.math.fixed;
 import nulib.text.unicode;
 import nulib.string;
+
+import numem.core.traits : Fields, isStructLike;
 import numem;
 
 /**
@@ -160,8 +162,7 @@ public:
         Destructor
     */
     ~this() @trusted {
-        if (reader) nogc_delete(reader);
-        if (stream) nogc_delete(stream);
+        this.close();
     }
     /**
         Constructs a new SFNT Reader from a stream.
@@ -195,7 +196,7 @@ public:
         Reads a single element from the stream
     */
     T readElementBE(T)() @trusted {
-        static if (is(typeof((T rt) { rt.deserialize(reader); })))
+        static if (is(typeof((T rt) { rt.deserialize(FontReader.init); })))
             return T.init.deserialize(reader);
         else static if (__traits(isScalar, T))
             return reader.readBE!T;
@@ -216,7 +217,7 @@ public:
         Reads a single element from the stream
     */
     T readElementLE(T)() @trusted {
-        static if (is(typeof((T rt) { rt.deserialize(reader); })))
+        static if (is(typeof((T rt) { rt.deserialize(FontReader.init); })))
             return T.init.deserialize(reader);
         else static if (__traits(isScalar, T))
             return reader.readLE!T;
@@ -231,6 +232,90 @@ public:
             }
             return tmp;
         } else static assert(0, "Not supported.");
+    }
+
+    /**
+        Reads a single record from the stream
+    */
+    T readRecordBE(T)() if (isStructLike!T) {
+        T rt;
+
+        static if (is(typeof((T rt) { rt.deserialize(FontReader.init); }))) {
+            rt.deserialize(this);
+        } else {
+            alias members = rt.tupleof;
+            alias fields = Fields!T;
+
+            // Iterates through every member of the struct that is a scalar.
+            static foreach(i, fieldT; fields) {
+                {
+                    static if (isStructLike!fieldT) {
+                        members[i] = this.readRecordBE!fieldT;
+                    } else static if (__traits(isStaticArray, fieldT)) {
+                        static if (fieldT.init[0].sizeof == 1) {
+                            this.read(cast(ubyte[])members[i]);
+                        } else {
+                            members[i] = this.readElementBE!fieldT;
+                        }
+                    } else {
+                        members[i] = this.readElementBE!fieldT;
+                    }
+                }
+            }
+        }
+
+        return rt;
+    }
+
+    /**
+        Reads a single record from the stream
+    */
+    T readRecordLE(T)() if (isStructLike!T) {
+        T rt;
+
+        static if (is(typeof((T rt) { rt.deserialize(FontReader.init); }))) {
+            rt.deserialize(this);
+        } else {
+            alias members = rt.tupleof;
+            alias fields = Fields!T;
+
+            // Iterates through every member of the struct that is a scalar.
+            static foreach(i, fieldT; fields) {
+                {
+                    static if (isStructLike!fieldT) {
+                        members[i] = this.readRecordLE!fieldT;
+                    } else static if (__traits(isStaticArray, fieldT)) {
+                        static if (fieldT.init[0].sizeof == 1) {
+                            this.read(cast(ubyte[])members[i]);
+                        } else {
+                            members[i] = this.readElementLE!fieldT;
+                        }
+                    } else {
+                        members[i] = this.readElementLE!fieldT;
+                    }
+                }
+            }
+        }
+
+        return rt;
+    }
+
+    /**
+        Reads multiple record from the stream.
+    */
+    void readRecordsBE(T)(T[] dst) if (is(T == struct)) {
+        foreach(i; 0..dst.length) {
+            dst[i] = this.readRecordBE!T();
+        }
+    }
+
+    /**
+        Reads multiple record from the stream.
+    */
+    void readRecordsLE(T)(T[] dst) if (is(T == struct)) {
+        foreach(i; 0..dst.length) {
+            dst[i] = this.readRecordLE!T();
+        }
     }
 
     /**
@@ -310,6 +395,16 @@ public:
     final
     void skip(size_t bytes) @trusted {
         this.stream.seek(bytes, SeekOrigin.relative);
+    }
+
+    /**
+        Closes the underlying stream in the font reader.
+    */
+    final
+    void close() {
+        this.stream.close();
+        if (reader) nogc_delete(reader);
+        if (stream) nogc_delete(stream);
     }
 
     /**

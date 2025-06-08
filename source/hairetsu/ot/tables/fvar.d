@@ -48,7 +48,7 @@ struct FVarTable {
         ha_freearr(instances);
     }
 
-    void deserialize(SFNTReader reader) {
+    void deserialize(FontReader reader) {
         size_t start = reader.tell();
 
         // Read base info
@@ -71,7 +71,7 @@ struct FVarTable {
         reader.seek(start+axesArrayOffset);
         foreach(ref FVarVariationAxisRecord axis; this.axes) {
             size_t ioffset = reader.tell();
-            axis = reader.readRecord!FVarVariationAxisRecord;
+            axis = reader.readRecordBE!FVarVariationAxisRecord;
             reader.seek(ioffset+axisSize);
         }
 
@@ -157,7 +157,7 @@ struct FVarInstanceRecord {
         ha_freearr(coordinates);
     }
 
-    void deserialize(SFNTReader reader, uint axisCount) {
+    void deserialize(FontReader reader, uint axisCount) {
         this.subfamilyNameId = reader.readElementBE!ushort;
         this.flags = reader.readElementBE!ushort;
 

@@ -50,7 +50,7 @@ public:
     /**
         Deserializes the EBLC table.
     */
-    void deserialize(SFNTReader reader) { }
+    void deserialize(FontReader reader) { }
 }
 
 struct BitmapSizeRecord {
@@ -71,7 +71,7 @@ public:
     /**
         Deserializes the size record.
     */
-    void deserialize(SFNTReader reader) {
+    void deserialize(FontReader reader) {
         
     }
 
@@ -196,7 +196,7 @@ public:
     /**
         Parses small metrics format from a reader.
     */
-    void deserialize(SFNTReader reader) {
+    void deserialize(FontReader reader) {
         this.ascender = reader.readElementBE!byte();
         this.descender = reader.readElementBE!byte();
         this.widthMax = reader.readElementBE!ubyte();

@@ -158,7 +158,7 @@ public:
         Parses CMAP table.
     */
     void parseCmapTable(SFNTReader reader) {
-        this.cmapTable = reader.readRecord!CmapTable();
+        this.cmapTable = reader.readRecordBE!CmapTable();
 
         foreach(CmapSubTable table; cmapTable.subtables) {
             switch(table.format) {

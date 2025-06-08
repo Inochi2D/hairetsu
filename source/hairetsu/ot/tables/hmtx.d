@@ -36,11 +36,11 @@ struct HmtxTable {
     /**
         Deserializes the table.
     */
-    void deserialize(SFNTReader reader, HheaTable hhea, uint glyphCount) {
+    void deserialize(FontReader reader, HheaTable hhea, uint glyphCount) {
         this.records = ha_allocarr!MtxRecord(glyphCount);
         foreach(i; 0..glyphCount) {
             if (i < hhea.numberOfHMetrics)            
-                this.records[i] = reader.readRecord!MtxRecord();
+                this.records[i] = reader.readRecordBE!MtxRecord();
             else
                 this.records[i].bearing = reader.readElementBE!short;
         }

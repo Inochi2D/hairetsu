@@ -39,7 +39,7 @@ struct CmapTable {
     /**
         Deserializes the character map.
     */
-    void deserialize(SFNTReader reader) {
+    void deserialize(FontReader reader) {
         size_t start = reader.tell();
 
         ushort tableVersion = reader.readElementBE!ushort();
@@ -56,7 +56,7 @@ struct CmapTable {
                     // Read the subtable.
                     size_t next = reader.tell();
                     reader.seek(start+subtableOffset);
-                    this.subtables[i] = reader.readRecord!CmapSubTable();
+                    this.subtables[i] = reader.readRecordBE!CmapSubTable();
                     reader.seek(next);
                 }
                 return;
@@ -104,7 +104,7 @@ struct CmapSubTable {
             ha_freearr(glyphIdArray);
         }
 
-        void deserialize(SFNTReader reader) {
+        void deserialize(FontReader reader) {
             length = reader.readElementBE!ushort();
             language = reader.readElementBE!ushort();
             segCountX2 = reader.readElementBE!ushort();
@@ -146,7 +146,7 @@ struct CmapSubTable {
             ha_freearr(glyphIdArray);
         }
 
-        void deserialize(SFNTReader reader) {
+        void deserialize(FontReader reader) {
             length = reader.readElementBE!ushort();
             language = reader.readElementBE!ushort();
             firstCode = reader.readElementBE!ushort();
@@ -173,7 +173,7 @@ struct CmapSubTable {
             ha_freearr(groups);
         }
 
-        void deserialize(SFNTReader reader) {
+        void deserialize(FontReader reader) {
             reader.skip(2); // reserved
             length = reader.readElementBE!uint();
             language = reader.readElementBE!uint();
@@ -181,7 +181,7 @@ struct CmapSubTable {
             uint sequentialMapGroupCount = reader.readElementBE!uint();
             this.groups = ha_allocarr!SequentialMapGroup(sequentialMapGroupCount);
             foreach(ref group; groups) {
-                group = reader.readRecord!SequentialMapGroup();
+                group = reader.readRecordBE!SequentialMapGroup();
             }
         }
     }
@@ -216,24 +216,24 @@ struct CmapSubTable {
         }
     }
 
-    void deserialize(SFNTReader reader) {
+    void deserialize(FontReader reader) {
         format = reader.readElementBE!ushort();
 
         switch(format) {
             case 0:
-                format0 = reader.readRecord!Format0();
+                format0 = reader.readRecordBE!Format0();
                 break;
 
             case 4:
-                format4 = reader.readRecord!Format4();
+                format4 = reader.readRecordBE!Format4();
                 break;
 
             case 6:
-                format6 = reader.readRecord!Format6();
+                format6 = reader.readRecordBE!Format6();
                 break;
 
             case 12:
-                format12 = reader.readRecord!Format12();
+                format12 = reader.readRecordBE!Format12();
                 break;
 
             default:

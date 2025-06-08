@@ -15,13 +15,81 @@ targetPath "out/"
 copyFiles "LICENSE"
 buildOptions "debugInfoC"
 
+
+
+
+
+//
+//          Win32
+//
+
+configuration "win32-static" {
+    platform "windows"
+    targetType "staticLibrary"
+
+    dependency "nulib:com" version=">=0.3.0"
+    libs "dwrite"
+}
+
+configuration "win32-dynamic" {
+    platform "windows"
+    targetType "dynamicLibrary"
+
+    dependency "nulib:com" version=">=0.3.0"
+    libs "dwrite"
+}
+
+//
+//          appleOS
+//
+
+configuration "appleos-static" {
+    platforms "osx" "ios" "watchos" "visionos" "tvos"
+    targetType "staticLibrary"
+
+    lflags "-framework" "CoreText"
+}
+
+configuration "appleos-dynamic" {
+    platforms "osx" "ios" "watchos" "visionos" "tvos"
+    targetType "dynamicLibrary"
+
+    lflags "-framework" "CoreText"
+}
+
+//
+//          POSIX
+//
+
+configuration "posix-static" {
+    platforms "posix"
+    targetType "staticLibrary"
+
+    libs "fontconfig"
+}
+
+configuration "posix-dynamic" {
+    platforms "posix"
+    targetType "dynamicLibrary"
+
+    libs "fontconfig"
+}
+
+//
+//          Generic
+//
+
 configuration "static" {
     targetType "staticLibrary"
 }
 
 configuration "dynamic" {
-    targetType "staticLibrary"
+    targetType "dynamicLibrary"
 }
+
+//
+//          Special
+//
 
 configuration "unittest" {
     dependency "silly" version="*"

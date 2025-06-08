@@ -36,11 +36,11 @@ struct VmtxTable {
     /**
         Deserializes the table.
     */
-    void deserialize(SFNTReader reader, VheaTable vhea, uint glyphCount) {
+    void deserialize(FontReader reader, VheaTable vhea, uint glyphCount) {
         this.records = ha_allocarr!MtxRecord(glyphCount);
         foreach(i; 0..glyphCount) {
             if (i < vhea.numberOfVMetrics)            
-                this.records[i] = reader.readRecord!MtxRecord();
+                this.records[i] = reader.readRecordBE!MtxRecord();
             else
                 this.records[i].bearing = reader.readElementBE!short;
         }

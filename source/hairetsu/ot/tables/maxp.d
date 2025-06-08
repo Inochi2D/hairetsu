@@ -99,7 +99,7 @@ struct MaxpTable {
     */
     ushort maxComponentDepth;
 
-    void deserialize(SFNTReader reader) {
+    void deserialize(FontReader reader) {
         this.version_ = reader.readElementBE!fixed32;
         this.numGlyphs = reader.readElementBE!ushort;
 
