@@ -20,10 +20,12 @@ import hairetsu.font.font;
 import hairetsu.font.face;
 import hairetsu.font.cmap;
 import hairetsu.font.glyph;
+import hairetsu.common;
 
 // Extern deps used internally.
 import nulib.string;
 import numem : NuRefCounted;
+import numem.core.hooks : nu_free;
 
 extern(C) export:
 
@@ -89,7 +91,7 @@ void ha_retain(void* obj) {
 }
 
 /**
-    Retains a reference to a hairetsu object.
+    Releases a reference to a hairetsu object.
 
     Params:
         obj = The object to retain.
@@ -239,6 +241,10 @@ struct ha_font_t;
     
     Returns:
         The postscript name in UTF-8 format.
+
+    Note:
+        The string is owned by the font and should not be
+        freed by you directly.
 */
 const(char)* ha_font_get_name(ha_font_t* obj) {
     return (cast(Font)obj).name.ptr;
@@ -252,6 +258,10 @@ const(char)* ha_font_get_name(ha_font_t* obj) {
     
     Returns:
         The family name in UTF-8 format.
+
+    Note:
+        The string is owned by the font and should not be
+        freed by you directly.
 */
 const(char)* ha_font_get_family(ha_font_t* obj) {
     return (cast(Font)obj).family.ptr;
@@ -265,6 +275,10 @@ const(char)* ha_font_get_family(ha_font_t* obj) {
     
     Returns:
         The subfamily name in UTF-8 format.
+
+    Note:
+        The string is owned by the font and should not be
+        freed by you directly.
 */
 const(char)* ha_font_get_subfamily(ha_font_t* obj) {
     return (cast(Font)obj).subfamily.ptr;
@@ -278,6 +292,10 @@ const(char)* ha_font_get_subfamily(ha_font_t* obj) {
     
     Returns:
         The type name in UTF-8 format.
+
+    Note:
+        The string is owned by the font and should not be
+        freed by you directly.
 */
 const(char)* ha_font_get_type(ha_font_t* obj) {
     return (cast(Font)obj).type.ptr;
@@ -383,7 +401,6 @@ ha_face_t* ha_font_create_face(ha_font_t* obj) {
 //
 //      FACE OBJECTS
 //
-
 
 /**
     Opaque handle to Hairetsru Font File.
@@ -584,5 +601,128 @@ void ha_face_set_px(ha_face_t* obj, float value) {
         The scaled global metrics.
 */
 FontMetrics ha_face_get_global_metrics(ha_face_t* obj) {
-    return (cast(FontFace)obj).faceMetrics;   
+    return (cast(FontFace)obj).faceMetrics;
+}
+
+/**
+    Gets a glyph from a glyph ID.
+
+    Params:
+        obj = The object to query.
+        glyphId = The ID of the glyph to fetch.
+        type = The type of glyph data to fetch for the glyph.
+*/
+ha_glyph_t* ha_face_get_glyph(ha_face_t* obj, uint glyphId, GlyphType type) {
+    return cast(ha_glyph_t*)((cast(FontFace)obj).getGlyph(glyphId, type).copyToHeap());
+}
+
+//
+//      GLYPHS
+//
+
+/**
+    Glyph types
+*/
+enum GlyphType 
+    HA_GLYPH_TYPE_NONE = GlyphType.none,
+    HA_GLYPH_TYPE_SBIX = GlyphType.sbix,
+    HA_GLYPH_TYPE_EBDT = GlyphType.ebdt,
+    HA_GLYPH_TYPE_CBDT = GlyphType.cbdt,
+    HA_GLYPH_TYPE_BITMAP = GlyphType.bitmap,
+    HA_GLYPH_TYPE_TTF = GlyphType.trueType,
+    HA_GLYPH_TYPE_CFF = GlyphType.cff,
+    HA_GLYPH_TYPE_CFF2 = GlyphType.cff2,
+    HA_GLYPH_TYPE_OUTLINE = GlyphType.outline,
+    HA_GLYPH_TYPE_SVG = GlyphType.svg,
+    HA_GLYPH_TYPE_ANY = GlyphType.any;
+
+/**
+    Opaque handle to a glyph.
+    
+    Glyphs must be deallocated with ha_glyph_free after use!
+*/
+struct ha_glyph_t;
+
+/**
+    Frees the given glyph.
+*/
+void ha_glyph_free(ha_glyph_t* obj) {
+    nu_free(obj);
+}
+
+/**
+    Gets whether the glyph has any data associated with it.
+    
+    Params:
+        obj = The object to query.
+    
+    Returns:
+        True if the glyph has data.
+*/
+bool ha_glyph_get_has_data(ha_glyph_t* obj) {
+    return (cast(Glyph*)obj).hasData;
+}
+
+/**
+    Gets whether the glyph has any data associated with it.
+    
+    Params:
+        obj = The object to query.
+        svg = Where to store the SVG data pointer.
+        length = Where to store the length of the data.
+    
+    Note:
+        The SVG data is owned by the parent font, you should
+        NOT free the SVG data. The data is encoded in UTF-8.
+*/
+void ha_glyph_get_svg(ha_glyph_t* obj, const(char)** svg, uint* length) {
+    if (!svg) return;
+
+    *svg = (cast(Glyph*)obj).svg.ptr;
+    *length = cast(uint)(cast(Glyph*)obj).svg.length;
+}
+
+/**
+    Tries to rasterize the given glyph to the given buffer.
+    
+    Params:
+        obj = The object to query.
+        data = Destination array to store the bitmap reference.
+        length = Where to store the length of the bitmap array.
+        width = Where to store the width of the bitmap.
+        height = Where to store the height of the bitmap.
+
+    Note:
+        The rasterized data belongs to you and must be freed by you,
+        using standard C $(D free) mechanisms.
+*/
+void ha_glyph_rasterize(ha_glyph_t* obj, ubyte** data, uint* length, uint* width, uint* height) {
+    HaBitmap bmp = (cast(Glyph*)obj).rasterize(true);
+    *data = bmp.data.ptr;
+    *length = cast(uint)bmp.data.length;
+    *width = bmp.width;
+    *height = bmp.height;
+}
+
+/**
+    Tries to rasterize the given glyph to the given buffer;
+    rasterization happens without anti-aliasing.
+    
+    Params:
+        obj = The object to query.
+        data = Destination array to store the bitmap reference.
+        length = Where to store the length of the bitmap array.
+        width = Where to store the width of the bitmap.
+        height = Where to store the height of the bitmap.
+
+    Note:
+        The rasterized data belongs to you and must be freed by you,
+        using standard C $(D free) mechanisms.
+*/
+void ha_glyph_rasterize_aliased(ha_glyph_t* obj, ubyte** data, uint* length, uint* width, uint* height) {
+    HaBitmap bmp = (cast(Glyph*)obj).rasterize(false);
+    *data = bmp.data.ptr;
+    *length = cast(uint)bmp.data.length;
+    *width = bmp.width;
+    *height = bmp.height;
 }

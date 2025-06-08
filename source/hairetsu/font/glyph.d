@@ -12,6 +12,7 @@ module hairetsu.font.glyph;
 import hairetsu.font.font;
 import hairetsu.font.tables.glyf;
 import hairetsu.common;
+import numem;
 
 /**
     Types of glyphs stored within a font.
@@ -160,7 +161,7 @@ public:
                 Path p = this.path();
                 if (p.hasPath) {
                     p.finalize();
-                    
+
                     HaCoverageMask covMask = HaCoverageMask(cast(uint)p.bounds.width, cast(uint)p.bounds.height);
                     HaBitmap bitmap = HaBitmap(covMask.width, covMask.height, 1, 1);
                     
@@ -183,6 +184,15 @@ public:
                 return HaBitmap.init;
 
         }
+    }
+
+    /**
+        Copies the glyph to the heap.
+    */
+    Glyph* copyToHeap() {
+        Glyph* glyph = nogc_new!Glyph;
+        *glyph = this;
+        return glyph;
     }
 }
 
