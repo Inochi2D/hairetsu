@@ -89,7 +89,7 @@ public:
     */
     final
     bool canRender(ref Glyph glyph) {
-        return glyph.canRasterize;
+        return glyph.hasData;
     }
 
     /**

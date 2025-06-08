@@ -154,15 +154,6 @@ public:
     */
     float[] coverage;
 
-    /*
-        Destructor
-    */
-    ~this() {
-        this.width = 0;
-        this.height = 0;
-        this.coverage = coverage.nu_resize(0);
-    }
-
     /**
         Creates a new coverage mask.
 
@@ -174,17 +165,17 @@ public:
         this.width = width+MASK_PADDING;
         this.height = height+MASK_PADDING;
 
-        this.coverage = coverage.nu_resize(this.width * this.height);
+        this.coverage = ha_allocarr!float(this.width * this.height);
         this.clear();
     }
 
     /**
-        Postblit
+        Frees the path
     */
-    this(this) {
-        this.width = width;
-        this.height = height;
-        this.coverage = coverage.nu_dup();
+    void free() {
+        this.width = 0;
+        this.height = 0;
+        ha_freearr(coverage);
     }
 
     /**
@@ -291,5 +282,18 @@ public:
         foreach(y; 0..height) {
             this.blitScanlineTo!antialias(cast(ubyte[])bitmap.scanline(y), bitmap.channels, y);
         }
+    }
+
+    /**
+        Blits the coverage mask directly to a bitmap.
+        This is all that's needed for basic glyph rendering.
+
+        Params:
+            bitmap = The bitmap to blit the coverage mask to.
+            antialias = Whether to do anti aliasing.
+    */
+    void blitTo(ref HaBitmap bitmap, bool antialias) {
+        if (antialias) this.blitTo!true(bitmap);
+        else this.blitTo!false(bitmap);
     }
 }

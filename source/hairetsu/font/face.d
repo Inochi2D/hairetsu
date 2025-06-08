@@ -92,7 +92,6 @@ protected:
 
 public:
 
-
     /**
         The units-per-EM of the font face.
     */
@@ -281,7 +280,7 @@ public:
             glyph will be updated.
     */
     final
-    Glyph getGlyph(GlyphIndex glyphIdx, GlyphType type = GlyphType.none) {
+    Glyph getGlyph(GlyphIndex glyphIdx, GlyphType type = GlyphType.any) {
         this.updateState();
         
         Glyph glyph = parent.getGlyph(glyphIdx, type);
@@ -293,6 +292,7 @@ public:
         glyph.metrics.advance.y *= scaleFactor_;
         glyph.metrics.bearing.x *= scaleFactor_;
         glyph.metrics.bearing.y *= scaleFactor_;
+        glyph.metrics.scale = scaleFactor_;
         return glyph;
     }
 }

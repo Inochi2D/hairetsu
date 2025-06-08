@@ -12,6 +12,7 @@ module hairetsu.math.path;
 import nulib.collections.vector;
 import hairetsu.math;
 import hairetsu.common;
+import numem;
 
 /**
     A logical path; a series of lines which makes up shapes.
@@ -46,11 +47,16 @@ private:
     }
 
     void push(vec2 p1, vec2 p2, bool move = true) {
-        this.subpath.segments ~= line(p1, p2);
+        this.subpath.push(line(p1, p2));
         this.recalcBounds(p1);
         this.recalcBounds(p2);
 
         if (move) this.cursor = p2;
+    }
+
+    void newSubpath() {
+        this.subpaths = subpaths.nu_resize(this.subpaths.length+1);
+        this.subpaths[$-1] = Subpath();
     }
 
 public:
@@ -58,7 +64,7 @@ public:
     /**
         Subpaths contained within the path.
     */
-    vector!Subpath subpaths;
+    Subpath[] subpaths;
     
     /**
         Bounds of the path.
@@ -68,7 +74,7 @@ public:
     /**
         Cursor position.
     */
-    vec2 cursor;
+    vec2 cursor = vec2(0, 0);
 
     /**
         How many times to subdivide curves.
@@ -83,12 +89,59 @@ public:
         if (this.subpaths.length > 0)
             return this.subpaths[$-1];
 
-        this.subpaths ~= Subpath();
+        this.newSubpath();
         return this.subpaths[$-1];
     }
 
-    // Destructor
-    ~this() { this.clear(); }
+    /**
+        Gets whether the path instance has any actual path.
+    */
+    final
+    @property bool hasPath() {
+        if (this.subpaths.length == 0)
+            return false;
+        
+        if (this.subpaths[0].length == 0)
+            return false;
+        
+        return bounds.isValid;
+    }
+
+    /**
+        Clears all subpaths from the path.
+    */
+    void free() {
+
+        // Free subpaths.
+        foreach(ref subpath; this.subpaths) {
+            subpath.free();
+        }
+        ha_freearr(subpaths);
+        
+        // Reset state.
+        this.cursor = vec2.zero;
+        this.bounds = aabbDefault;
+    }
+
+    /**
+        Re-scales the path by the given scale factor.
+
+        Params:
+            scale = The scale factor.
+    */
+    void rescale(float scale) {
+        foreach(ref Subpath subpath; subpaths) {
+            foreach(ref line line_; subpath.lines) {
+                line_.p1 *= scale;
+                line_.p2 *= scale;
+            }
+        }
+
+        this.bounds.xMin *= scale;
+        this.bounds.xMax *= scale;
+        this.bounds.yMin *= scale;
+        this.bounds.yMax *= scale;
+    }
 
     /**
         Begins a path
@@ -144,35 +197,46 @@ public:
         vec2 start = subpaths[$-1].start;
         vec2 end = subpaths[$-1].end;
         this.push(end, start);
-
-        this.subpaths ~= Subpath();
+        this.newSubpath();
     }
 
     /**
-        Clears all subpaths from the path.
+        Finalizes the path.
     */
-    void clear() {
+    void finalize() {
+        if (!hasPath)
+            return;
 
-        // Free subpaths.
-        foreach(ref subpath; this.subpaths) {
-            subpath.clear();
+        // Close any unclosed paths.
+        this.closePath();
+
+        vec2 baseOffset = vec2(
+            -this.bounds.xMin,
+            -this.bounds.yMax + this.bounds.height
+        );
+
+        foreach(ref subpath; subpaths) {
+            foreach(ref line; subpath.lines) {
+                line.p1 += baseOffset;
+                line.p2 += baseOffset;
+            }
         }
-        this.subpaths.clear();
-        
-        // Reset state.
-        this.cursor = vec2.zero;
-        this.bounds = aabbDefault;
     }
 
     /**
         Makes a copy of the path
     */
     Path clone() {
-        Path npath;
-        foreach(ref Subpath subpath; this.subpaths[]) {
-            npath.subpaths ~= subpath.clone();
-        }
-        return npath;
+        Path newpath;
+        newpath.bounds = this.bounds;
+        newpath.cursor = this.cursor;
+        newpath.curveSubdivisions = this.curveSubdivisions;
+        newpath.subpaths = ha_allocarr!Subpath(subpaths.length);
+
+        foreach(i, ref Subpath subpath; this.subpaths)
+            newpath.subpaths[i] = subpath.clone();
+        
+        return newpath;
     }
 }
 
@@ -181,7 +245,7 @@ public:
 */
 struct Subpath {
 private:
-    vector!line segments;
+    line[] segments;
 
 public:
 @nogc:
@@ -231,19 +295,20 @@ public:
             return false;
         return sp == ep;
     }
+
+    /**
+        Clears the subpath of line segments.
+    */
+    void free() {
+        ha_freearr(segments);
+    }
     
     /**
         Pushes a line segment to the subpath.
     */
     void push(line lineSegment) {
-        this.segments ~= lineSegment;
-    }
-
-    /**
-        Clears the subpath of line segments.
-    */
-    void clear() {
-        this.segments.clear();
+        this.segments = segments.nu_resize(segments.length+1);
+        this.segments[$-1] = lineSegment;
     }
 
     /**
@@ -255,7 +320,7 @@ public:
     */
     Subpath clone() {
         Subpath newPath;
-        newPath.segments ~= this.lines;
+        newPath.segments = this.lines.nu_dup();
         return newPath;
     }
 }
