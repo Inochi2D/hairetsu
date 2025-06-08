@@ -40,6 +40,47 @@ protected:
     */
     abstract FontFace onCreateFace(FontReader reader);
     
+    /**
+        Normalizes the glyph type to one that is supported.
+
+        Params:
+            type = The type to normalize
+            normalizeTo = The glyph to normalize against.
+        
+        Returns:
+            A GlyphType normalized against the given glyph index.
+    */
+    final
+    GlyphType normalizeType(GlyphType type, GlyphIndex normalizeTo) {
+        GlyphType supported = this.getGlyphType(normalizeTo);
+
+        switch(type) {
+            case GlyphType.any:
+                if (supported & GlyphType.svg)
+                    return supported & GlyphType.svg;
+
+                if (supported & GlyphType.outline)
+                    return supported & GlyphType.outline;
+
+                if (supported & GlyphType.bitmap)
+                    return supported & GlyphType.bitmap;
+                
+                return GlyphType.none;
+
+            case GlyphType.bitmap:
+                return supported & GlyphType.bitmap;
+
+            case GlyphType.outline:
+                return supported & GlyphType.outline;
+
+            case GlyphType.svg:
+                return supported & GlyphType.svg;
+
+            default:
+                return GlyphType.none;
+        }
+    }
+
 public:
 
     /**

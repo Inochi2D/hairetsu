@@ -69,33 +69,6 @@ struct GlyfTable {
 }
 
 /**
-    Drawing data passed into glyf.
-*/
-struct GlyfDrawData {
-@nogc:
-    GlyfRecord* record;
-    GlyphDrawCallbacks* callbacks;
-}
-
-/**
-    Internal draw function which passes the render callbacks
-    into the glyf handler.
-
-    You won't use this directly.
-*/
-extern(C)
-bool __ha_glyf_draw_function(void*[4] argHandles, float scale, void* userdata) @nogc {
-    GlyfRecord* record = cast(GlyfRecord*)argHandles[0];
-    GlyphDrawCallbacks* callbacks = cast(GlyphDrawCallbacks*)argHandles[1];
-    
-    if (record && callbacks) {
-        record.drawWith(*callbacks, scale, userdata);
-        return true;
-    }
-    return false;
-}
-
-/**
     A single glyf record.
 */
 struct GlyfRecord {
@@ -170,7 +143,7 @@ public:
     */
     void drawWith(GlyphDrawCallbacks outline, float scale, void* userdata) {
         
-        // NOTE: Temporary stores needed to calculate outliens from the
+        // NOTE: Temporary stores needed to calculate outlines from the
         //       compressed form, start and first differ due to how outlines
         //       can start and end with off-curve points; in which case you need
         //       to use the point after the first to calculate the ghost control point. 
@@ -178,7 +151,6 @@ public:
         GlyfPoint first;
         GlyfPoint last;
         GlyfPoint curr;
-
         foreach(ref GlyfContour contour; contours) {
             
             // Skip empty contours.
@@ -269,8 +241,8 @@ struct GlyfContour {
     A point in a glyph contour
 */
 struct GlyfPoint {
-    vec2 point;
-    bool onCurve;
+    vec2 point = vec2(0, 0);
+    bool onCurve = false;
 }
 
 /// Only used internally to construct GlyfContour

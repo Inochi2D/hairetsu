@@ -362,7 +362,6 @@ public:
     */
     this(SFNTFontEntry entry, FontReader reader) {
         this.entry_ = entry;
-
         super(entry_.index, reader);
     }
     
@@ -478,32 +477,29 @@ public:
     Glyph getGlyph(GlyphIndex glyphId, GlyphType type) {
         Glyph glyph;
 
+        glyph.font = this;
         glyph.id = glyphId;
         glyph.metrics = this.getMetricsFor(glyphId);
+
+        // Requested nothing.
+        if (type == GlyphType.none)
+            return glyph;
+
+        // Requested w/ glyph data.
+        type = this.normalizeType(type, glyphId);
         switch(type) {
 
             // TTF Glyf Outlines.
             case GlyphType.trueType:
                 if (auto record = this.getGlyfRecord(glyphId)) {
-                    glyph.data.argHandles = [
-                        cast(void*)record,
-                        null,
-                        null,
-                        null
-                    ];
-                    glyph.data.drawFunc = &__ha_glyf_draw_function;
+                    glyph.setData(record);
                 }
                 break;
 
             // SVG
             case GlyphType.svg:
                 if (auto record = this.getSVG(glyphId)) {
-                    glyph.data.argHandles = [
-                        cast(void*)record.ptr,
-                        cast(void*)record.length,
-                        null,
-                        null
-                    ];
+                    glyph.setData(record);
                 }
                 break;
             
