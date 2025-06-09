@@ -77,7 +77,7 @@ public:
 /**
     A font family used during font enumeration.
 */
-class FontFamily : FontCollection {
+class FontFamily : NuRefCounted {
 private:
 @nogc:
     FontFaceInfo[] _faces;
@@ -108,6 +108,48 @@ public:
     final
     @property FontFaceInfo[] faces() {
         return _faces;
+    }
+
+    /**
+        Gets whether any font within the family has the specified 
+        character.
+
+        Params:
+            code = The unicode codepoint to query for.
+        
+        Returns:
+            $(D true) if the family has a face with the given 
+            unicode code point, $(D false) otherwise.
+    */
+    final
+    bool hasCharacter(codepoint code) {
+        foreach(face; faces) {
+            if (face.hasCharacter(code))
+                return true;
+        }
+
+        return false;
+    }
+
+    /**
+        Gets the first font face in the family with the given
+        character.
+
+        Params:
+            code = The unicode codepoint to query for.
+        
+        Returns:
+            The first $(D FontFaceInfo) that supports said codepoint,
+            otherwise $(D null) if none was found.
+    */
+    final
+    FontFaceInfo getFirstFaceWith(codepoint code) {
+        foreach(face; faces) {
+            if (face.hasCharacter(code)) {
+                return face;
+            }
+        }
+        return null;
     }
 
     /**
@@ -208,17 +250,24 @@ public:
     string sampleText;
 
     /**
-        Whether the font is a valid instance.
+        Whether the face is a valid instance.
     */
     final
-    @property bool isValidFont() {
+    @property bool isRealizable() {
         return path.length > 0 || stream;
     }
 
     /**
         Gets whether the font has the specified character.
+
+        Params:
+            code = The unicode codepoint to query for.
+        
+        Returns:
+            $(D true) if the face has the given unicode code point,
+            $(D false) otherwise.
     */
-    abstract bool hasCharacter(codepoint character);
+    abstract bool hasCharacter(codepoint code);
 
     /**
         Realises the virtual font.

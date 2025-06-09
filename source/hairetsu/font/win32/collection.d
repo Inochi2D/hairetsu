@@ -58,7 +58,7 @@ extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
                 IDWriteFont font;
                 if (SUCCEEDED(dwriteFamily.GetFont(f, font))) {
                     DWriteFontFaceInfo vFace = nogc_new!DWriteFontFaceInfo(font);
-                    if(vFace.isValidFont) {
+                    if(vFace.isRealizable) {
                         vFace.retain();
                         family.addFace(vFace);
                     }

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="hairetsu.png" alt="NuMem" style="height: 50%; max-height: 512px; width: auto;">
+    <img src="hairetsu.png" alt="NuMem" style="height: 50%; max-height: 512px; width: auto;">
 </p>  
 
 *Rendered with Hairetsu using Noto Sans JP*
@@ -10,6 +10,36 @@ lookup, shaping and rasterization with plans for complex text layout and bidi in
 
 Hairetsu is built around reference counted types built ontop of `numem`; despite this the types provided
 by hairetsu should be usable in a GC context.
+
+## Enumerating System Fonts
+
+Hairetsu has a subsystem for enumerating fonts on the system and their capabilities.
+To facilitate this, Hairetsu provides "collections". Collections cover fonts and their variants.
+
+You can get a collection of all fonts that the OS is aware of by calling `FontCollection.createFromSystem`,
+this function will only list fonts which Hairetsu can realize to actual font objects and will omit non-realizable fonts.
+
+For example, to select the first font that supports a given unicode code point, 
+you can use `FontFamily.getFirstFaceWith` to query each face in the collection for a UTF-32 character.
+
+FontFaceInfo's can be realised to their font file using `FontFaceInfo.realize`; some fonts might not be
+realizable. Use `FontFaceInfo.isRealizable` to query this.
+
+```d
+// Note:  You can pass in a boolean to tell Hairetsu whether to ask the OS
+//        to reindex its font list.
+FontCollection systemFonts = FontCollection.createFromSystem();
+FontFile selectedFont;
+foreach(family; systemFonts.families) {
+    if (FontFaceInfo face = family.getFirstFaceWith('あ')) {
+        selectedFont = face.realize();
+        break;
+    }
+}
+```
+
+#### NOTE
+This will only work on systems where a backend is implemented; otherwise you will get an empty collection.
 
 ## Loading Fonts
 
