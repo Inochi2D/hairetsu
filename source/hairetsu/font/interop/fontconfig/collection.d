@@ -31,7 +31,7 @@ void _ha_fc_fontcollection_init(bool update) @nogc {
 extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
     _ha_fc_fontcollection_init(update);
     FcPattern* pattern = FcPatternCreate();
-    FcObjectSet* objects = FcObjectSetBuild(FC_FAMILY, FC_FULLNAME, FC_POSTSCRIPT_NAME, FC_CHARSET, FC_FONTFORMAT, FC_FILE, cast(char*)null);
+    FcObjectSet* objects = FcObjectSetBuild(FC_FAMILY, FC_FULLNAME, FC_POSTSCRIPT_NAME, FC_CHARSET, FC_INDEX, FC_FILE, cast(char*)null);
     FcFontSet* fonts = FcFontList(fc, pattern, objects);
 
     // Allocate faces; we'll allocate for every font, even unsupported ones.
@@ -47,15 +47,17 @@ extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
         const(char)* family;
 
         if (FcPatternGetString(font, FC_FAMILY, 0, family) == FcResult.Match) {
-
             const(char)* file;
             const(char)* fullName;
             const(char)* psName;
             FcCharSet* charSet;
+            int index;
+
             FcPatternGetString(font, FC_FILE, 0, file);
             FcPatternGetString(font, FC_FULLNAME, 0, fullName);
             FcPatternGetString(font, FC_POSTSCRIPT_NAME, 0, psName);
             FcPatternGetCharSet(font, FC_CHARSET, 0, charSet);
+            FcPatternGetInteger(font, FC_INDEX, 0, index);
 
             // Skip unnamed.
             if (!fullName)
@@ -64,7 +66,7 @@ extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
             if (!file)
                 continue;
 
-            faces[faceIdx] = nogc_new!FCFontFaceInfo(charSet);
+            faces[faceIdx] = nogc_new!FCFontFaceInfo(charSet, index);
             faces[faceIdx].familyName = cast(string)family.fromStringz().nu_dup();
 
             // Optional info
@@ -97,6 +99,7 @@ class FCFontFaceInfo : FontFaceInfo {
 private:
 @nogc:
     FcCharSet* charset;
+    int index;
 
 public:
 
@@ -111,8 +114,9 @@ public:
     /**
         Constructor
     */
-    this(FcCharSet* charset) {
+    this(FcCharSet* charset, int index) {
         this.charset = FcCharSetCopy(charset);
+        this.index = index;
     }
 
     /**
@@ -128,5 +132,19 @@ public:
     override
     bool hasCharacter(codepoint code) {
         return FcCharSetHasChar(charset, code);
+    }
+
+    /**
+        Realises the font face into a Hairetsu font object.
+
+        Returns:
+            The font created from the font info.
+    */
+    override
+    Font realize() {
+        if (!path)
+            return null;
+
+        return this.realizeFromFile(FontFile.fromFile(path), index);
     }
 }

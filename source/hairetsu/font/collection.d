@@ -172,6 +172,42 @@ private:
 @nogc:
     Stream stream;
 
+protected:
+
+    /**
+        Helper implementation which provides a simple "realize"
+        implementation for an already open font file.
+        
+        Note:
+            The font file will be released after this operation.
+
+        Params:
+            fFile = The font file to realize.
+            index = The index within the file to realize.
+
+        Returns:
+            A new font object from the font file.
+    */
+    final
+    Font realizeFromFile(FontFile fFile, uint index) {
+        Font font;
+        
+        if (fFile.fonts.length > 0) {
+            
+            // Fallback if we somehow got a malformed index.
+            if (index >= fFile.fonts.length)
+                index = 0;
+
+            // Font found, retain it while releasing the
+            // font file; this should allow continued used
+            // of the fetched font object.
+            font = fFile.fonts[0];
+            font.retain();
+        }
+        fFile.release();
+        return font;
+    }
+
 public:
 
     /**
@@ -270,19 +306,21 @@ public:
     abstract bool hasCharacter(codepoint code);
 
     /**
-        Realises the virtual font.
+        Realises the font face into a Hairetsu font object.
 
         Returns:
-            The font created from the font info.
+            A font created from the font info.
     */
-    FontFile realize() {
+    Font realize() {
+
+        // Open the font file.
+        FontFile fFile;
         if (stream)
-            return FontFile.fromStream(stream, name);
-        
-        if (path)
-            return FontFile.fromFile(path);
-        
-        return null;
+            fFile = FontFile.fromStream(stream, name);
+        else if (path)
+            fFile = FontFile.fromFile(path);
+
+        return this.realizeFromFile(fFile, 0);
     }
 }
 
