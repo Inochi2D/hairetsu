@@ -9,8 +9,6 @@ void main() {
 		foreach(j, face; family.faces) {
 			writefln("    %s: %s", j, face.name);
 		}
-		writeln(family.faces[0].path);
-		writefln(" - %s", cast(void*)family.faces[0].realize());
 	}
 	collection.release();
 }
