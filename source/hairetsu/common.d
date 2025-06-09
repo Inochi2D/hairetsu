@@ -19,7 +19,6 @@ public import hairetsu.ot.script;
 public import hairetsu.ot.lang;
 
 public import hairetsu.math;
-import nulib.system.com.unk;
 
 /**
     The 32-bit glyph index in a font.
