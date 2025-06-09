@@ -24,7 +24,7 @@ buildOptions "debugInfoC"
 //
 
 configuration "win32-static" {
-    platform "windows"
+    platforms "windows"
     targetType "staticLibrary"
 
     dependency "nulib:com" version=">=0.3.0"
@@ -33,7 +33,7 @@ configuration "win32-static" {
 }
 
 configuration "win32-dynamic" {
-    platform "windows"
+    platforms "windows"
     targetType "dynamicLibrary"
 
     dependency "nulib:com" version=">=0.3.0"
