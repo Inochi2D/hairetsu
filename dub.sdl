@@ -81,10 +81,12 @@ configuration "posix-dynamic" {
 
 configuration "static" {
     targetType "staticLibrary"
+    versions "HA_GENERIC"
 }
 
 configuration "dynamic" {
     targetType "dynamicLibrary"
+    versions "HA_GENERIC"
 }
 
 //

@@ -110,11 +110,13 @@ extern(Windows) {
 */
 wstring getUserDefaultLocaleW() @nogc {
     const(wchar)[] lname = ha_allocarr!(const(wchar))(85);
+    
+    // Fetch name
     int len = GetUserDefaultLocaleName(lname.ptr, 85);
-    if (len > 0) {
+    if (len) 
         return cast(wstring)lname[0..len-1];
-    }
-
+    
+    // Name not found.
     ha_freearr(lname);
     return null;
 }
@@ -166,26 +168,25 @@ extern(Windows):
     uint GetStyle() pure;
     bool IsSymbolFont() pure;
     HRESULT GetFaceNames(ref IDWriteLocalizedStrings names) pure;
-    HRESULT GetInformationalStrings(DWriteInformationalStringID sid, ref IDWriteLocalizedStrings infoStrings, ref bool exists) pure;
+    HRESULT GetInformationalStrings(DWriteInformationalStringID sid, IDWriteLocalizedStrings* infoStrings, ref bool exists) pure;
     uint GetSimulations() pure;
     void GetMetrics(void* metrics) pure;
     HRESULT HasCharacter(uint codepoint, ref bool exists) pure;
-    HRESULT CreateFontFace(IDWriteFontFace* face);
+    HRESULT CreateFontFace(IDWriteFontFace* face) pure;
 
     /**
         Gets informational string from the font.
     */
     final
-    string getInformationalString(DWriteInformationalStringID sid) {
+    extern(D)
+    string getInformationalString(DWriteInformationalStringID sid) @nogc {
         IDWriteLocalizedStrings strings;
         bool exists;
-        if (SUCCEEDED(this.GetInformationalStrings(sid, strings, exists))) {
-            if (!exists)
-                return null;
+        HRESULT hr;
 
-            if (!strings)
-                return null;
-            
+        hr = this.GetInformationalStrings(sid, &strings, exists);
+        if (exists) {
+
             nstring infstr = strings.getBestString();
             string copy = infstr[].nu_dup();
             return copy;
@@ -275,23 +276,23 @@ extern(Windows):
     final
     extern(D)
     IDWriteFontFile[] getFiles() {
+        HRESULT hr;
         IDWriteFontFile[] files;
         uint numberOfFiles;
 
-        if (SUCCEEDED(this.GetFiles(numberOfFiles, null))) {
+        hr = this.GetFiles(numberOfFiles, null);
+        if (SUCCEEDED(hr)) {
             if (numberOfFiles == 0)
                 return null;
 
-            files = ha_allocarr!IDWriteFontFile(numberOfFiles);
-
             // Attempt to read files into files.ptr
-            if (SUCCEEDED(this.GetFiles(numberOfFiles, files.ptr))) {
-                return files;
-            }
+            files = ha_allocarr!IDWriteFontFile(numberOfFiles);
             
-            ha_freearr(files);
+            hr = this.GetFiles(numberOfFiles, files.ptr);
+            if (FAILED(hr)) 
+                ha_freearr(files);
         }
-        return null;
+        return files;
     }
 }
 
@@ -300,11 +301,39 @@ interface IDWriteLocalizedStrings : IUnknown {
 extern(Windows):
 @nogc:
     uint GetCount() pure;
-    HRESULT FindLocaleName(const(wchar)* localeName, ref uint index, ref bool exists) pure;
+    HRESULT FindLocaleName(const(wchar)* localeName, uint* index, bool* exists) pure;
     HRESULT GetLocaleNameLength(uint index, ref uint length) pure;
     HRESULT GetLocaleName(uint index, const(wchar)* localeName, uint size) pure;
     HRESULT GetStringLength(uint index, ref uint length) pure;
     HRESULT GetString(uint index, const(wchar)* stringBuffer, uint size) pure;
+
+    /**
+        Gets the best locale from a IDWriteLocalizedStrings
+    */
+    final
+    extern(D)
+    uint getBestLocale() @nogc {
+        uint index = 0;
+        bool exists = false;
+        HRESULT hr;
+        
+
+        wstring locale = getUserDefaultLocaleW();
+        if (locale.ptr !is null) {
+
+            hr = this.FindLocaleName(locale.ptr, &index, &exists);
+            ha_freearr(locale);
+
+            if (FAILED(hr) || !exists) {
+                hr = this.FindLocaleName("en-us", &index, &exists);
+                if (FAILED(hr) || !exists) {
+                    return 0; // Select first one if none are found.
+                }
+            }
+            return index;
+        }
+        return 0;
+    }
 
     /**
         Gets the best string from a IDWriteLocalizedStrings
@@ -312,32 +341,21 @@ extern(Windows):
     final
     extern(D)
     string getBestString() @nogc {
+        wchar[] str;
+        HRESULT hr;
         uint strLen;
-        uint index;
-        bool exists;
 
-        wstring locale = getUserDefaultLocaleW();
-        if (locale.ptr !is null) {
-            if (SUCCEEDED(this.FindLocaleName(locale.ptr, index, exists)) && !exists) {
-                if (!SUCCEEDED(this.FindLocaleName("en-us", index, exists))) {
-                    index = 0; // Select first one if none are found.
-                }
-            }
-            ha_freearr(locale);
+        uint index = this.getBestLocale();
+        hr = this.GetStringLength(index, strLen);
+        if (FAILED(hr)) {
+            return null;
         }
 
-        if (SUCCEEDED(this.GetStringLength(index, strLen))) {
-            wchar[] str = ha_allocarr!(wchar)(strLen+1);
-            this.GetString(index, str.ptr, strLen+1);
+        str = ha_allocarr!(wchar)(strLen+1);
+        this.GetString(index, str.ptr, strLen+1);
 
-            nstring ret = str[0..strLen];
-            ha_freearr(str);
-
-            this.Release();
-            return ret.nu_dup();
-        }
-
-        this.Release();
-        return null;
+        nstring ret = str[0..strLen];
+        ha_freearr(str);
+        return ret.nu_dup();
     }
 }

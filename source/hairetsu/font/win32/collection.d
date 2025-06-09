@@ -84,10 +84,11 @@ extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
 class DWriteFontFaceInfo : FontFaceInfo {
 private:
 @nogc:
-    IDWriteFont _font;
+    IDWriteFont font;
 
-    void setPathFromFont(IDWriteFont font) {
-        
+    void setPathFromFont() {
+        import std.stdio : printf;
+
         IDWriteFontFace face;
         if (SUCCEEDED(font.CreateFontFace(&face))) {
             if (!face.GetType().isFaceSupported) {
@@ -114,7 +115,7 @@ private:
         }
     }
 
-    void setInfoFromFont(IDWriteFont font) {
+    void setInfoFromFont() {
         this.name = font.getInformationalString(DWriteInformationalStringID.FULL_NAME);
         this.postscriptName = font.getInformationalString(DWriteInformationalStringID.POSTSCRIPT_NAME);
         this.familyName = font.getInformationalString(DWriteInformationalStringID.TYPOGRAPHIC_FAMILY_NAMES);
@@ -128,16 +129,19 @@ public:
         Destructor
     */
     ~this() {
-        this._font.Release();
+        this.font.Release();
     }
 
     /**
         Creates virtual font from dwrite font and face.
     */
     this(IDWriteFont font) {
-        this._font = font;
-        this.setPathFromFont(font);
-        this.setInfoFromFont(font);
+        this.font = font;
+        
+        this.setPathFromFont();
+
+        // This is broken on LDC??
+        version(LDC) { } else this.setInfoFromFont();
     }
 
     /**
@@ -146,7 +150,7 @@ public:
     override
     bool hasCharacter(codepoint character) {
         bool exists;
-        _font.HasCharacter(character, exists);
+        font.HasCharacter(character, exists);
         return exists;
     }
 }

@@ -44,6 +44,7 @@ T[] ha_allocarr(T)(size_t size) @nogc {
 
     T[] buffer;
     buffer = buffer.nu_resize(size);
+
     nogc_initialize(buffer[0..$]);
     return buffer;
 }

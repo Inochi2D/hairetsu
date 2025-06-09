@@ -25,7 +25,6 @@ void main(string[] args) {
 						font.glyphCount
 					);
 					writefln("      - Format: %s", font.type);
-					writefln("      - Glyph Types: %s", font.glyphTypeNames);
 					writefln("      - Features: (%u) '%s'", font.fontFeatures.length, font.fontFeatures().join("', '"));
 				}
 			}

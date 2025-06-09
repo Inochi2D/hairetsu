@@ -17,9 +17,19 @@ import nulib.io.stream;
 import numem;
 
 // Implemented by the backend.
-private 
-extern(C) FontCollection _ha_fontcollection_from_system(bool update) @weak @nogc {
-    return null;
+private {
+    version(HA_GENERIC) {
+        extern(C) FontCollection _ha_fontcollection_from_system(bool update) @weak @nogc {
+            return nogc_new!FontCollection();
+        }
+    } else {
+
+        // NOTE: DMD does not support weak symbols like LDC and GDC,
+        //       so this ugly hack lies here.
+        //       Given that we already define HA_GENERIC when we don't have
+        //       A specific backend, this *should* be fine.
+        extern(C) FontCollection _ha_fontcollection_from_system(bool update) @weak @nogc;
+    }
 }
 
 /**
