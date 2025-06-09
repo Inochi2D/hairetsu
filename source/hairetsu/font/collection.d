@@ -285,3 +285,37 @@ public:
         return null;
     }
 }
+
+/**
+    Creates a font collection from a series of faces, organized by
+    family.
+
+    Params:
+        faces = The faces to turn into a collection.
+
+    Returns:
+        A newly populated FontCollection.
+*/
+FontCollection collectionFromFaces(FontFaceInfo[] faces) {
+    FontCollection collection = nogc_new!FontCollection();
+    import nulib.collections.map : weak_map;
+
+    weak_map!(string, FontFamily) families;
+    foreach(i; 0..faces.length) {
+        string fname = faces[i].familyName;
+        if (fname !in families) {
+            families[fname] = nogc_new!FontFamily();
+
+            // Copy family name since the family also deletes its own name ref.
+            families[fname].familyName = faces[i].familyName.nu_dup();
+        }
+
+        families[fname].addFace(faces[i]);
+    }
+
+    // Step 3. Add them to the collection.
+    foreach(family; families.byValue) {
+        collection.addFamily(family);
+    }
+    return collection;
+}

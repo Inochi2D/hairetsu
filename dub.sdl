@@ -49,7 +49,7 @@ configuration "appleos-static" {
     platforms "osx" "ios" "watchos" "visionos" "tvos"
     targetType "staticLibrary"
 
-    lflags "-framework" "CoreText"
+    lflags "-framework" "CoreFoundation" "-framework" "CoreText"
     versions "HA_CORETEXT"
 }
 
@@ -57,7 +57,7 @@ configuration "appleos-dynamic" {
     platforms "osx" "ios" "watchos" "visionos" "tvos"
     targetType "dynamicLibrary"
 
-    lflags "-framework" "CoreText"
+    lflags "-framework" "CoreFoundation" "-framework" "CoreText"
     versions "HA_CORETEXT"
 }
 

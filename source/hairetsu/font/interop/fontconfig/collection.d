@@ -49,7 +49,6 @@ bool isFontSupported(const(char)* fmt) {
 */
 extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
     _ha_fc_fontcollection_init(update);
-    FontCollection collection = nogc_new!FontCollection();
     FcPattern* pattern = FcPatternCreate();
     FcObjectSet* objects = FcObjectSetBuild(FC_FAMILY, FC_FULLNAME, FC_POSTSCRIPT_NAME, FC_CHARSET, FC_FONTFORMAT, FC_FILE, cast(char*)null);
     FcFontSet* fonts = FcFontList(fc, pattern, objects);
@@ -88,7 +87,8 @@ extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
             // Optional info
             if (file) faces[faceIdx].path = file.fromStringz().nu_dup();
             if (fullName) faces[faceIdx].name = fullName.fromStringz().nu_dup();
-            if (psName) faces[faceIdx].name = psName.fromStringz().nu_dup();
+            if (psName) faces[faceIdx].postscriptName = psName.fromStringz().nu_dup();
+            faces[faceIdx].sampleText = faces[faceIdx].name.nu_dup();
 
             // Retain the face so that later deletion of our temp array doesn't
             // free it.
@@ -98,26 +98,11 @@ extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
 
     }
 
-    // Step 2. Assign them to families.
-    weak_map!(string, FontFamily) families;
-    foreach(i; 0..faceIdx) {
-        string fname = faces[i].familyName;
-        if (fname !in families) {
-            families[fname] = nogc_new!FontFamily();
+    // Step 2. Convert to collection.
+    faces = faces[0..faceIdx];
+    FontCollection collection = faces.collectionFromFaces();
 
-            // Copy family name since the family also deletes its own name ref.
-            families[fname] = faces[i].familyName.nu_dup();
-        }
-
-        families[fname] = faces[i];
-    }
-
-    // Step 3. Add them to the collection.
-    foreach(family; families.byValue) {
-        collection.addFamily(family);
-    }
-
-    // Step 4. Final cleanup.
+    // Step 3. Final cleanup.
     ha_freearr(faces);
     nogc_delete(families);
     FcFontSetDestroy(fonts);
@@ -144,7 +129,7 @@ public:
         Constructor
     */
     this(FcCharSet* charset) {
-        charset = FcCharSetCopy(charset);
+        this.charset = FcCharSetCopy(charset);
     }
 
     /**
