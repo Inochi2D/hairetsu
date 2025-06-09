@@ -9,11 +9,11 @@
     Authors:   Luna Nielsen
 */
 module hairetsu.font.collection;
-import core.attribute;
 import hairetsu.font.font;
 import hairetsu.font.file;
 import hairetsu.common;
 import nulib.io.stream;
+import core.attribute;
 import numem;
 
 // Implemented by the backend.

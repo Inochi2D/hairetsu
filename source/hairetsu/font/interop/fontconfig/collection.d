@@ -11,6 +11,8 @@
 module hairetsu.font.interop.fontconfig.collection;
 import hairetsu.font.interop.fontconfig.fontconfig;
 import hairetsu.font.collection;
+import hairetsu.font.font;
+import hairetsu.font.file;
 import hairetsu.common;
 import nulib.collections.map;
 import numem;

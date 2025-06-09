@@ -11,6 +11,8 @@
 module hairetsu.font.interop.dwrite.collection;
 import hairetsu.font.interop.dwrite.dwrite;
 import hairetsu.font.collection;
+import hairetsu.font.font;
+import hairetsu.font.file;
 import hairetsu.common;
 import numem;
 
@@ -83,6 +85,7 @@ extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
 class DWriteFontFaceInfo : FontFaceInfo {
 private:
 @nogc:
+    int index;
     IDWriteFont font;
 
     void setPathFromFont() {
@@ -94,6 +97,8 @@ private:
                 face.Release();
                 return;
             }
+
+            this.index = face.GetIndex();
 
             IDWriteFontFile[] files = face.getFiles();
             if (files.length > 0) {
@@ -151,5 +156,19 @@ public:
         bool exists;
         font.HasCharacter(character, exists);
         return exists;
+    }
+
+    /**
+        Realises the font face into a Hairetsu font object.
+
+        Returns:
+            The font created from the font info.
+    */
+    override
+    Font realize() {
+        if (!path)
+            return null;
+
+        return this.realizeFromFile(FontFile.fromFile(path), index);
     }
 }
