@@ -59,7 +59,7 @@ void ha_freearr(T)(ref T[] arr) @nogc {
         }
     }
     
-    version(Have_nulib_com) {
+    static if (is(nulib.system.com.unk)) {
         import nulib.system.com.unk : IUnknown;
         
         static if (is(T : IUnknown)) {
