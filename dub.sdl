@@ -108,10 +108,43 @@ configuration "none-dynamic" {
 }
 
 //
-//          Special
+//          Unit tests
 //
+
+configuration "win32-unittest" {
+    platforms "windows"
+
+    dependency "silly" version="*"
+    dependency "numem:hookset-libc" version="*"
+    dependency "nulib:com" version=">=0.3.0"
+    
+    libs "dwrite"
+    versions "HA_DIRECTWRITE"
+}
+
+configuration "appleos-unittest" {
+    platforms "osx" "ios" "watchos" "visionos" "tvos"
+
+    dependency "silly" version="*"
+    dependency "numem:hookset-libc" version="*"
+    
+    lflags "-framework" "CoreFoundation" "-framework" "CoreText"
+    versions "HA_CORETEXT"
+}
+
+configuration "posix-unittest" {
+    platforms "posix"
+
+    dependency "silly" version="*"
+    dependency "numem:hookset-libc" version="*"
+
+    libs "fontconfig"
+    versions "HA_FONTCONFIG"
+}
 
 configuration "unittest" {
     dependency "silly" version="*"
     dependency "numem:hookset-libc" version="*"
+    
+    versions "HA_GENERIC"
 }

@@ -59,8 +59,9 @@ void ha_freearr(T)(ref T[] arr) @nogc {
         }
     }
     
-    version(Windows) {
+    version(Have_nulib_com) {
         import nulib.system.com.unk : IUnknown;
+        
         static if (is(T : IUnknown)) {
             foreach(ref item; arr) {
                 item.Release();
