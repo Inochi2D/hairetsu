@@ -8,10 +8,12 @@
     License:   $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
     Authors:   Luna Nielsen
 */
-module hairetsu.font.win32.dwrite;
+module hairetsu.font.interop.dwrite.dwrite;
 import hairetsu.common;
 import nulib.string;
 import numem;
+
+version(HA_DIRECTWRITE):
 version(Windows):
 
 public import nulib.system.com;

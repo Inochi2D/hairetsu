@@ -1,5 +1,5 @@
 /**
-    Hairetsu Font Collections for Windows
+    Hairetsu Font Collections for DirectWrite
 
     Copyright:
         Copyright © 2023-2025, Kitsunebi Games
@@ -8,18 +8,17 @@
     License:   $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
     Authors:   Luna Nielsen
 */
-module hairetsu.font.win32.collection;
-import hairetsu.font.win32.dwrite;
-
-version(Windows):
-
+module hairetsu.font.interop.dwrite.collection;
+import hairetsu.font.interop.dwrite.dwrite;
 import hairetsu.font.collection;
-import hairetsu.font.win32.dwrite;
 import hairetsu.common;
 import numem;
 
+version(HA_DIRECTWRITE):
+version(Windows):
+
 __gshared IDWriteFactory _ha_dwrite_factory;
-void _ha_win32_fontcollection_init() @nogc {
+void _ha_dwrite_fontcollection_init() @nogc {
     if (!_ha_dwrite_factory) {
         DWriteCreateFactory(DWriteFactoryType.SHARED, &IDWriteFactory.iid, cast(IUnknown*)&_ha_dwrite_factory);
     }
@@ -29,7 +28,7 @@ void _ha_win32_fontcollection_init() @nogc {
     Function to enumerate the system fonts.
 */
 extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
-    _ha_win32_fontcollection_init();
+    _ha_dwrite_fontcollection_init();
 
     FontCollection collection = nogc_new!FontCollection();
     if (!_ha_dwrite_factory)

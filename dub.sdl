@@ -29,6 +29,7 @@ configuration "win32-static" {
 
     dependency "nulib:com" version=">=0.3.0"
     libs "dwrite"
+    versions "HA_DIRECTWRITE"
 }
 
 configuration "win32-dynamic" {
@@ -37,6 +38,7 @@ configuration "win32-dynamic" {
 
     dependency "nulib:com" version=">=0.3.0"
     libs "dwrite"
+    versions "HA_DIRECTWRITE"
 }
 
 //
@@ -48,6 +50,7 @@ configuration "appleos-static" {
     targetType "staticLibrary"
 
     lflags "-framework" "CoreText"
+    versions "HA_CORETEXT"
 }
 
 configuration "appleos-dynamic" {
@@ -55,6 +58,7 @@ configuration "appleos-dynamic" {
     targetType "dynamicLibrary"
 
     lflags "-framework" "CoreText"
+    versions "HA_CORETEXT"
 }
 
 //
@@ -66,6 +70,7 @@ configuration "posix-static" {
     targetType "staticLibrary"
 
     libs "fontconfig"
+    versions "HA_FONTCONFIG"
 }
 
 configuration "posix-dynamic" {
@@ -73,20 +78,33 @@ configuration "posix-dynamic" {
     targetType "dynamicLibrary"
 
     libs "fontconfig"
+    versions "HA_FONTCONFIG"
 }
 
 //
 //          Generic
 //
 
-configuration "static" {
+configuration "generic-static" {
     targetType "staticLibrary"
     versions "HA_GENERIC"
 }
 
-configuration "dynamic" {
+configuration "generic-dynamic" {
     targetType "dynamicLibrary"
     versions "HA_GENERIC"
+}
+
+//
+//          None       
+//
+
+configuration "none-static" {
+    targetType "staticLibrary"
+}
+
+configuration "none-dynamic" {
+    targetType "dynamicLibrary"
 }
 
 //
