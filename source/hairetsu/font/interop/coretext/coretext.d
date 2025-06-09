@@ -14,6 +14,8 @@ import nulib.string;
 import numem;
 
 version(HA_CORETEXT):
+enum CFStringEncoding kCFStringEncodingUTF8 = 134217984;
+
 extern(C) extern @nogc:
 
 //
@@ -32,7 +34,7 @@ extern void* CFArrayGetValueAtIndex(CFArray*, CFIndex);
 
 struct CFString;
 alias CFStringEncoding = uint;
-extern __gshared const(CFStringEncoding) kCFStringEncodingUTF8;
+
 extern CFString* CFStringCreateWithCStringNoCopy(void*, const(char)*, CFStringEncoding, void* dealloc = null);
 extern const(char)* CFStringGetCStringPtr(CFString*, CFStringEncoding);
 extern bool CFStringGetCString(CFString*, char*, CFIndex, CFStringEncoding);
@@ -45,13 +47,13 @@ string toString(CFString* str) {
 
         // First try the fast route.   
         if (const(char)* name = CFStringGetCStringPtr(str, kCFStringEncodingUTF8)) {
-            return name[0..len].nu_dup();
+            return cast(string)name[0..len].nu_dup();
         }
 
         // Slow route, we have to convert ourselves.
-        const(char)[] ret = ha_allocarr!(const(char))(len);
+        char[] ret = ha_allocarr!(char)(len);
         if (CFStringGetCString(str, ret.ptr, len, kCFStringEncodingUTF8))
-            return ret;
+            return cast(string)ret;
     }
     return null;
 }
@@ -85,10 +87,10 @@ extern bool CFCharacterSetIsLongCharacterMember(CFCharacterSet*, codepoint);
 //          CoreText
 //
 
-extern __gshared void* kCTFontCollectionCopyDefaultOptions;
+alias CTFontCollectionCopyOptions = uint;
 
 struct CTFontCollection;
-extern CTFontCollection* CTFontCollectionCreateFromAvailableFonts(void*);
+extern CTFontCollection* CTFontCollectionCreateFromAvailableFonts(CTFontCollectionCopyOptions);
 extern CFArray* CTFontCollectionCreateMatchingFontDescriptors(CTFontCollection*);
 
 struct CTFontDescriptor;
@@ -115,6 +117,6 @@ extern __gshared const(CFString)* kCTFontEnabledAttribute;
 extern void* CTFontDescriptorCopyAttribute(CTFontDescriptor*, CFString*);
 
 extern(D)
-T* copyAttribute(T)(CTFontDescriptor* desc, CFString* key) {
-    return cast(T*)CTFontDescriptorCopyAttribute(desc, key);
+T* copyAttribute(T)(CTFontDescriptor* desc, inout(CFString)* key) {
+    return cast(T*)CTFontDescriptorCopyAttribute(desc, cast(CFString*)key);
 }

@@ -296,7 +296,7 @@ public:
     Returns:
         A newly populated FontCollection.
 */
-FontCollection collectionFromFaces(FontFaceInfo[] faces) {
+FontCollection collectionFromFaces(FontFaceInfo[] faces) @nogc {
     FontCollection collection = nogc_new!FontCollection();
     import nulib.collections.map : weak_map;
 

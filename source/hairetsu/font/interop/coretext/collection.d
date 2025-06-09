@@ -18,7 +18,7 @@ import numem;
 version(HA_CORETEXT):
 
 extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
-    CTFontCollection* ctCollection = CTFontCollectionCreateFromAvailableFonts(kCTFontCollectionCopyDefaultOptions);
+    CTFontCollection* ctCollection = CTFontCollectionCreateFromAvailableFonts(0);
     CFArray* ctDescriptors = CTFontCollectionCreateMatchingFontDescriptors(ctCollection);
 
     // Allocate faces; we'll allocate for every font, even unsupported ones.
@@ -28,20 +28,21 @@ extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
 
     // Step 1. Get all the valid fonts.
     foreach(i; 0..faces.length) {
-        CTFontDescriptor* desc = cast(CTFontDescriptor*)CFArrayGetValueAtIndex(ctDescriptors, i);
+        CTFontDescriptor* desc = cast(CTFontDescriptor*)CFArrayGetValueAtIndex(ctDescriptors, cast(CFIndex)i);
         string familyName = desc.copyAttribute!CFString(kCTFontFamilyNameAttribute).toStringReleased();
 
         // We only want fonts that we can sort.
         if (familyName) {
             CFCharacterSet* charset = desc.copyAttribute!CFCharacterSet(kCTFontCharacterSetAttribute);
-            faces[faceIdx] = nogc_new!FontFaceInfo(charset);
+            faces[faceIdx] = nogc_new!CTFontFaceInfo(charset);
+
             faces[faceIdx].familyName = familyName;
-            faces[faceIdx].name = desc.copyAttribute!CFCharacterSet(kCTFontDisplayNameAttribute);
-            faces[faceIdx].postscriptName = desc.copyAttribute!CFCharacterSet(kCTFontNameAttribute);
+            faces[faceIdx].name = desc.copyAttribute!CFString(kCTFontDisplayNameAttribute).toStringReleased();
+            faces[faceIdx].postscriptName = desc.copyAttribute!CFString(kCTFontNameAttribute).toStringReleased();
             faces[faceIdx].sampleText = faces[faceIdx].name.nu_dup();
             
             // Parse path.
-            CFURL* url = desc.copyAttribute!CFString(kCTFontURLAttribute);
+            CFURL* url = desc.copyAttribute!CFURL(kCTFontURLAttribute);
             faces[faceIdx].path = CFURLCopyFileSystemPath(url, CFURLPathStyle.POSIX).toStringReleased();
 
             faceIdx++;
@@ -77,7 +78,7 @@ public:
         Constructor
     */
     this(CFCharacterSet* charset) {
-        this.charset = CFCharacterSetCreateCopy(charset);
+        this.charset = CFCharacterSetCreateCopy(null, charset);
     }
 
     /**
