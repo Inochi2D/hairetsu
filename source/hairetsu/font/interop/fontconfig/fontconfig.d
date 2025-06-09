@@ -14,7 +14,6 @@ import nulib.string;
 import numem;
 
 version(HA_FONTCONFIG):
-extern(C) extern @nogc:
 
 enum const(char)* FC_FAMILY             = "family";         /* String */
 enum const(char)* FC_STYLE              = "style";          /* String */
@@ -76,6 +75,8 @@ enum FcResult {
     NoId,
     OutOfMemory
 }
+
+extern(C) extern @nogc:
 
 struct FcConfig;
 FcConfig* FcInitLoadConfigAndFonts() nothrow;

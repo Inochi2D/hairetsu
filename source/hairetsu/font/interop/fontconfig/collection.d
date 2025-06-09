@@ -26,25 +26,6 @@ void _ha_fc_fontcollection_init(bool update) @nogc {
 }
 
 /**
-    Helper that determines format support.
-*/
-bool isFontSupported(const(char)* fmt) {
-    enum SUPPORTED_FORMATS = [ // @suppress(dscanner.performance.enum_array_literal)
-        "TrueType", 
-        "Type 1", 
-        "CFF",
-    ];
-
-    // NOTE:    String switches requires compiler support;
-    //          as such we use basic if statements instead.
-    static foreach(format; SUPPORTED_FORMATS) {
-        if (fmt == format)
-            return true;
-    }
-    return false;
-}
-
-/**
     Function to enumerate the system fonts.
 */
 extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
@@ -58,19 +39,14 @@ extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
     FontFaceInfo[] faces = ha_allocarr!FontFaceInfo(fonts.nfont);
     uint faceIdx;
 
+    import std.stdio : printf;
+
     // Step 1. Get all the valid fonts.
     foreach(i; 0..fonts.nfont) {
         FcPattern* font = fonts.fonts[i];
         const(char)* family;
 
         if (FcPatternGetString(font, FC_FAMILY, 0, family) == FcResult.Match) {
-            const(char)* format;
-            FcPatternGetString(font, FC_FONTFORMAT, 0, format);
-
-            // Skip unsupported fonts.
-            if (!isFontSupported(format))
-                continue;
-            
 
             const(char)* file;
             const(char)* fullName;
@@ -81,14 +57,21 @@ extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
             FcPatternGetString(font, FC_POSTSCRIPT_NAME, 0, psName);
             FcPatternGetCharSet(font, FC_CHARSET, 0, charSet);
 
+            // Skip unnamed.
+            if (!fullName)
+                continue;
+            
+            if (!file)
+                continue;
+
             faces[faceIdx] = nogc_new!FCFontFaceInfo(charSet);
-            faces[faceIdx].familyName = fullName.fromStringz().nu_dup();
+            faces[faceIdx].familyName = cast(string)family.fromStringz().nu_dup();
 
             // Optional info
-            if (file) faces[faceIdx].path = file.fromStringz().nu_dup();
-            if (fullName) faces[faceIdx].name = fullName.fromStringz().nu_dup();
-            if (psName) faces[faceIdx].postscriptName = psName.fromStringz().nu_dup();
-            faces[faceIdx].sampleText = faces[faceIdx].name.nu_dup();
+            if (file) faces[faceIdx].path = cast(string)file.fromStringz().nu_dup();
+            if (fullName) faces[faceIdx].name = cast(string)fullName.fromStringz().nu_dup();
+            if (psName) faces[faceIdx].postscriptName = cast(string)psName.fromStringz().nu_dup();
+            faces[faceIdx].sampleText = cast(string)faces[faceIdx].name.nu_dup();
 
             // Retain the face so that later deletion of our temp array doesn't
             // free it.
@@ -104,7 +87,6 @@ extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
 
     // Step 3. Final cleanup.
     ha_freearr(faces);
-    nogc_delete(families);
     FcFontSetDestroy(fonts);
     FcObjectSetDestroy(objects);
     FcPatternDestroy(pattern);
