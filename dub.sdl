@@ -6,7 +6,7 @@ license "BSL-1.0"
 
 dependency "numem" version=">=1.1.2"
 dependency "numem:hookset-libc" version="*"
-dependency "nulib" version=">=0.3.0"
+dependency "nulib" version=">=0.3.1"
 dependency "intel-intrinsics" version="1.12.0"
 
 stringImportPaths "res/"
