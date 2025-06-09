@@ -15,6 +15,7 @@ public import hairetsu.font.font;
 public import hairetsu.font.face;
 public import hairetsu.font.cmap;
 public import hairetsu.font.glyph;
+public import hairetsu.font.collection;
 public import hairetsu.ot.tables;
 public import hairetsu.font.types;
 

@@ -2,15 +2,14 @@ import std.stdio;
 import hairetsu;
 
 void main() {
-	auto fontManager = FontManager.create();
+	auto collection = FontCollection.createFromSystem(false);
 
-	writeln(fontManager.fontFamilies());
-	foreach(i, ref family; fontManager.fontFamilies()) {
+	foreach(i, ref family; collection.families) {
 		writefln("%s: %s (%s faces)", i, family.familyName, family.faces.length);
 		foreach(j, face; family.faces) {
-			writefln("    %s: %s", j, face);
+			writefln("    %s: %s", j, face.name);
 		}
-		
+		writefln(" - %s", cast(void*)family.faces[0].realize());
 	}
-	fontManager.release();
+	collection.release();
 }

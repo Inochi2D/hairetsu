@@ -19,8 +19,7 @@ public import hairetsu.ot.script;
 public import hairetsu.ot.lang;
 
 public import hairetsu.math;
-
-@nogc nothrow:
+import nulib.system.com.unk;
 
 /**
     The 32-bit glyph index in a font.
@@ -38,7 +37,7 @@ alias GlyphIndex = uint;
 enum GlyphIndex GLYPH_MISSING = 0x0u;
 
 /**
-    Allocates an array
+    Allocates an array of the given size.
 */
 T[] ha_allocarr(T)(size_t size) @nogc {
     import numem : nogc_initialize;
@@ -53,6 +52,20 @@ T[] ha_allocarr(T)(size_t size) @nogc {
     Frees an array
 */
 void ha_freearr(T)(ref T[] arr) @nogc {
+    static if (is(T : NuRefCounted)) {
+        foreach(ref item; arr) {
+            item.release();
+            item = null;
+        }
+    }
+
+    static if (is(T : IUnknown)) {
+        foreach(ref item; arr) {
+            item.Release();
+            item = null;
+        }
+    }
+
     arr = arr.nu_resize(0);
 }
 
