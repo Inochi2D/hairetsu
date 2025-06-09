@@ -319,3 +319,13 @@ FontCollection collectionFromFaces(FontFaceInfo[] faces) @nogc {
     }
     return collection;
 }
+
+@("FontCollection")
+unittest {
+    FontCollection fc = FontCollection.createFromSystem();
+    assert(fc.families.length > 0);
+
+    foreach(FontFamily family; fc.families) {
+        assert(family.faces.length > 0);
+    }
+}
