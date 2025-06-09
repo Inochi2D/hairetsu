@@ -102,8 +102,12 @@ extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
     weak_map!(string, FontFamily) families;
     foreach(i; 0..faceIdx) {
         string fname = faces[i].familyName;
-        if (fname !in families)
+        if (fname !in families) {
             families[fname] = nogc_new!FontFamily();
+
+            // Copy family name since the family also deletes its own name ref.
+            families[fname] = faces[i].familyName.nu_dup();
+        }
 
         families[fname] = faces[i];
     }
