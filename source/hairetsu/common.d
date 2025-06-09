@@ -58,11 +58,14 @@ void ha_freearr(T)(ref T[] arr) @nogc {
             item = null;
         }
     }
-
-    static if (is(T : IUnknown)) {
-        foreach(ref item; arr) {
-            item.Release();
-            item = null;
+    
+    version(Windows) {
+        import nulib.system.com.unk : IUnknown;
+        static if (is(T : IUnknown)) {
+            foreach(ref item; arr) {
+                item.Release();
+                item = null;
+            }
         }
     }
 
