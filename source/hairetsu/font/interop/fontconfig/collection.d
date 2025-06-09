@@ -123,6 +123,7 @@ public:
     */
     ~this() {
         FcCharSetDestroy(charset);
+        charset = null;
     }
 
     /**

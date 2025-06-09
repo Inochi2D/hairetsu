@@ -77,8 +77,7 @@ public:
         Constructor
     */
     this(CFCharacterSet* charset) {
-        this.charset = charset;
-        CFRetain(charset);
+        this.charset = CFCharacterSetCreateCopy(charset);
     }
 
     /**

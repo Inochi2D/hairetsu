@@ -78,7 +78,8 @@ extern bool CFNumberGetValue(CFNumber*, CFNumberType, void*);
 extern bool CFNumberIsFloatType(CFNumber*);
 
 struct CFCharacterSet;
-bool CFCharacterSetIsLongCharacterMember(CFCharacterSet*, codepoint);
+extern CFCharacterSet* CFCharacterSetCreateCopy(void*, CFCharacterSet*);
+extern bool CFCharacterSetIsLongCharacterMember(CFCharacterSet*, codepoint);
 
 //
 //          CoreText
