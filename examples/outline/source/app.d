@@ -32,7 +32,7 @@ Font findFont(string nameOrFile) {
 		string lcName = nameOrFile.toLower();
 		string faName = family.familyName.toLower();
 
-		if (faName.startsWith(lcName)) {
+		if (faName.startsWith(lcName) || lcName.startsWith(faName)) {
 			uint bestMatchIdx = 0;
 			uint bestMatchDivergence = uint.max;
 			
@@ -45,7 +45,6 @@ Font findFont(string nameOrFile) {
 			foreach(i, face; family.faces) {
 				string fcName = face.name.toLower();
 				string fcStripped = fcName.chompPrefix(lcName);
-				writeln(fcName, " ", fcStripped);
 				if (fcStripped.length < bestMatchDivergence) {
 					bestMatchIdx = cast(uint)i;
 					bestMatchDivergence = cast(uint)fcStripped.length;
