@@ -9,12 +9,20 @@
     Authors:   Luna Nielsen
 */
 module hairetsu.font.interop.dwrite.dwrite;
+import hairetsu.font.glyph;
 import hairetsu.common;
 import nulib.string;
 import numem;
 
 version(HA_DIRECTWRITE):
 version(Windows):
+
+// TODO: IDWrite 1, 2 and 3 are not bound and should be to fetch
+//       the variability of the font. Overall this should all be 
+//       cleaned up.
+
+
+
 
 public import nulib.system.com;
 
@@ -52,16 +60,23 @@ enum DWriteFontFaceType : uint {
     RAW_CFF,
 }
 
-bool isFaceSupported(DWriteFontFaceType type) @nogc {
+GlyphType toGlyphType(DWriteFontFaceType type) @nogc {
     switch(type) {
+        case DWriteFontFaceType.OPENTYPE_COLLECTION:
+            return GlyphType.outline;
+
         case DWriteFontFaceType.CFF:
         case DWriteFontFaceType.RAW_CFF:
+            return GlyphType.cff;
+        
         case DWriteFontFaceType.TRUETYPE:
-        case DWriteFontFaceType.OPENTYPE_COLLECTION:
-            return true;
+            return GlyphType.trueType;
+        
+        case DWriteFontFaceType.BITMAP:
+            return GlyphType.bitmap;
         
         default:
-            return false;
+            return GlyphType.none;
     }
 }
 

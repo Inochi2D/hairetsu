@@ -11,6 +11,7 @@
 module hairetsu.font.collection;
 import hairetsu.font.font;
 import hairetsu.font.file;
+import hairetsu.font.glyph;
 import hairetsu.common;
 import nulib.io.stream;
 import core.attribute;
@@ -284,6 +285,16 @@ public:
         The sample text to show for a given font.
     */
     string sampleText;
+
+    /**
+        The kind of outlines stored in the file.
+    */
+    GlyphType outlines;
+
+    /**
+        Whether the font is variable.
+    */
+    bool variable;
 
     /**
         Whether the face is a valid instance.

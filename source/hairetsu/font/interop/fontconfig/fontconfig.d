@@ -9,6 +9,7 @@
     Authors:   Luna Nielsen
 */
 module hairetsu.font.interop.fontconfig.fontconfig;
+import hairetsu.font.glyph;
 import hairetsu.common;
 import nulib.string;
 import numem;
@@ -74,6 +75,16 @@ enum FcResult {
     TypeMismatch,
     NoId,
     OutOfMemory
+}
+
+GlyphType toGlyphType(string typeString) @nogc {
+    if (typeString == "CFF")
+        return GlyphType.cff;
+    
+    if (typeString == "TrueType")
+        return GlyphType.trueType;
+    
+    return GlyphType.unknown;
 }
 
 extern(C) extern @nogc:

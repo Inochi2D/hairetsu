@@ -11,6 +11,7 @@
 module hairetsu.font.interop.coretext.collection;
 import hairetsu.font.interop.coretext.coretext;
 import hairetsu.font.collection;
+import hairetsu.font.glyph;
 import hairetsu.font.font;
 import hairetsu.font.file;
 import hairetsu.common;
@@ -46,6 +47,15 @@ extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
             // Parse path.
             CFURL* url = desc.copyAttribute!CFURL(kCTFontURLAttribute);
             faces[faceIdx].path = CFURLCopyFileSystemPath(url, CFURLPathStyle.POSIX).toStringReleased();
+
+            // Parse format.
+            CTFontFormat format;
+            CFNumber* ctFormat = desc.copyAttribute!CFNumber(kCTFontFormatAttribute);
+            CFNumberGetValue(ctFormat, CFNumberGetType(ctFormat), &format);
+
+            // Parse variability.
+            CFDictionary* variation = desc.copyAttribute!CFDictionary(kCTFontVariationAttribute);
+            if (variation && CFDictionaryGetCount(variation) > 0) faces[faceIdx].variable = true;
 
             faceIdx++;
         }

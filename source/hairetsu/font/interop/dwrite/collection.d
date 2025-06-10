@@ -11,6 +11,7 @@
 module hairetsu.font.interop.dwrite.collection;
 import hairetsu.font.interop.dwrite.dwrite;
 import hairetsu.font.collection;
+import hairetsu.font.glyph;
 import hairetsu.font.font;
 import hairetsu.font.file;
 import hairetsu.common;
@@ -89,15 +90,10 @@ private:
     IDWriteFont font;
 
     void setPathFromFont() {
-        import std.stdio : printf;
 
         IDWriteFontFace face;
         if (SUCCEEDED(font.CreateFontFace(&face))) {
-            if (!face.GetType().isFaceSupported) {
-                face.Release();
-                return;
-            }
-
+            this.outlines = face.GetType().toGlyphType();
             this.index = face.GetIndex();
 
             IDWriteFontFile[] files = face.getFiles();

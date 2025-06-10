@@ -12,9 +12,39 @@ module hairetsu.font.interop.coretext.coretext;
 import hairetsu.common;
 import nulib.string;
 import numem;
+import hairetsu.font.glyph;
 
 version(HA_CORETEXT):
 enum CFStringEncoding kCFStringEncodingUTF8 = 134217984;
+
+enum CTFontFormat : uint {
+    Unrecognized,
+    OpenTypePostScript,
+    OpenTypeTrueType,
+    TrueType,
+    PostScript,
+    Bitmap
+}
+
+GlyphType toGlyphType(CTFontFormat format) @nogc {
+    switch(format) {
+        case CTFontFormat.TrueType:
+        case CTFontFormat.OpenTypeTrueType:
+            return GlyphType.trueType;
+        
+        case CTFontFormat.OpenTypePostScript:
+            return GlyphType.cff2;
+        
+        case CTFontFormat.PostScript:
+            return GlyphType.cff;
+        
+        case CTFontFormat.Bitmap:
+            return GlyphType.bitmap;
+        
+        default:
+            return GlyphType.none;
+    }
+}
 
 extern(C) extern @nogc:
 
@@ -31,6 +61,9 @@ extern void* CFRelease(void*);
 struct CFArray;
 extern CFIndex CFArrayGetCount(CFArray*);
 extern void* CFArrayGetValueAtIndex(CFArray*, CFIndex);
+
+struct CFDictionary;
+extern CFIndex CFDictionaryGetCount(CFDictionary*);
 
 struct CFString;
 alias CFStringEncoding = uint;
@@ -94,17 +127,10 @@ extern CTFontCollection* CTFontCollectionCreateFromAvailableFonts(CTFontCollecti
 extern CFArray* CTFontCollectionCreateMatchingFontDescriptors(CTFontCollection*);
 
 struct CTFontDescriptor;
-enum CTFontFormat : uint {
-    Unrecognized,
-    OpenTypePostScript,
-    OpenTypeTrueType,
-    TrueType,
-    PostScript,
-    Bitmap
-}
 
 extern __gshared const(CFString)* kCTFontURLAttribute;
 extern __gshared const(CFString)* kCTFontNameAttribute;
+extern __gshared const(CFString)* kCTFontVariationAttribute;
 extern __gshared const(CFString)* kCTFontDisplayNameAttribute;
 extern __gshared const(CFString)* kCTFontFamilyNameAttribute;
 extern __gshared const(CFString)* kCTFontStyleNameAttribute;

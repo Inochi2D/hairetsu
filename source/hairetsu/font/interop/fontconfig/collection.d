@@ -11,6 +11,7 @@
 module hairetsu.font.interop.fontconfig.collection;
 import hairetsu.font.interop.fontconfig.fontconfig;
 import hairetsu.font.collection;
+import hairetsu.font.glyph;
 import hairetsu.font.font;
 import hairetsu.font.file;
 import hairetsu.common;
@@ -52,12 +53,14 @@ extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
             const(char)* file;
             const(char)* fullName;
             const(char)* psName;
+            const(char)* format;
             FcCharSet* charSet;
             int index;
 
             FcPatternGetString(font, FC_FILE, 0, file);
             FcPatternGetString(font, FC_FULLNAME, 0, fullName);
             FcPatternGetString(font, FC_POSTSCRIPT_NAME, 0, psName);
+            FcPatternGetString(font, FC_FONTFORMAT, 0, format);
             FcPatternGetCharSet(font, FC_CHARSET, 0, charSet);
             FcPatternGetInteger(font, FC_INDEX, 0, index);
 
@@ -72,10 +75,13 @@ extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
             faces[faceIdx].familyName = cast(string)family.fromStringz().nu_dup();
 
             // Optional info
+            if (format) faces[faceIdx].outlines = format.fromStringz().toGlyphType();
             if (file) faces[faceIdx].path = cast(string)file.fromStringz().nu_dup();
             if (fullName) faces[faceIdx].name = cast(string)fullName.fromStringz().nu_dup();
             if (psName) faces[faceIdx].postscriptName = cast(string)psName.fromStringz().nu_dup();
             faces[faceIdx].sampleText = cast(string)faces[faceIdx].name.nu_dup();
+            
+            FcPatternGetBool(font, FC_VARIABLE, 0, faces[faceIdx].variable);
 
             // Retain the face so that later deletion of our temp array doesn't
             // free it.
