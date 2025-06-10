@@ -9,20 +9,67 @@ import std.conv : to;
 import hairetsu.shaper.basic;
 import hairetsu.render;
 
-void main(string[] args) {
+Font findFont(string nameOrFile) {
+	import std.algorithm.searching : startsWith;
+	import std.string : chompPrefix;
+	import std.uni : toLower;
+
+	// Lookup file?
+	if (stdfile.exists(nameOrFile)) {
+		if (FontFile file = FontFile.fromFile(nameOrFile)) {
+			Font font = file.fonts[0].retained;
+			file.release();
+			return font;
+		}
+	}
+	
+	// NOTE:	In a function that wouldn't just be called once you'd want
+	// 			to cache this.
+	FontCollection fc = FontCollection.createFromSystem();
+	
+	// Lookup by name?
+	foreach(family; fc.families) {
+		string lcName = nameOrFile.toLower();
+		string faName = family.familyName.toLower();
+
+		if (faName.startsWith(lcName)) {
+			uint bestMatchIdx = 0;
+			uint bestMatchDivergence = uint.max;
+			
+			// DirectWrite limitation (currently).
+			if (family.faces[0].name.length == 0) {
+				writefln("Font is missing name, matched first instance of %s...", family.familyName);
+				return family.faces[bestMatchIdx].realize();
+			}
+			
+			foreach(i, face; family.faces) {
+				string fcName = face.name.toLower();
+				string fcStripped = fcName.chompPrefix(lcName);
+				writeln(fcName, " ", fcStripped);
+				if (fcStripped.length < bestMatchDivergence) {
+					bestMatchIdx = cast(uint)i;
+					bestMatchDivergence = cast(uint)fcStripped.length;
+				}
+			}
+
+			if (bestMatchDivergence != 0) {
+				writefln("Using best match %s...", family.faces[bestMatchIdx].name);
+			}
+
+			return family.faces[bestMatchIdx].realize();
+		}
+	}
+
+	return null;
+}
+
+int main(string[] args) {
 	if (args.length != 4) {
 		writeln("metrics <font> <pt size> <string>");
-		return;
+		return -1;
 	}
 
 	float ptSize;
-	ndstring text;
-
-	if (!stdfile.exists(args[1])) {
-		writeln(args[1], " not found...");
-		return;
-	}
-
 	try {
 		ptSize = args[2].to!float;
 	} catch(Exception ex) {
@@ -30,8 +77,9 @@ void main(string[] args) {
 	}
 
 	// Load font.
-	FontFile file = FontFile.fromFile(args[1]);
-	Font font = file.fonts[0];
+	Font font = findFont(args[1]);
+	if (!font) { writeln(args[1], " not found..."); return -1; }
+
 	FontFace face = font.createFace();
 	face.pt = ptSize;
 
@@ -49,7 +97,7 @@ void main(string[] args) {
 	vec2 textSize = renderer.measureGlyphRun(face, glyphRun);
 	FontMetrics fmetrics = face.faceMetrics();
 
-	HaCanvas canvas = nogc_new!HaCanvas(cast(uint)textSize.x, cast(uint)(textSize.y), HaColorFormat.CBPP8);
+	HaCanvas canvas = nogc_new!HaCanvas(cast(uint)textSize.x, cast(uint)(textSize.y-fmetrics.descender.x), HaColorFormat.CBPP8);
 	renderer.render(face, glyphRun, vec2(0, fmetrics.ascender.x), canvas);
 
 	canvas.dumpToFile();
@@ -58,7 +106,7 @@ void main(string[] args) {
 	renderer.release();
 	canvas.release();
 	face.release();
-	file.release();
+	return 0;
 }
 
 /**
