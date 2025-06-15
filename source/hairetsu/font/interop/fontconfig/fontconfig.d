@@ -84,7 +84,7 @@ GlyphType toGlyphType(string typeString) @nogc {
     if (typeString == "TrueType")
         return GlyphType.trueType;
     
-    return GlyphType.unknown;
+    return GlyphType.none;
 }
 
 extern(C) extern @nogc:

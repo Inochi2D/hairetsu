@@ -16,6 +16,7 @@ import hairetsu.font.font;
 import hairetsu.font.file;
 import hairetsu.common;
 import nulib.collections.map;
+import nulib.string;
 import numem;
 
 version(HA_FONTCONFIG):
@@ -41,8 +42,6 @@ extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
     // We will be discarding this array anyways.
     FontFaceInfo[] faces = ha_allocarr!FontFaceInfo(fonts.nfont);
     uint faceIdx;
-
-    import std.stdio : printf;
 
     // Step 1. Get all the valid fonts.
     foreach(i; 0..fonts.nfont) {
@@ -75,7 +74,7 @@ extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
             faces[faceIdx].familyName = cast(string)family.fromStringz().nu_dup();
 
             // Optional info
-            if (format) faces[faceIdx].outlines = format.fromStringz().toGlyphType();
+            if (format) faces[faceIdx].outlines = (cast(string)format.fromStringz()).toGlyphType();
             if (file) faces[faceIdx].path = cast(string)file.fromStringz().nu_dup();
             if (fullName) faces[faceIdx].name = cast(string)fullName.fromStringz().nu_dup();
             if (psName) faces[faceIdx].postscriptName = cast(string)psName.fromStringz().nu_dup();
