@@ -507,9 +507,6 @@ public:
         if (glyphCount == 0)
             return GlyphMetrics.init;
 
-        import std.stdio : printf;
-        printf("Glyph=%u count=%u\n", glyph, glyphCount);
-
         // Avoid indexing out of range.
         if (glyph >= glyphCount)
             return gmetrics[0];
