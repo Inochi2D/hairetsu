@@ -136,6 +136,34 @@ struct HaBitmap {
     }
 
     /**
+        Crops the bitmap.
+    */
+    void crop(uint x0, uint y0, uint x1, uint y1) {
+        if (cast(ptrdiff_t)y1-cast(ptrdiff_t)y0 < 0)
+            return;
+        if (cast(ptrdiff_t)x1-cast(ptrdiff_t)x0 < 0)
+            return;
+
+        uint newWidth = x1-x0;
+        uint newHeight = y1-y0;
+        ubyte[] newData = ha_allocarr!ubyte(newWidth*newHeight*channels*bpc);
+        newData[0..$] = 0;
+
+        size_t nl = 0;
+        size_t ns = newWidth*channels*bpc;
+        foreach(y; y0..y1) {
+            ubyte[] sl = cast(ubyte[])scanline(y);
+            newData[nl*ns..(nl*ns)+ns] = sl[x0*channels*bpc..x1*channels*bpc];
+            nl++;
+        }
+
+        this.free();
+        this.data = newData;
+        this.width = newWidth;
+        this.height = newHeight;
+    }
+
+    /**
         Resizes the allocation of the buffer.
 
         Note:
