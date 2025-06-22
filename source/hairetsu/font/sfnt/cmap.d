@@ -93,7 +93,7 @@ public:
         foreach(CmapSubTable table; cmapTable.subtables) {
             switch(table.format) {
                 case 0:
-                    if (code >= 256) 
+                    if (code >= 255) 
                         break;
                     
                     return 
@@ -132,6 +132,10 @@ public:
                     uint length = cast(uint)table.format6.glyphIdArray.length;
 
                     if (code < start || code > start+length)
+                        break;
+                    
+                    // Out of range.
+                    if (code-start >= table.format6.glyphIdArray.length)
                         break;
                     
                     return table.format6.glyphIdArray[code-start];

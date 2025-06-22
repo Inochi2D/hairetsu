@@ -28,8 +28,7 @@ private:
         ushort count = reader.readElementBE!ushort;
         uint storageOffset = reader.readElementBE!ushort;
 
-        this.records = records.nu_resize(count);
-        reader.seek(start+storageOffset);
+        this.records = ha_allocarr!NameRecord(count);
         foreach(i; 0..count) {
             this.records[i].header = reader.readRecordBE!NameRecordHeader;
 
@@ -47,9 +46,22 @@ private:
         ushort count = reader.readElementBE!ushort;
         uint storageOffset = reader.readElementBE!ushort;
 
-        this.languageTags = languageTags.nu_resize(count);
-        reader.seek(start+storageOffset);
+        this.records = ha_allocarr!NameRecord(count);
         foreach(i; 0..count) {
+            this.records[i].header = reader.readRecordBE!NameRecordHeader;
+
+            // Skip parsing non-unicode names.
+            if (!this.records[i].header.isUnicodeName()) {
+                reader.skip(4); // Skip string info
+                continue;
+            }
+
+            this.records[i].deserialize(reader, start+storageOffset);
+        }
+
+        ushort tagCount = reader.readElementBE!ushort;
+        this.languageTags = ha_allocarr!LanguageTagRecord(tagCount);
+        foreach(i; 0..tagCount) {
             this.languageTags[i].deserialize(reader, start+storageOffset);
         }
     }
@@ -74,7 +86,6 @@ public:
                 break;
 
             case 1:
-                deserializeV0(reader, start);
                 deserializeV1(reader, start);
                 break;
 
