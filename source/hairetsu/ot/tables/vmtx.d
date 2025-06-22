@@ -42,7 +42,7 @@ struct VmtxTable {
             if (i < vhea.numberOfVMetrics)            
                 this.records[i] = reader.readRecordBE!MtxRecord();
             else
-                this.records[i].bearing = reader.readElementBE!short;
+                this.records[i] = MtxRecord(records[i-1].advance, reader.readElementBE!short);
         }
     }
 }

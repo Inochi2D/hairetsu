@@ -141,6 +141,8 @@ private:
             fmetrics.lineGap.x = hhea.lineGap;
             fmetrics.maxExtent.x = hhea.xMaxExtent;
             fmetrics.maxAdvance.x = hhea.advanceWidthMax;
+            fmetrics.minBearingStart.x = hhea.minLeftSideBearing;
+            fmetrics.minBearingEnd.x = hhea.minRightSideBearing;
 
             if (auto subtable = entry.findTable(ISO15924!("hmtx"))) {
                 reader.seek(subtable.offset);
@@ -157,13 +159,15 @@ private:
             fmetrics.lineGap.y = vhea.lineGap;
             fmetrics.maxExtent.y = vhea.yMaxExtent;
             fmetrics.maxAdvance.y = vhea.advanceHeightMax;
+            fmetrics.minBearingStart.y = vhea.minTopSideBearing;
+            fmetrics.minBearingEnd.y = vhea.minBottomSideBearing;
 
             if (auto subtable = entry.findTable(ISO15924!("vmtx"))) {
                 reader.seek(subtable.offset);
                 vmtx.deserialize(reader, vhea, glyphCount);
             }
         }
-        
+
         // Individual glyph metrics.
         gmetrics.resize(glyphCount);
         foreach(i; 0..glyphCount) {
@@ -502,6 +506,9 @@ public:
     GlyphMetrics getMetricsFor(GlyphIndex glyph) {
         if (glyphCount == 0)
             return GlyphMetrics.init;
+
+        import std.stdio : printf;
+        printf("Glyph=%u count=%u\n", glyph, glyphCount);
 
         // Avoid indexing out of range.
         if (glyph >= glyphCount)

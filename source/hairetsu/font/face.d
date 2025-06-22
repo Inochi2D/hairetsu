@@ -223,7 +223,7 @@ public:
     GlyphMetrics getMetricsFor(GlyphIndex glyphIdx) {
         
         // Reload and scale metrics.
-        auto metrics = this.parent.getMetricsFor(glyphIdx);
+        auto metrics = parent.getMetricsFor(glyphIdx);
 
         // Scale to pixel grid
         metrics.bounds.xMin *= scaleFactor_;
@@ -234,6 +234,7 @@ public:
         metrics.advance.y *= scaleFactor_;
         metrics.bearing.x *= scaleFactor_;
         metrics.bearing.y *= scaleFactor_;
+        metrics.scale = scaleFactor_;
         return metrics;
     }
 

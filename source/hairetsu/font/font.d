@@ -262,4 +262,14 @@ struct FontMetrics {
         The global max advances for glyphs.
     */
     vec2 maxAdvance;
+
+    /**
+        Minimum start bearing.
+    */
+    vec2 minBearingStart;
+    
+    /**
+        Minimum end bearing.
+    */
+    vec2 minBearingEnd;
 }
