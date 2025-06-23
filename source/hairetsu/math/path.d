@@ -212,7 +212,7 @@ public:
 
         vec2 baseOffset = vec2(
             -this.bounds.xMin,
-            -this.bounds.yMax + this.bounds.height
+            -this.bounds.yMin
         );
 
         foreach(ref subpath; subpaths) {
