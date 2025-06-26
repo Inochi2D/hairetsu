@@ -117,6 +117,13 @@ struct Vec2Impl(T) {
     }
 
     /**
+        Calculates the product between two vectors.
+    */
+    T dot(Vec2Impl!T other) {
+        return (this.x * other.x) + (this.y * other.y);
+    }
+
+    /**
         Normalizes the vector.
     */
     Vec2Impl!T normalized() {
@@ -142,6 +149,19 @@ struct Vec2Impl(T) {
             cast(T)((this.x + other.x) / 2.0), 
             cast(T)((this.y + other.y) / 2.0)
         );
+    }
+    
+    /**
+        Binary operators
+    */
+    auto opBinary(string op = "*")(Mat2Impl!T other) {
+        Vec2Impl!T result = Vec2Impl!T(0, 0);
+        static foreach(r; 0..2) {
+            static foreach(c; 0..2) {
+                result.data[r] += data[c] * other.matrix[r][c];
+            }
+        }
+        return result;
     }
 
     /**
@@ -188,6 +208,44 @@ struct Vec2Impl(T) {
 }
 
 enum isVec2(T) = is(T == Vec2Impl!U, U...);
+
+/**
+    An unsigned integral 2D point
+*/
+alias mat2 = Mat2Impl!float;
+
+struct Mat2Impl(T) {
+@nogc:
+    T[2][2] matrix;
+    
+    /**
+        Binary operators
+    */
+    auto opBinary(string op = "*")(Mat2Impl!T other) {
+        Mat2Impl!T result;
+        static foreach(r; 0..2) {
+            static foreach(c; 0..2) {
+                result.matrix[r][c] += this.matrix[r][c] * other.matrix[r][c];
+            }
+        }
+        return result;
+    }
+    
+    /**
+        Binary operators
+    */
+    auto opBinary(string op = "*")(Vec2Impl!T other) {
+        Vec2Impl!T result = Vec2Impl!T(0, 0);
+        static foreach(r; 0..2) {
+            static foreach(c; 0..2) {
+                result.data[r] += this.matrix[r][c] * other.data[c];
+            }
+        }
+        return result;
+    }
+}
+
+enum isMat2(T) = is(T == Mat2Impl!U, U...);
 
 /**
     Truncates the values of the vector.
@@ -261,9 +319,16 @@ struct LineImpl(T) {
     Vec2Impl!T delta;
 
     /**
-        Gets the midpoint of the line.
+        The midpoint of the line.
     */
     @property Vec2Impl!T midpoint() { return p1.midpoint(p2); }
+
+    /**
+        The ccw normal for the line
+    */
+    @property Vec2Impl!T normal() {
+        return Vec2Impl!T(-(p2.y - p1.y), (p2.x - p1.x)).normalized;
+    }
 
     /**
         Constructor

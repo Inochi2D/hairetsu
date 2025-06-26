@@ -12,6 +12,7 @@ module hairetsu.math.path;
 import nulib.collections.vector;
 import hairetsu.math;
 import hairetsu.common;
+import nulib.math;
 import numem;
 
 /**
@@ -84,7 +85,6 @@ public:
     /**
         Gets the current active subpath.
     */
-    final
     @property ref Subpath subpath() {
         if (this.subpaths.length > 0)
             return this.subpaths[$-1];
@@ -96,7 +96,6 @@ public:
     /**
         Gets whether the path instance has any actual path.
     */
-    final
     @property bool hasPath() {
         if (this.subpaths.length == 0)
             return false;
@@ -219,6 +218,28 @@ public:
             foreach(ref line; subpath.lines) {
                 line.p1 += baseOffset;
                 line.p2 += baseOffset;
+            }
+        }
+    }
+
+    /**
+        Shears the path by a given factor.
+
+        Params:
+            factor = The factor to skew by.
+    */
+    void shear(float factor = 0) {
+        mat2 m = mat2([
+            [1.0, -factor], 
+            [0.0, 1.0], 
+        ]);
+
+        foreach(ref subpath; subpaths) {
+            foreach(ref line; subpath.lines) {
+                line.p1 = line.p1 * m;
+                line.p2 = line.p2 * m;
+                this.recalcBounds(line.p1);
+                this.recalcBounds(line.p2);
             }
         }
     }

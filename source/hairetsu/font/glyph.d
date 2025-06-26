@@ -66,6 +66,16 @@ struct GlyphMetrics {
         The overall scale applied to the glyph.
     */
     float scale = 1;
+    
+    /**
+        Synthetic thickness to apply. (default: 1)
+    */
+    float thickness = 1;
+    
+    /**
+        Synthetic shear to apply. (default: 1)
+    */
+    float shear = 0;
 }
 
 /**
@@ -130,6 +140,11 @@ public:
     @property Path path() {
         Path path;
         this.drawOutline(GlyphDrawCallbacks.createForPath(), metrics.scale, &path);
+        
+        // Apply shear.
+        if (this.metrics.shear != 0)
+            path.shear(metrics.shear);
+
         return path;
     }
 
