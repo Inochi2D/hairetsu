@@ -361,6 +361,9 @@ public:
     final
     nstring readUTF16BE(size_t bytes) @trusted {
         assert((bytes % 2) == 0, "Unaligned byte read!");
+        if (bytes == 0 || (bytes % 2) != 0)
+            return nstring.init;
+        
         return toUTF8(reader.readUTF16BE(cast(uint)bytes/2));
     }
 
@@ -369,8 +372,11 @@ public:
     */
     final
     nstring readUTF16LE(size_t bytes) @trusted {
+        if (bytes == 0 || (bytes % 2) != 0)
+            return nstring.init;
+        
         assert((bytes % 2) == 0, "Unaligned byte read!");
-        return toUTF8(reader.readUTF16BE(cast(uint)bytes/2));
+        return toUTF8(reader.readUTF16LE(cast(uint)bytes/2));
     }
 
     /**

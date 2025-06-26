@@ -105,7 +105,7 @@ private:
                         if (!path.ptr)
                             continue;
 
-                        this.setData(path[].nu_dup());
+                        this.setData(path[]);
                         break;
                     }
                 }

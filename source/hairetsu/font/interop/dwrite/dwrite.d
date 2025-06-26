@@ -205,10 +205,7 @@ extern(Windows) @nogc:
             return null;
         
         if (exists && strings !is null) {
-
-            nstring infstr = strings.getBestString();
-            string copy = infstr[].nu_dup();
-            return copy;
+            return strings.getBestString().nu_dup();
         }
         return null;
     }
@@ -236,8 +233,7 @@ extern(Windows):
             if (pLength > 0) {
                 const(wchar)[] str = ha_allocarr!(const(wchar))(pLength+1);
                 if(SUCCEEDED(this.GetFilePathFromKey(key, keyLength, str.ptr, pLength+1))) {
-                    nstring ret = str;
-
+                    nstring ret = str[0..$-1];
                     ha_freearr(str);
                     return ret;
                 }
@@ -360,17 +356,15 @@ extern(Windows):
     final
     extern(D)
     string getBestString() @nogc {
-        wchar[] str;
         HRESULT hr;
         uint strLen;
-
         uint index = this.getBestLocale();
         hr = this.GetStringLength(index, strLen);
-        if (FAILED(hr)) {
+        if (FAILED(hr) || strLen == 0) {
             return null;
         }
 
-        str = ha_allocarr!(wchar)(strLen+1);
+        wchar[] str = ha_allocarr!(wchar)(strLen+1);
         this.GetString(index, str.ptr, strLen+1);
 
         nstring ret = str[0..strLen];
