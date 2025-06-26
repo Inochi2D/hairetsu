@@ -139,9 +139,7 @@ public:
         this.font = font;
         
         this.setPathFromFont();
-
-        // This is broken on LDC??
-        version(LDC) { } else this.setInfoFromFont();
+        this.setInfoFromFont();
     }
 
     /**
@@ -149,9 +147,9 @@ public:
     */
     override
     bool hasCharacter(codepoint character) {
-        bool exists;
+        uint exists;
         font.HasCharacter(character, exists);
-        return exists;
+        return exists != 0;
     }
 
     /**

@@ -80,7 +80,7 @@ GlyphType toGlyphType(DWriteFontFaceType type) @nogc {
     }
 }
 
-enum DWriteInformationalStringID : uint {
+enum DWriteInformationalStringID : size_t {
     NONE,
     COPYRIGHT_NOTICE,
     VERSION_STRINGS,
@@ -154,7 +154,7 @@ extern(Windows):
 @nogc:
     uint GetFontFamilyCount() pure;
     HRESULT GetFontFamily(uint index, ref IDWriteFontFamily family) pure;
-    HRESULT FindFamilyName(const(wchar)* familyName, ref uint index, ref bool exists) pure;
+    HRESULT FindFamilyName(const(wchar)* familyName, ref uint index, ref uint exists) pure;
 }
 
 @Guid!("1a0d8438-1d97-4ec1-aef9-a2fb86ed6acb")
@@ -177,18 +177,17 @@ extern(Windows):
 
 @Guid!("acd16696-8c14-4f5d-877e-fe3fc1d32737")
 interface IDWriteFont : IUnknown {
-extern(Windows):
-@nogc:
+extern(Windows) @nogc:
     HRESULT GetFontFamily(ref IDWriteFontFamily fontFamily) pure;
     uint GetWeight() pure;
     uint GetStretch() pure;
     uint GetStyle() pure;
     bool IsSymbolFont() pure;
     HRESULT GetFaceNames(ref IDWriteLocalizedStrings names) pure;
-    HRESULT GetInformationalStrings(DWriteInformationalStringID sid, IDWriteLocalizedStrings* infoStrings, ref bool exists) pure;
+    HRESULT GetInformationalStrings(DWriteInformationalStringID sid, ref IDWriteLocalizedStrings infoStrings, ref uint exists) pure;
     uint GetSimulations() pure;
     void GetMetrics(void* metrics) pure;
-    HRESULT HasCharacter(uint codepoint, ref bool exists) pure;
+    HRESULT HasCharacter(uint codepoint, ref uint exists) pure;
     HRESULT CreateFontFace(IDWriteFontFace* face) pure;
 
     /**
@@ -198,11 +197,14 @@ extern(Windows):
     extern(D)
     string getInformationalString(DWriteInformationalStringID sid) @nogc {
         IDWriteLocalizedStrings strings;
-        bool exists;
+        uint exists;
         HRESULT hr;
 
-        hr = this.GetInformationalStrings(sid, &strings, exists);
-        if (exists) {
+        hr = this.GetInformationalStrings(sid, strings, exists);
+        if (!SUCCEEDED(hr))
+            return null;
+        
+        if (exists && strings !is null) {
 
             nstring infstr = strings.getBestString();
             string copy = infstr[].nu_dup();
@@ -253,7 +255,7 @@ extern(Windows):
 @nogc:
     HRESULT GetReferenceKey(ref const(void)* ffRefKeyRef, ref uint ffRefKeySize);
     HRESULT GetLoader(ref IDWriteFontFileLoader loader) pure;
-    HRESULT Analyze(ref bool ffIsSupported, ref DWriteFontFileType ffType, void* fType, ref uint faceCount);
+    HRESULT Analyze(ref uint ffIsSupported, ref DWriteFontFileType ffType, void* fType, ref uint faceCount);
 
     final
     extern(D)
