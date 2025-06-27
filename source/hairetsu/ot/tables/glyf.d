@@ -64,6 +64,7 @@ struct GlyfTable {
 
             reader.seek(start+loca.offsets[glyphId]);
             this.glyphs[i].deserialize(reader, glyphId, loca.hasGlyph(glyphId));
+            this.glyphs[i].glyf = &this;
         }
     }
 }
@@ -74,17 +75,21 @@ struct GlyfTable {
 struct GlyfRecord {
 public:
 @nogc:
-    bool isComposite;
+    GlyfTable* glyf;
     GlyfContour[] contours;
+    GlyfComposite[] composites;
     GlyphIndex glyphId;
     rect bounds;
 
     /**
+        Whether the contour is a composite.
+    */
+    @property bool isComposite() { return composites.length > 0; }
+
+    /**
         Whether the glyph has an outline.
     */
-    bool hasOutline() {
-        return contours.length > 0;
-    }
+    bool hasOutline() { return contours.length > 0 || composites.length > 0; }
 
     /**
         Frees the glyf record
@@ -114,7 +119,6 @@ public:
 
         // Contours
         if (numberOfCountours >= 0) {
-            this.isComposite = false;
             SimpleGlyfContour simpleContour;
             simpleContour.deserialize(reader, numberOfCountours);
 
@@ -128,21 +132,71 @@ public:
 
             simpleContour.free();
             return;
-        }
+        } else {
+            GlyfComposite composite;
+            do {
+                composite.flags = reader.readElementBE!ushort();
+                composite.glyphIndex = reader.readElementBE!ushort();
 
-        this.isComposite = true;
+                if (composite.flags & ARG_1_AND_2_ARE_WORDS) {
+                    if (composite.flags & ARGS_ARE_XY_VALUES) {
+                        composite.position.x = reader.readElementBE!short();
+                        composite.position.y = reader.readElementBE!short();
+                    } else {
+                        composite.position.x = reader.readElementBE!ushort();
+                        composite.position.y = reader.readElementBE!ushort();
+                    }
+                } else {
+                    if (composite.flags & ARGS_ARE_XY_VALUES) {
+                        composite.position.x = reader.readElementBE!byte();
+                        composite.position.y = reader.readElementBE!byte();
+                    } else {
+                        composite.position.x = reader.readElementBE!ubyte();
+                        composite.position.y = reader.readElementBE!ubyte();
+                    }
+                }
+
+                if (composite.flags & WE_HAVE_A_SCALE) {
+                    float scale = cast(float)reader.readElementBE!fixed2_14();
+                    composite.scale = mat2.scale(scale, scale);
+                } else if (composite.flags & WE_HAVE_AN_X_AND_Y_SCALE) {
+                    float scaleX = cast(float)reader.readElementBE!fixed2_14();
+                    float scaleY = cast(float)reader.readElementBE!fixed2_14();
+                    composite.scale = mat2.scale(scaleX, scaleY);
+                } else if (composite.flags & WE_HAVE_A_TWO_BY_TWO) {
+                    composite.scale.matrix[0][0] = cast(float)reader.readElementBE!fixed2_14();
+                    composite.scale.matrix[0][1] = cast(float)reader.readElementBE!fixed2_14();
+                    composite.scale.matrix[1][0] = cast(float)reader.readElementBE!fixed2_14();
+                    composite.scale.matrix[1][1] = cast(float)reader.readElementBE!fixed2_14();
+                } else {
+                    composite.scale = mat2.scale(1, 1);
+                }
+
+                composites = composites.nu_resize(composites.length+1);
+                composites[$-1] = composite;
+            } while(composite.flags & MORE_COMPONENTS);
+        }
     }
 
     /**
         Draws the glyf with the given callbacks.
         
         Params:
-            outline = The outline drawing callbacks to call.
-            scale = The scale to apply to the outline.
-            userdata = Userdata to pass to drawing functions.
+            outline     = The outline drawing callbacks to call.
+            position    = The start position of the outline.
+            scale       = The scale to apply to the outline.
+            userdata    = Userdata to pass to drawing functions.
     */
-    void drawWith(GlyphDrawCallbacks outline, float scale, void* userdata) {
-        
+    void drawWith(GlyphDrawCallbacks outline, vec2 position, mat2 scale, void* userdata) {
+
+        if (isComposite) {
+            foreach(ref composite; composites) {
+                outline.moveTo(position.x, position.y, userdata);
+                glyf.findGlyf(composite.glyphIndex).drawWith(outline, composite.position, composite.scale * scale, userdata);
+            }
+            return;
+        }
+
         // NOTE: Temporary stores needed to calculate outlines from the
         //       compressed form, start and first differ due to how outlines
         //       can start and end with off-curve points; in which case you need
@@ -150,7 +204,7 @@ public:
         GlyfPoint start;
         GlyfPoint first;
         GlyfPoint last;
-        GlyfPoint curr;
+        GlyfPoint curr = GlyfPoint(position * scale, false);
         foreach(ref GlyfContour contour; contours) {
             
             // Skip empty contours.
@@ -161,9 +215,11 @@ public:
                 last = curr;
                 curr = contour.points[i];
                 
+                vec2 currScaled = curr.point * scale;
+
                 // Calculate absolute point
-                curr.point.x = last.point.x + (curr.point.x * scale);
-                curr.point.y = last.point.y - (curr.point.y * scale);
+                curr.point.x = last.point.x + currScaled.x;
+                curr.point.y = last.point.y - currScaled.y;
                 
                 if (i == 0) {
                     start = curr;
@@ -213,6 +269,16 @@ public:
 }
 
 /**
+    A glyph composite definition
+*/
+struct GlyfComposite {
+    ushort flags;
+    ushort glyphIndex;
+    vec2 position;
+    mat2 scale;
+}
+
+/**
     A glyph contour
 */
 struct GlyfContour {
@@ -236,6 +302,21 @@ struct GlyfContour {
         }
     }
 }
+
+private
+enum ushort 
+    ARG_1_AND_2_ARE_WORDS       = 0x0001,
+    ARGS_ARE_XY_VALUES          = 0x0002,
+    ROUND_XY_TO_GRID            = 0x0004,
+    WE_HAVE_A_SCALE             = 0x0008,
+    MORE_COMPONENTS             = 0x0020,
+    WE_HAVE_AN_X_AND_Y_SCALE    = 0x0040,
+    WE_HAVE_A_TWO_BY_TWO        = 0x0080,
+    WE_HAVE_INSTRUCTIONS        = 0x0100,
+    USE_MY_METRICS              = 0x0200,
+    OVERLAP_COMPOUND            = 0x0400,
+    SCALED_COMPONENT_OFFSET     = 0x0800,
+    UNSCALED_COMPONENT_OFFSET   = 0x1000;
 
 /**
     A point in a glyph contour

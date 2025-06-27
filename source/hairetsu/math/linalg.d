@@ -216,8 +216,23 @@ alias mat2 = Mat2Impl!float;
 
 struct Mat2Impl(T) {
 @nogc:
-    T[2][2] matrix;
+    T[2][2] matrix = [[0, 0], [0, 0]];
+
+    /**
+        Identity matrix.
+    */
+    static Mat2Impl identity = Mat2Impl([[cast(T)1, cast(T)0], [cast(T)0, cast(T)1]]);
     
+    /**
+        Creates a scale matrix.
+    */
+    static Mat2Impl scale(T x, T y) { return Mat2Impl([[x, cast(T)0], [cast(T)0, y]]); }
+    
+    /**
+        Creates a shear matrix.
+    */
+    static Mat2Impl shear(T x, T y) { return Mat2Impl([[cast(T)1, cast(T)-x], [-y, cast(T)1.0f]]); }
+
     /**
         Binary operators
     */

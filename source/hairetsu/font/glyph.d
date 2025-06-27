@@ -154,7 +154,7 @@ public:
     void drawOutline(GlyphDrawCallbacks callbacks, float scale, void* userdata) {
         switch(data.type) {
             case GlyphType.trueType:
-                return data.glyf.drawWith(callbacks, scale, userdata);
+                return data.glyf.drawWith(callbacks, vec2(0, 0), mat2.scale(scale, scale), userdata);
             
             default:
                 return;

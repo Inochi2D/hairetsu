@@ -229,11 +229,7 @@ public:
             factor = The factor to skew by.
     */
     void shear(float factor = 0) {
-        mat2 m = mat2([
-            [1.0, -factor], 
-            [0.0, 1.0], 
-        ]);
-
+        mat2 m = mat2.shear(factor, 0);
         foreach(ref subpath; subpaths) {
             foreach(ref line; subpath.lines) {
                 line.p1 = line.p1 * m;

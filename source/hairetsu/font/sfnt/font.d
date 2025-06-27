@@ -239,7 +239,7 @@ private:
         if (auto locaTable = entry.findTable(ISO15924!("loca"))) {
             reader.seek(locaTable.offset);
             loca.deserialize(reader, head, maxp);
-            
+
             if (auto table = entry.findTable(ISO15924!("glyf"))) {
                 reader.seek(table.offset);
                 glyf.deserialize(reader, loca);
@@ -250,7 +250,7 @@ private:
                 }
             }
 
-            // Free loca table after we're done.
+            // Finalize.
             loca.free();
         }
     }
