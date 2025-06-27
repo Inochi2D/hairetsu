@@ -707,24 +707,20 @@ bool ha_glyph_get_has_data(ha_glyph_t* obj) {
     
     Params:
         obj = The object to query.
-        svg = Where to store the SVG data pointer.
         length = Where to store the length of the data.
     
+    Returns:
+        A pointer to the internal storage for the SVG body.
+
     Note:
         The SVG data is owned by the parent font, you should
         NOT free the SVG data. The data is encoded in UTF-8.
-        If no SVG is associated with the glyph, $(D svg) is set to
-        $(D null) and $(D length) is set to $(D 0). 
+        If no SVG is associated with the glyph, $(D null) is 
+        returned and $(D length) is set to $(D 0). 
 */
-void ha_glyph_get_svg(ha_glyph_t* obj, const(char)** svg, uint* length) {
-    if (!svg) {
-        *svg = null;
-        *length = 0;
-        return;
-    }
-
-    *svg = (cast(Glyph*)obj).svg.ptr;
+const(char)* ha_glyph_get_svg(ha_glyph_t* obj, uint* length) {
     *length = cast(uint)(cast(Glyph*)obj).svg.length;
+    return (cast(Glyph*)obj).svg.ptr;
 }
 
 /**
