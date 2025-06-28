@@ -213,8 +213,8 @@ public:
         // Shift everything to be based in the
         // top left.
         vec2 baseOffset = vec2(
-            -bounds.xMin,
-            ceil(bounds.height) - bounds.yMax
+            (-bounds.xMin) + 0.5f,
+            (-bounds.yMin) + 0.5f
         );
 
         bounds = aabbDefault;
@@ -228,8 +228,8 @@ public:
             }
         }
 
-        this.bounds.xMax = ceil(bounds.xMax);
-        this.bounds.yMax = ceil(bounds.yMax);
+        this.bounds.xMax = ceil(bounds.xMax)+0.5;
+        this.bounds.yMax = ceil(bounds.yMax)+0.5;
     }
 
     /**
