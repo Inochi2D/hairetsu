@@ -203,23 +203,33 @@ public:
         Finalizes the path.
     */
     void finalize() {
+        import std.stdio : printf;
         if (!hasPath)
             return;
 
         // Close any unclosed paths.
         this.closePath();
 
+        // Shift everything to be based in the
+        // top left.
         vec2 baseOffset = vec2(
-            -this.bounds.xMin,
-            -this.bounds.yMin
+            -bounds.xMin,
+            ceil(bounds.height) - bounds.yMax
         );
 
+        bounds = aabbDefault;
         foreach(ref subpath; subpaths) {
             foreach(ref line; subpath.lines) {
                 line.p1 += baseOffset;
                 line.p2 += baseOffset;
+                
+                this.recalcBounds(line.p1);
+                this.recalcBounds(line.p2);
             }
         }
+
+        this.bounds.xMax = ceil(bounds.xMax);
+        this.bounds.yMax = ceil(bounds.yMax);
     }
 
     /**
@@ -229,11 +239,11 @@ public:
             factor = The factor to skew by.
     */
     void shear(float factor = 0) {
-        mat2 m = mat2.shear(factor, 0);
+        mat2 shf = mat2.shear(factor, 0);
         foreach(ref subpath; subpaths) {
             foreach(ref line; subpath.lines) {
-                line.p1 = line.p1 * m;
-                line.p2 = line.p2 * m;
+                line.p1 = shf * line.p1;
+                line.p2 = shf * line.p2;
                 this.recalcBounds(line.p1);
                 this.recalcBounds(line.p2);
             }

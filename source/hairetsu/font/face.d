@@ -68,8 +68,8 @@ private:
     void updateState() {
 
         // Reload and scale face metrics metrics.
-        this.ppem_ = pt_ * dpi_ / BASE_TYPOGRAPHIC_DPI;
-        this.scaleFactor_ = cast(float)(ppem_ / upem);
+        this.ppem_ = pt_ * dpi_ / cast(float)BASE_TYPOGRAPHIC_DPI;
+        this.scaleFactor_ = ppem_ / cast(float)upem;
         this.fmetrics_ = parent.fontMetrics();
         this.fmetrics_.ascender.x *= scaleFactor_;
         this.fmetrics_.ascender.y *= scaleFactor_;

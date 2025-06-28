@@ -129,15 +129,7 @@ public:
         This is needed to prevent outline spills with the
         current algorithm.
     */
-    enum uint MASK_PADDING = 4;
-
-    /**
-        The built-in pixel offset added to the coverage mask.
-
-        This is needed to prevent outline spills with the
-        current algorithm.
-    */
-    enum vec2 MASK_OFFSET = vec2(MASK_PADDING/2, MASK_PADDING/2);
+    enum uint MASK_PADDING = 1;
     
     /**
         Width of the raster.
@@ -162,8 +154,8 @@ public:
             height = height of the coverage mask in pixels.
     */
     this(uint width, uint height) {
-        this.width = width+MASK_PADDING;
-        this.height = height+MASK_PADDING;
+        this.width  = width +(MASK_PADDING*2);
+        this.height = height+(MASK_PADDING*2);
 
         this.coverage = ha_allocarr!float(this.width * this.height);
         this.clear();
@@ -194,7 +186,7 @@ public:
         
         foreach(ref subpath; outline.subpaths[]) {
             foreach(line; subpath.lines[]) {
-                this.addLine(line, MASK_OFFSET);
+                this.addLine(line, vec2(MASK_PADDING, MASK_PADDING));
             }
         }
     }
@@ -203,7 +195,7 @@ public:
         Draws a single line into the coverage mask.
     */
     void draw(line ln) {
-        this.addLine(ln, MASK_OFFSET);
+        this.addLine(ln, vec2(MASK_PADDING, MASK_PADDING));
     }
 
     /**

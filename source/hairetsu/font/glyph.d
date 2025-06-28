@@ -177,7 +177,7 @@ public:
                 if (p.hasPath) {
                     p.finalize();
 
-                    HaCoverageMask covMask = HaCoverageMask(cast(uint)p.bounds.width, cast(uint)p.bounds.height);
+                    HaCoverageMask covMask = HaCoverageMask(cast(int)p.bounds.xMax, cast(int)p.bounds.yMax);
                     HaBitmap bitmap = HaBitmap(covMask.width, covMask.height, 1, 1);
                     
                     covMask.draw(p);

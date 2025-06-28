@@ -150,19 +150,6 @@ struct Vec2Impl(T) {
             cast(T)((this.y + other.y) / 2.0)
         );
     }
-    
-    /**
-        Binary operators
-    */
-    auto opBinary(string op = "*")(Mat2Impl!T other) {
-        Vec2Impl!T result = Vec2Impl!T(0, 0);
-        static foreach(r; 0..2) {
-            static foreach(c; 0..2) {
-                result.data[r] += data[c] * other.matrix[r][c];
-            }
-        }
-        return result;
-    }
 
     /**
         Binary operators
@@ -226,12 +213,12 @@ struct Mat2Impl(T) {
     /**
         Creates a scale matrix.
     */
-    static Mat2Impl scale(T x, T y) { return Mat2Impl([[x, cast(T)0], [cast(T)0, y]]); }
+    static Mat2Impl scale(T x, T y) { return Mat2Impl([[x, 0], [0, y]]); }
     
     /**
         Creates a shear matrix.
     */
-    static Mat2Impl shear(T x, T y) { return Mat2Impl([[cast(T)1, cast(T)-x], [-y, cast(T)1.0f]]); }
+    static Mat2Impl shear(T x, T y) { return Mat2Impl([[1, -x], [-y, 1]]); }
 
     /**
         Binary operators
@@ -254,6 +241,19 @@ struct Mat2Impl(T) {
         static foreach(r; 0..2) {
             static foreach(c; 0..2) {
                 result.data[r] += this.matrix[r][c] * other.data[c];
+            }
+        }
+        return result;
+    }
+    
+    /**
+        Binary operators
+    */
+    auto opBinaryRight(string op = "*")(Vec2Impl!T other) {
+        Vec2Impl!T result = Vec2Impl!T(0, 0);
+        static foreach(r; 0..2) {
+            static foreach(c; 0..2) {
+                result.data[r] += other.data[c] * this.matrix[r][c];
             }
         }
         return result;

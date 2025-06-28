@@ -20,19 +20,11 @@ import hairetsu.font;
 class SFNTFontFace : FontFace {
 protected:
 @nogc:
-    
-    /**
-        The reader instance
-    */
-    SFNTReader reader;
 
     /**
         Implemented by the font face to read the face.
     */
-    override
-    void onFaceLoad(FontReader reader) {        
-        this.reader = cast(SFNTReader)reader;
-    }
+    override void onFaceLoad(FontReader reader) { }
     
 public:
     
