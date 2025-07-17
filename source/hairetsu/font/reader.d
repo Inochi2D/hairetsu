@@ -339,6 +339,34 @@ public:
     }
 
     /**
+        Peeks the value of a byte at the given index.
+
+        Params:
+            offset = The offset to peek at.
+
+        Returns:
+            The byte at the given offset.
+    */
+    final
+    ubyte peek(size_t offset = 0) {
+
+        stream.seek(offset, SeekOrigin.relative);
+        ubyte rval = this.read();
+        stream.seek(-(cast(ptrdiff_t)offset+1), SeekOrigin.relative);
+        return rval;
+    }
+
+    /**
+        Reads a single byte from the stream.
+    */
+    final
+    ubyte read() {
+        ubyte[1] rval;
+        stream.read(rval[0..$]);
+        return rval[0];
+    }
+
+    /**
         Reads raw bytes from the underlying stream
         into the given buffer.
     */
