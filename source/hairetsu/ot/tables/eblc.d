@@ -44,7 +44,7 @@ public:
         Frees the EBLC table.
     */
     void free() {
-        ha_freearr(sizes);
+        nu_freea(sizes);
     }
     
     /**

@@ -28,7 +28,7 @@ private:
         ushort count = reader.readElementBE!ushort;
         uint storageOffset = reader.readElementBE!ushort;
 
-        this.records = ha_allocarr!NameRecord(count);
+        this.records = nu_malloca!NameRecord(count);
         foreach(i; 0..count) {
             this.records[i].header = reader.readRecordBE!NameRecordHeader;
 
@@ -46,7 +46,7 @@ private:
         ushort count = reader.readElementBE!ushort;
         uint storageOffset = reader.readElementBE!ushort;
 
-        this.records = ha_allocarr!NameRecord(count);
+        this.records = nu_malloca!NameRecord(count);
         foreach(i; 0..count) {
             this.records[i].header = reader.readRecordBE!NameRecordHeader;
 
@@ -60,7 +60,7 @@ private:
         }
 
         ushort tagCount = reader.readElementBE!ushort;
-        this.languageTags = ha_allocarr!LanguageTagRecord(tagCount);
+        this.languageTags = nu_malloca!LanguageTagRecord(tagCount);
         foreach(i; 0..tagCount) {
             this.languageTags[i].deserialize(reader, start+storageOffset);
         }

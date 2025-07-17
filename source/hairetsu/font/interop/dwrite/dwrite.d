@@ -12,6 +12,7 @@ module hairetsu.font.interop.dwrite.dwrite;
 import hairetsu.font.glyph;
 import hairetsu.common;
 import nulib.string;
+import numem.core.memory;
 import numem;
 
 version(HA_DIRECTWRITE):
@@ -126,7 +127,7 @@ extern(Windows) {
     Gets the default user locale.
 */
 wstring getUserDefaultLocaleW() @nogc {
-    const(wchar)[] lname = ha_allocarr!(const(wchar))(85);
+    const(wchar)[] lname = nu_malloca!(const(wchar))(85);
     
     // Fetch name
     int len = GetUserDefaultLocaleName(lname.ptr, 85);
@@ -134,7 +135,7 @@ wstring getUserDefaultLocaleW() @nogc {
         return cast(wstring)lname[0..len-1];
     
     // Name not found.
-    ha_freearr(lname);
+    nu_freea(lname);
     return null;
 }
 
@@ -231,14 +232,14 @@ extern(Windows):
         uint pLength;
         if (SUCCEEDED(this.GetFilePathLengthFromKey(key, keyLength, pLength))) {
             if (pLength > 0) {
-                const(wchar)[] str = ha_allocarr!(const(wchar))(pLength+1);
+                const(wchar)[] str = nu_malloca!(const(wchar))(pLength+1);
                 if(SUCCEEDED(this.GetFilePathFromKey(key, keyLength, str.ptr, pLength+1))) {
                     nstring ret = str[0..$-1];
-                    ha_freearr(str);
+                    nu_freea(str);
                     return ret;
                 }
 
-                ha_freearr(str);
+                nu_freea(str);
             }
         }
         return nstring.init;
@@ -301,11 +302,11 @@ extern(Windows):
                 return null;
 
             // Attempt to read files into files.ptr
-            files = ha_allocarr!IDWriteFontFile(numberOfFiles);
+            files = nu_malloca!IDWriteFontFile(numberOfFiles);
             
             hr = this.GetFiles(numberOfFiles, files.ptr);
             if (FAILED(hr)) 
-                ha_freearr(files);
+                nu_freea(files);
         }
         return files;
     }
@@ -337,7 +338,7 @@ extern(Windows):
         if (locale.ptr !is null) {
 
             hr = this.FindLocaleName(locale.ptr, &index, &exists);
-            ha_freearr(locale);
+            nu_freea(locale);
 
             if (FAILED(hr) || !exists) {
                 hr = this.FindLocaleName("en-us", &index, &exists);
@@ -364,11 +365,11 @@ extern(Windows):
             return null;
         }
 
-        wchar[] str = ha_allocarr!(wchar)(strLen+1);
+        wchar[] str = nu_malloca!(wchar)(strLen+1);
         this.GetString(index, str.ptr, strLen+1);
 
         nstring ret = str[0..strLen];
-        ha_freearr(str);
+        nu_freea(str);
         return ret.nu_dup();
     }
 }

@@ -40,7 +40,7 @@ extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
 
     // Allocate faces; we'll allocate for every font, even unsupported ones.
     // We will be discarding this array anyways.
-    FontFaceInfo[] faces = ha_allocarr!FontFaceInfo(fonts.nfont);
+    FontFaceInfo[] faces = nu_malloca!FontFaceInfo(fonts.nfont);
     uint faceIdx;
 
     // Step 1. Get all the valid fonts.
@@ -95,7 +95,7 @@ extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
     FontCollection collection = faces.collectionFromFaces();
 
     // Step 3. Final cleanup.
-    ha_freearr(faces);
+    nu_freea(faces);
     FcFontSetDestroy(fonts);
     FcObjectSetDestroy(objects);
     FcPatternDestroy(pattern);

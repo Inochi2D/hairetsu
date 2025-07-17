@@ -84,7 +84,7 @@ string toString(CFString* str) {
         }
 
         // Slow route, we have to convert ourselves.
-        char[] ret = ha_allocarr!(char)(len);
+        char[] ret = nu_malloca!(char)(len);
         if (CFStringGetCString(str, ret.ptr, len, kCFStringEncodingUTF8))
             return cast(string)ret;
     }

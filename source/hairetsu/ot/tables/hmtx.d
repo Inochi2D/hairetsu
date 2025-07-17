@@ -30,14 +30,14 @@ struct HmtxTable {
         Frees the table.
     */
     void free() {
-        ha_freearr(records);
+        nu_freea(records);
     }
 
     /**
         Deserializes the table.
     */
     void deserialize(FontReader reader, HheaTable hhea, uint glyphCount) {
-        this.records = ha_allocarr!MtxRecord(glyphCount);
+        this.records = nu_malloca!MtxRecord(glyphCount);
         foreach(i; 0..glyphCount) {
             if (i < hhea.numberOfHMetrics)            
                 this.records[i] = reader.readRecordBE!MtxRecord();

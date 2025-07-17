@@ -79,7 +79,7 @@ public:
         foreach(ref document; svgDocuments) {
             document.free();
         }
-        ha_freearr(svgDocuments);
+        nu_freea(svgDocuments);
     }
     
     /**
@@ -99,7 +99,7 @@ public:
                 reader.seek(start+doclistOffset);
 
                 ushort entries = reader.readElementBE!ushort;
-                this.svgDocuments = ha_allocarr!SVGDocumentRecord(entries);
+                this.svgDocuments = nu_malloca!SVGDocumentRecord(entries);
                 foreach(i; 0..entries) {
                     ushort startGlyph = reader.readElementBE!ushort();
                     ushort endGlyph = reader.readElementBE!ushort();
@@ -108,7 +108,7 @@ public:
 
                     this.svgDocuments[i].startGlyph = startGlyph;
                     this.svgDocuments[i].endGlyph = endGlyph;
-                    this.svgDocuments[i].data = ha_allocarr!(immutable(char))(docLength);
+                    this.svgDocuments[i].data = nu_malloca!(immutable(char))(docLength);
                     
                     size_t next = reader.tell();
 
@@ -144,6 +144,6 @@ public:
         Frees the document record.
     */
     void free() {
-        ha_freearr(data);
+        nu_freea(data);
     }
 }

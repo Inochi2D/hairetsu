@@ -36,44 +36,6 @@ alias GlyphIndex = uint;
 enum GlyphIndex GLYPH_MISSING = 0x0u;
 
 /**
-    Allocates an array of the given size.
-*/
-T[] ha_allocarr(T)(size_t size) @nogc {
-    import numem : nogc_initialize;
-
-    T[] buffer;
-    buffer = buffer.nu_resize(size);
-
-    nogc_initialize(buffer[0..$]);
-    return buffer;
-}
-
-/**
-    Frees an array
-*/
-void ha_freearr(T)(ref T[] arr) @nogc {
-    static if (is(T : NuRefCounted)) {
-        foreach(ref item; arr) {
-            item.release();
-            item = null;
-        }
-    }
-    
-    static if (is(nulib.system.com.unk)) {
-        import nulib.system.com.unk : IUnknown;
-        
-        static if (is(T : IUnknown)) {
-            foreach(ref item; arr) {
-                item.Release();
-                item = null;
-            }
-        }
-    }
-
-    arr = arr.nu_resize(0);
-}
-
-/**
     A bitmap containing pixel data.
 */
 struct HaBitmap {
@@ -117,7 +79,7 @@ struct HaBitmap {
         else bpc = cast(ubyte)clamp(bpc, 1, 4);
         this.bpc = bpc;
 
-        this.data = ha_allocarr!ubyte(width*height*channels*bpc);
+        this.data = nu_malloca!ubyte(width*height*channels*bpc);
         this.clear();
     }
     
@@ -125,7 +87,7 @@ struct HaBitmap {
         Frees the data associated with the bitmap.
     */
     void free() {
-        ha_freearr(data);
+        nu_freea(data);
     }
 
     /**

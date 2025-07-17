@@ -44,8 +44,8 @@ struct FVarTable {
         foreach(ref instance; instances) {
             instance.free();
         }
-        ha_freearr(axes);
-        ha_freearr(instances);
+        nu_freea(axes);
+        nu_freea(instances);
     }
 
     void deserialize(FontReader reader) {
@@ -64,8 +64,8 @@ struct FVarTable {
         ushort instanceCount = reader.readElementBE!ushort;
         ushort instanceSize = reader.readElementBE!ushort;
 
-        this.axes = ha_allocarr!FVarVariationAxisRecord(axisCount);
-        this.instances = ha_allocarr!FVarInstanceRecord(instanceCount);
+        this.axes = nu_malloca!FVarVariationAxisRecord(axisCount);
+        this.instances = nu_malloca!FVarInstanceRecord(instanceCount);
 
         // Variation Axis
         reader.seek(start+axesArrayOffset);
@@ -154,14 +154,14 @@ struct FVarInstanceRecord {
     ushort postScriptNameId;
 
     void free() {
-        ha_freearr(coordinates);
+        nu_freea(coordinates);
     }
 
     void deserialize(FontReader reader, uint axisCount) {
         this.subfamilyNameId = reader.readElementBE!ushort;
         this.flags = reader.readElementBE!ushort;
 
-        this.coordinates = ha_allocarr!fixed32(axisCount);
+        this.coordinates = nu_malloca!fixed32(axisCount);
         reader.readElementsBE(this.coordinates);
 
         this.postScriptNameId = reader.readElementBE!ushort;

@@ -115,7 +115,7 @@ public:
         foreach(ref subpath; this.subpaths) {
             subpath.free();
         }
-        ha_freearr(subpaths);
+        nu_freea(subpaths);
         
         // Reset state.
         this.cursor = vec2.zero;
@@ -258,7 +258,7 @@ public:
         newpath.bounds = this.bounds;
         newpath.cursor = this.cursor;
         newpath.curveSubdivisions = this.curveSubdivisions;
-        newpath.subpaths = ha_allocarr!Subpath(subpaths.length);
+        newpath.subpaths = nu_malloca!Subpath(subpaths.length);
 
         foreach(i, ref Subpath subpath; this.subpaths)
             newpath.subpaths[i] = subpath.clone();
@@ -327,7 +327,7 @@ public:
         Clears the subpath of line segments.
     */
     void free() {
-        ha_freearr(segments);
+        nu_freea(segments);
     }
     
     /**

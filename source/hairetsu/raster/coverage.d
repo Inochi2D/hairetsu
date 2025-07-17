@@ -157,7 +157,7 @@ public:
         this.width  = width +(MASK_PADDING*2);
         this.height = height+(MASK_PADDING*2);
 
-        this.coverage = ha_allocarr!float(this.width * this.height);
+        this.coverage = nu_malloca!float(this.width * this.height);
         this.clear();
     }
 
@@ -167,7 +167,7 @@ public:
     void free() {
         this.width = 0;
         this.height = 0;
-        ha_freearr(coverage);
+        nu_freea(coverage);
     }
 
     /**

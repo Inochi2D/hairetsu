@@ -49,7 +49,7 @@ struct GlyfTable {
         Frees the glyf table
     */
     void free() {
-        ha_freearr(this.glyphs);
+        nu_freea(this.glyphs);
     }
 
     /**
@@ -58,7 +58,7 @@ struct GlyfTable {
     void deserialize(FontReader reader, ref LocaTable loca) {
         size_t start = reader.tell();
 
-        this.glyphs = ha_allocarr!GlyfRecord(loca.offsets.length);
+        this.glyphs = nu_malloca!GlyfRecord(loca.offsets.length);
         foreach(i; 0..glyphs.length) {
             GlyphIndex glyphId = cast(GlyphIndex)i;
 
@@ -95,7 +95,7 @@ public:
         Frees the glyf record
     */
     void free() {
-        ha_freearr(contours);
+        nu_freea(contours);
     }
 
     /**
@@ -122,7 +122,7 @@ public:
             SimpleGlyfContour simpleContour;
             simpleContour.deserialize(reader, numberOfCountours);
 
-            this.contours = ha_allocarr!GlyfContour(numberOfCountours);
+            this.contours = nu_malloca!GlyfContour(numberOfCountours);
             foreach(i; 0..contours.length) {
                 uint start = i == 0 ? 0 : simpleContour.endPtsOfContours[i-1]+1;
                 uint end = simpleContour.endPtsOfContours[i]+1;
@@ -286,14 +286,14 @@ struct GlyfContour {
     GlyfPoint[] points;
 
     void free() {
-        ha_freearr(points);
+        nu_freea(points);
     }
 
     /**
         Deserializes the Glyf table
     */
     void parse(ref SimpleGlyfContour contour, uint start, uint length) {
-        this.points = ha_allocarr!GlyfPoint(length);
+        this.points = nu_malloca!GlyfPoint(length);
         foreach(i; 0..length) {
             this.points[i] = GlyfPoint(
                 point: contour.contours[start+i],
@@ -335,10 +335,10 @@ struct SimpleGlyfContour {
     vec2[] contours;
 
     void free() {
-        ha_freearr(endPtsOfContours);
-        ha_freearr(instructions);
-        ha_freearr(flags);
-        ha_freearr(contours);
+        nu_freea(endPtsOfContours);
+        nu_freea(instructions);
+        nu_freea(flags);
+        nu_freea(contours);
     }
 
     /**
@@ -347,20 +347,20 @@ struct SimpleGlyfContour {
     void deserialize(FontReader reader, ushort contourCount) {
         
         // endPtsOfContours
-        this.endPtsOfContours = ha_allocarr!ushort(contourCount);
+        this.endPtsOfContours = nu_malloca!ushort(contourCount);
         reader.readElementsBE!ushort(endPtsOfContours);
 
         // instructions
         ushort instructionLength = reader.readElementBE!ushort;
         if (instructionLength > 0) {
-            this.instructions = ha_allocarr!ubyte(instructionLength);
+            this.instructions = nu_malloca!ubyte(instructionLength);
             reader.read(instructions);
         }
 
         ushort pointCount = cast(ushort)(endPtsOfContours[$-1]+1);
         if (pointCount > 0) {
-            this.flags = ha_allocarr!ubyte(pointCount);
-            this.contours = ha_allocarr!vec2(pointCount);
+            this.flags = nu_malloca!ubyte(pointCount);
+            this.contours = nu_malloca!vec2(pointCount);
 
             // Read and expand flags
             for (size_t i = 0; i < pointCount; i++) {

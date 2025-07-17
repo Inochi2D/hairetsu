@@ -14,7 +14,7 @@
 */
 module hairetsu.ot.tables.common;
 public import hairetsu.common;
-public import numem : nu_resize;
+public import numem : nu_resize, nu_malloca, nu_freea;
 
 /**
     An OpenType Tag.

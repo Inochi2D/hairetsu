@@ -26,7 +26,7 @@ extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
 
     // Allocate faces; we'll allocate for every font, even unsupported ones.
     // We will be discarding this array anyways.
-    FontFaceInfo[] faces = ha_allocarr!FontFaceInfo(CFArrayGetCount(ctDescriptors));
+    FontFaceInfo[] faces = nu_malloca!FontFaceInfo(CFArrayGetCount(ctDescriptors));
     uint faceIdx;
 
     // Step 1. Get all the valid fonts.

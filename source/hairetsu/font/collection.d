@@ -47,7 +47,7 @@ public:
         Destructor
     */
     ~this() {
-        ha_freearr(_families);
+        nu_freea(_families);
     }
 
     /**
@@ -89,8 +89,8 @@ public:
         Destructor
     */
     ~this() {
-        ha_freearr(familyName);
-        ha_freearr(_faces);
+        nu_freea(familyName);
+        nu_freea(_faces);
     }
 
     /**
@@ -215,12 +215,12 @@ public:
         Destructor
     */
     ~this() {
-        ha_freearr(path);
-        ha_freearr(name);
-        ha_freearr(postscriptName);
-        ha_freearr(familyName);
-        ha_freearr(subfamilyName);
-        ha_freearr(sampleText);
+        nu_freea(path);
+        nu_freea(name);
+        nu_freea(postscriptName);
+        nu_freea(familyName);
+        nu_freea(subfamilyName);
+        nu_freea(sampleText);
         if (stream) nogc_delete(stream);
     }
 

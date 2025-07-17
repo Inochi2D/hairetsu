@@ -132,7 +132,7 @@ private:
         reader.seek(offset);
 
         entry.header = reader.readRecordBE!SFNTHeader;
-        entry.tables = ha_allocarr!SFNTTableRecord(entry.header.tableCount);
+        entry.tables = nu_malloca!SFNTTableRecord(entry.header.tableCount);
         foreach(ref table; entry.tables)
             table = reader.readRecordBE!SFNTTableRecord;
         

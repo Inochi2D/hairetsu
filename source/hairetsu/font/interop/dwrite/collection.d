@@ -109,7 +109,7 @@ private:
                         break;
                     }
                 }
-                ha_freearr(files);
+                nu_freea(files);
             }
             face.Release();
         }

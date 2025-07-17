@@ -33,7 +33,7 @@ struct CmapTable {
         foreach(ref subtable; subtables) {
             subtable.free();
         }
-        ha_freearr(subtables);
+        nu_freea(subtables);
     }
 
     /**
@@ -45,7 +45,7 @@ struct CmapTable {
         ushort tableVersion = reader.readElementBE!ushort();
         ushort tableCount = reader.readElementBE!ushort();
 
-        this.subtables = ha_allocarr!CmapSubTable(tableCount);
+        this.subtables = nu_malloca!CmapSubTable(tableCount);
         switch(tableVersion) {
             case 0:
                 foreach(i; 0..tableCount) {
@@ -97,11 +97,11 @@ struct CmapSubTable {
         ushort[] glyphIdArray;
 
         void free() {
-            ha_freearr(endCode);
-            ha_freearr(startCode);
-            ha_freearr(idDelta);
-            ha_freearr(idRangeOffset);
-            ha_freearr(glyphIdArray);
+            nu_freea(endCode);
+            nu_freea(startCode);
+            nu_freea(idDelta);
+            nu_freea(idRangeOffset);
+            nu_freea(glyphIdArray);
         }
 
         void deserialize(FontReader reader) {
@@ -120,11 +120,11 @@ struct CmapSubTable {
             ) / 2;
 
             // Prepare arrays
-            this.endCode = ha_allocarr!ushort(segCount);
-            this.startCode = ha_allocarr!ushort(segCount);
-            this.idDelta = ha_allocarr!short(segCount);
-            this.idRangeOffset = ha_allocarr!ushort(segCount);
-            this.glyphIdArray = ha_allocarr!ushort(glyphIdArrayLength);
+            this.endCode = nu_malloca!ushort(segCount);
+            this.startCode = nu_malloca!ushort(segCount);
+            this.idDelta = nu_malloca!short(segCount);
+            this.idRangeOffset = nu_malloca!ushort(segCount);
+            this.glyphIdArray = nu_malloca!ushort(glyphIdArrayLength);
 
             reader.readElementsBE(endCode);
             reader.skip(2); // reservedPad
@@ -143,7 +143,7 @@ struct CmapSubTable {
         ushort[] glyphIdArray;
         
         void free() {
-            ha_freearr(glyphIdArray);
+            nu_freea(glyphIdArray);
         }
 
         void deserialize(FontReader reader) {
@@ -152,7 +152,7 @@ struct CmapSubTable {
             firstCode = reader.readElementBE!ushort();
 
             ushort glyphIdArrayLength = reader.readElementBE!ushort();
-            this.glyphIdArray = ha_allocarr!ushort(glyphIdArrayLength);
+            this.glyphIdArray = nu_malloca!ushort(glyphIdArrayLength);
             reader.readElementsBE(glyphIdArray);
         }
     }
@@ -170,7 +170,7 @@ struct CmapSubTable {
         SequentialMapGroup[] groups;
         
         void free() {
-            ha_freearr(groups);
+            nu_freea(groups);
         }
 
         void deserialize(FontReader reader) {
@@ -179,7 +179,7 @@ struct CmapSubTable {
             language = reader.readElementBE!uint();
             
             uint sequentialMapGroupCount = reader.readElementBE!uint();
-            this.groups = ha_allocarr!SequentialMapGroup(sequentialMapGroupCount);
+            this.groups = nu_malloca!SequentialMapGroup(sequentialMapGroupCount);
             foreach(ref group; groups) {
                 group = reader.readRecordBE!SequentialMapGroup();
             }
