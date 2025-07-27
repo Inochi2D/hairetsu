@@ -33,6 +33,7 @@ dub build --build=release --config=appleos-dynamic
 ```
 
 The shared object will be put in `out/`, a C FFI interface is provided in [cffi.d](source/hairetsu/cffi.d).
+A C [header file](res/hairetsu.h) will also be copied out to the `out/` directory.
 
 ## Enumerating System Fonts
 
