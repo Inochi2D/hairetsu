@@ -11,6 +11,29 @@ lookup, shaping and rasterization with plans for complex text layout and bidi in
 Hairetsu is built around reference counted types built ontop of `numem`; despite this the types provided
 by hairetsu should be usable in a GC context.
 
+# Building and Packaging
+Hairetsu uses the `dub` build system and package manager during the build process.
+When using hairetsu in D code you can just simply add it as a D dependency.
+If you wish to use hairetsu outside of DLang, you can compile a shared/dynamic library using the `-dynamic` variants
+of the configurations.
+
+## On Linux, FreeBSD, etc.
+```
+dub build --build=release --config=posix-dynamic
+```
+
+## On Windows
+```
+dub build --build=release --config=win32-dynamic
+```
+
+## On macOS (and derived)
+```
+dub build --build=release --config=appleos-dynamic
+```
+
+The shared object will be put in `out/`, a C FFI interface is provided in [cffi.d](source/hairetsu/cffi.d).
+
 ## Enumerating System Fonts
 
 Hairetsu has a subsystem for enumerating fonts on the system and their capabilities.

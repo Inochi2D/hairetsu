@@ -51,53 +51,59 @@ Tag fromBCP47(string bcp47) @nogc nothrow {
     import nulib.c.stdio : printf;
     foreach(i; 0..minLength) tmp[i] = toLower(bcp47[i]);
     
+    version(USE_NURT) {
 
+        // NOTE:    for some reason using JSON under CTFE causes all of this to go haywire,
+        //          and most of the D standard library gets pulled in.
+        //          until a nogc JSON parser is implemented this will be stubbed out.
+        return LANG_NONE;
+    } else {
+        // NOTE:    This is where the compile-time code generation begins.
+        //          First we load the JSON from file, then we exploit the fact
+        //          That at compile time, we can still use libphobos to iterate
+        //          over the JSON object, the format of the JSON is described here:
+        //          https://github.com/jclark/lang-ietf-opentype
+        //
+        //          The inline getMultiMappings function will not be present in the
+        //          output build, as it's basically a no-op if it's not running during
+        //          compile time. The function is there to work around issues with just
+        //          iterating with static foreach directly. The rest of the code-gen
+        //          uses string mixins to generate code that can be nogc and nothrow.
+        //          Note that in general, Hairetsu wants to keep use of string mixins
+        //          to a minimum as they have a relatively high memory footprint. 
+        import std.format : format;
+        import std.json;
 
-    // NOTE:    This is where the compile-time code generation begins.
-    //          First we load the JSON from file, then we exploit the fact
-    //          That at compile time, we can still use libphobos to iterate
-    //          over the JSON object, the format of the JSON is described here:
-    //          https://github.com/jclark/lang-ietf-opentype
-    //
-    //          The inline getMultiMappings function will not be present in the
-    //          output build, as it's basically a no-op if it's not running during
-    //          compile time. The function is there to work around issues with just
-    //          iterating with static foreach directly. The rest of the code-gen
-    //          uses string mixins to generate code that can be nogc and nothrow.
-    //          Note that in general, Hairetsu wants to keep use of string mixins
-    //          to a minimum as they have a relatively high memory footprint. 
-    import std.format : format;
-    import std.json;
+        enum mappingRoot = parseJSON(import("langmap.json")).object();
+        pragma(msg, "Parsing ", cast(int)mappingRoot.length, " BCP47 language mappings...");
 
-    enum mappingRoot = parseJSON(import("langmap.json")).object();
-    pragma(msg, "Parsing ", cast(int)mappingRoot.length, " BCP47 language mappings...");
-
-    string[2][] getMultiMappings(JSONValue[] values) {
-        if (__ctfe) {
-            string[2][] mappings;
-            for (size_t i = 0; i < cast(ptrdiff_t)values.length-1; i += 2) {
-                mappings ~= [values[i].str, values[i+1].str];
-            }
-            return mappings;
-        } else return null;
-    }
-
-    switch(cast(string)tmp[0..minLength]) {
-        static foreach(string key, JSONValue language; mappingRoot) {
-            static if (language.type == JSONType.array) {
-                static foreach(mapping; getMultiMappings(language.array[1..$])) {
-                    mixin(q{case "%s-%s": return ISO15924!("%s");}.format(key, mapping[0], mapping[1]));
+        string[2][] getMultiMappings(JSONValue[] values) {
+            if (__ctfe) {
+                string[2][] mappings;
+                for (size_t i = 0; i < cast(ptrdiff_t)values.length-1; i += 2) {
+                    mappings ~= [values[i].str, values[i+1].str];
                 }
-
-                mixin(q{case "%s": return ISO15924!("%s");}.format(key, language.array[0].str()));
-            } else static if (language.type == JSONType.string) {
-
-                mixin(q{case "%s": return ISO15924!("%s");}.format(key, language.str()));
-            } else static assert(0, "Format error.");
+                return mappings;
+            } else return null;
         }
 
-        default:
-            return LANG_NONE;
+        switch(cast(string)tmp[0..minLength]) {
+            static foreach(string key, JSONValue language; mappingRoot) {
+                static if (language.type == JSONType.array) {
+                    static foreach(mapping; getMultiMappings(language.array[1..$])) {
+                        mixin(q{case "%s-%s": return ISO15924!("%s");}.format(key, mapping[0], mapping[1]));
+                    }
+
+                    mixin(q{case "%s": return ISO15924!("%s");}.format(key, language.array[0].str()));
+                } else static if (language.type == JSONType.string) {
+
+                    mixin(q{case "%s": return ISO15924!("%s");}.format(key, language.str()));
+                } else static assert(0, "Format error.");
+            }
+
+            default:
+                return LANG_NONE;
+        }
     }
 }
 
