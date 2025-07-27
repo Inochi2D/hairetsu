@@ -44,6 +44,7 @@ configuration "win32-dynamic" {
     versions "HA_DIRECTWRITE"
 
     subConfiguration "nurt" "nurt-enabled"
+    copyFiles "res/hairetsu.h"
 }
 
 //
@@ -67,6 +68,7 @@ configuration "appleos-dynamic" {
     versions "HA_CORETEXT"
 
     subConfiguration "nurt" "nurt-enabled"
+    copyFiles "res/hairetsu.h"
 }
 
 //
@@ -91,6 +93,7 @@ configuration "posix-dynamic" {
     versions "HA_FONTCONFIG"
 
     subConfiguration "nurt" "nurt-enabled"
+    copyFiles "res/hairetsu.h"
 }
 
 //
@@ -109,6 +112,7 @@ configuration "generic-dynamic" {
     versions "HA_GENERIC"
 
     subConfiguration "nurt" "nurt-enabled"
+    copyFiles "res/hairetsu.h"
 }
 
 //
@@ -125,6 +129,7 @@ configuration "none-dynamic" {
     targetType "dynamicLibrary"
     
     subConfiguration "nurt" "nurt-enabled"
+    copyFiles "res/hairetsu.h"
 }
 
 //
