@@ -20,6 +20,7 @@ import hairetsu.font.font;
 import hairetsu.font.face;
 import hairetsu.font.cmap;
 import hairetsu.font.glyph;
+import hairetsu.font.collection;
 import hairetsu.common;
 
 // Extern deps used internally.
@@ -40,7 +41,6 @@ extern(C) export:
         $(D true) if initialized,
         $(D false) otherwise.
 */
-extern(C)
 bool ha_get_initialized() @nogc nothrow {
     import hairetsu : haIsInitialized;
     return haIsInitialized();
@@ -55,7 +55,6 @@ bool ha_get_initialized() @nogc nothrow {
         $(D true) if initialized,
         $(D false) otherwise.
 */
-extern(C)
 bool ha_try_initialize() @nogc {
     import hairetsu : haTryInitialize;
     return haTryInitialize();
@@ -70,7 +69,6 @@ bool ha_try_initialize() @nogc {
         $(D true) if initialized,
         $(D false) otherwise.
 */
-extern(C)
 void ha_try_shutdown() @nogc {
     import hairetsu : haTryShutdown;
     return haTryShutdown();
@@ -86,7 +84,7 @@ void ha_try_shutdown() @nogc {
     Params:
         obj = The object to retain.
 */
-void ha_retain(void* obj) {
+void ha_retain(void* obj) @nogc {
     (cast(NuRefCounted)obj).retain();
 }
 
@@ -100,7 +98,7 @@ void ha_retain(void* obj) {
         The resulting handle after the operation,
         $(D null) if the object was freed.
 */
-void* ha_release(void* obj) {
+void* ha_release(void* obj) @nogc {
     return cast(void*)(cast(NuRefCounted)obj).release();
 }
 
@@ -130,7 +128,7 @@ struct ha_fontfile_t;
         This function will copy the memory out of data,
         this is to ensure ownership of the data is properly handled.
 */
-ha_fontfile_t* ha_fontfile_from_memory(ubyte* data, uint length) {
+ha_fontfile_t* ha_fontfile_from_memory(ubyte* data, uint length) @nogc {
     return cast(ha_fontfile_t*)FontFile.fromMemory(data[0..length]);
 }
 
@@ -150,7 +148,7 @@ ha_fontfile_t* ha_fontfile_from_memory(ubyte* data, uint length) {
         This function will copy the memory out of data,
         this is to ensure ownership of the data is properly handled.
 */
-ha_fontfile_t* ha_fontfile_from_memory_with_name(ubyte* data, uint length, const(char)* name) {
+ha_fontfile_t* ha_fontfile_from_memory_with_name(ubyte* data, uint length, const(char)* name) @nogc {
     nstring nname = name;
     return cast(ha_fontfile_t*)FontFile.fromMemory(data[0..length], nname);
 }
@@ -166,7 +164,7 @@ ha_fontfile_t* ha_fontfile_from_memory_with_name(ubyte* data, uint length, const
         A $(D FontFile) instance on success,
         $(D null) on failure.
 */
-ha_fontfile_t* ha_fontfile_from_file(const(char)* path) {
+ha_fontfile_t* ha_fontfile_from_file(const(char)* path) @nogc {
     nstring npath = path;
     return cast(ha_fontfile_t*)FontFile.fromFile(npath);
 }
@@ -181,7 +179,7 @@ ha_fontfile_t* ha_fontfile_from_file(const(char)* path) {
         Name of the type of font contained within the font file
         in UTF-8 encoding; $(D null) if obj is invalid.
 */
-const(char)* ha_fontfile_get_type(ha_fontfile_t* obj) {
+const(char)* ha_fontfile_get_type(ha_fontfile_t* obj) @nogc {
     if (!obj)
         return null;
     
@@ -198,7 +196,7 @@ const(char)* ha_fontfile_get_type(ha_fontfile_t* obj) {
         Name of font contained within the font file
         in UTF-8 encoding; $(D null) if obj is invalid.
 */
-const(char)* ha_fontfile_get_name(ha_fontfile_t* obj) {
+const(char)* ha_fontfile_get_name(ha_fontfile_t* obj) @nogc {
     if (!obj)
         return null;
     
@@ -217,7 +215,7 @@ const(char)* ha_fontfile_get_name(ha_fontfile_t* obj) {
         owned by the font file; the returned array should
         NOT be freed by the caller.
 */
-uint ha_fontfile_get_fonts(ha_fontfile_t* obj, ha_font_t** target) {
+uint ha_fontfile_get_fonts(ha_fontfile_t* obj, ha_font_t** target) @nogc {
     *target = cast(ha_font_t*)((cast(FontFile)obj).fonts.ptr);
     return cast(uint)(cast(FontFile)obj).fonts.length;
 }
@@ -246,7 +244,7 @@ struct ha_font_t;
         The string is owned by the font and should not be
         freed by you directly.
 */
-const(char)* ha_font_get_name(ha_font_t* obj) {
+const(char)* ha_font_get_name(ha_font_t* obj) @nogc {
     return (cast(Font)obj).name.ptr;
 }
 
@@ -263,7 +261,7 @@ const(char)* ha_font_get_name(ha_font_t* obj) {
         The string is owned by the font and should not be
         freed by you directly.
 */
-const(char)* ha_font_get_family(ha_font_t* obj) {
+const(char)* ha_font_get_family(ha_font_t* obj) @nogc {
     return (cast(Font)obj).family.ptr;
 }
 
@@ -280,7 +278,7 @@ const(char)* ha_font_get_family(ha_font_t* obj) {
         The string is owned by the font and should not be
         freed by you directly.
 */
-const(char)* ha_font_get_subfamily(ha_font_t* obj) {
+const(char)* ha_font_get_subfamily(ha_font_t* obj) @nogc {
     return (cast(Font)obj).subfamily.ptr;
 }
 
@@ -297,7 +295,7 @@ const(char)* ha_font_get_subfamily(ha_font_t* obj) {
         The string is owned by the font and should not be
         freed by you directly.
 */
-const(char)* ha_font_get_type(ha_font_t* obj) {
+const(char)* ha_font_get_type(ha_font_t* obj) @nogc {
     return (cast(Font)obj).type.ptr;
 }
 
@@ -310,7 +308,7 @@ const(char)* ha_font_get_type(ha_font_t* obj) {
     Returns:
         The amount of glyphs stored within the font.
 */
-uint ha_font_get_glyph_count(ha_font_t* obj) {
+uint ha_font_get_glyph_count(ha_font_t* obj) @nogc {
     return cast(uint)(cast(Font)obj).glyphCount;
 }
 
@@ -323,7 +321,7 @@ uint ha_font_get_glyph_count(ha_font_t* obj) {
     Returns:
         The Units per EM.
 */
-uint ha_font_get_upem(ha_font_t* obj) {
+uint ha_font_get_upem(ha_font_t* obj) @nogc {
     return (cast(Font)obj).upem;
 }
 
@@ -336,7 +334,7 @@ uint ha_font_get_upem(ha_font_t* obj) {
     Returns:
         The lowest recommended pixels-per-EM for readability.
 */
-uint ha_font_get_lowest_ppem(ha_font_t* obj) {
+uint ha_font_get_lowest_ppem(ha_font_t* obj) @nogc {
     return (cast(Font)obj).lowestPPEM;
 }
 
@@ -349,7 +347,7 @@ uint ha_font_get_lowest_ppem(ha_font_t* obj) {
     Returns:
         The global metrics.
 */
-FontMetrics ha_font_get_global_metrics(ha_font_t* obj) {
+FontMetrics ha_font_get_global_metrics(ha_font_t* obj) @nogc {
     return (cast(Font)obj).fontMetrics;   
 }
 
@@ -365,7 +363,7 @@ FontMetrics ha_font_get_global_metrics(ha_font_t* obj) {
         The glyph ID for the given codepoint, or 
         $(D GLYPH_MISSING) if not found.
 */
-uint ha_font_find_glyph(ha_font_t* obj, uint codepoint) {
+uint ha_font_find_glyph(ha_font_t* obj, uint codepoint) @nogc {
     return (cast(Font)obj).charMap.getGlyphIndex(codepoint);
 }
 
@@ -379,7 +377,7 @@ uint ha_font_find_glyph(ha_font_t* obj, uint codepoint) {
     Returns:
         The base metrics of the given glyph.
 */
-GlyphMetrics ha_font_glyph_metrics_for(ha_font_t* obj, uint glyphId) {
+GlyphMetrics ha_font_glyph_metrics_for(ha_font_t* obj, uint glyphId) @nogc {
     return (cast(Font)obj).getMetricsFor(glyphId);
 }
 
@@ -393,7 +391,7 @@ GlyphMetrics ha_font_glyph_metrics_for(ha_font_t* obj, uint glyphId) {
         A reference to a newly created face object,
         or $(D null) on failure.
 */
-ha_face_t* ha_font_create_face(ha_font_t* obj) {
+ha_face_t* ha_font_create_face(ha_font_t* obj) @nogc {
     return cast(ha_face_t*)((cast(Font)obj).createFace());
 }
 
@@ -416,7 +414,7 @@ struct ha_face_t;
     Returns:
         The Units per EM.
 */
-uint ha_face_get_upem(ha_face_t* obj) {
+uint ha_face_get_upem(ha_face_t* obj) @nogc {
     return (cast(FontFace)obj).upem;
 }
 
@@ -429,7 +427,7 @@ uint ha_face_get_upem(ha_face_t* obj) {
     Returns:
         The scale factor.
 */
-float ha_face_get_scale(ha_face_t* obj) {
+float ha_face_get_scale(ha_face_t* obj) @nogc {
     return (cast(FontFace)obj).scale;
 }
 
@@ -442,7 +440,7 @@ float ha_face_get_scale(ha_face_t* obj) {
     Returns:
         The pixels-per-EM.
 */
-float ha_face_get_ppem(ha_face_t* obj) {
+float ha_face_get_ppem(ha_face_t* obj) @nogc {
     return (cast(FontFace)obj).ppem;
 }
 
@@ -455,7 +453,7 @@ float ha_face_get_ppem(ha_face_t* obj) {
     Returns:
         The amount of glyphs stored within the font face.
 */
-uint ha_face_get_glyph_count(ha_face_t* obj) {
+uint ha_face_get_glyph_count(ha_face_t* obj) @nogc {
     return (cast(FontFace)obj).glyphCount;
 }
 
@@ -470,7 +468,7 @@ uint ha_face_get_glyph_count(ha_face_t* obj) {
         A weak reference to the fallback face, or
         $(D null) if no fallback is specified.
 */
-ha_face_t* ha_face_get_fallback(ha_face_t* obj) {
+ha_face_t* ha_face_get_fallback(ha_face_t* obj) @nogc {
     return cast(ha_face_t*)(cast(FontFace)obj).fallback;
 }
 
@@ -487,7 +485,7 @@ ha_face_t* ha_face_get_fallback(ha_face_t* obj) {
         If this is the case the operation will set the fallback to
         $(D null)!
 */
-void ha_face_set_fallback(ha_face_t* obj, ha_face_t* face) {
+void ha_face_set_fallback(ha_face_t* obj, ha_face_t* face) @nogc {
     (cast(FontFace)obj).fallback = cast(FontFace)face;
 }
 
@@ -500,7 +498,7 @@ void ha_face_set_fallback(ha_face_t* obj, ha_face_t* face) {
     Returns:
         Whether hinting is requested.
 */
-bool ha_face_get_hinting(ha_face_t* obj) {
+bool ha_face_get_hinting(ha_face_t* obj) @nogc {
     return (cast(FontFace)obj).wantHinting;
 }
 
@@ -511,7 +509,7 @@ bool ha_face_get_hinting(ha_face_t* obj) {
         obj = The object to query.
         value = The value to set.
 */
-void ha_face_set_hinting(ha_face_t* obj, bool value) {
+void ha_face_set_hinting(ha_face_t* obj, bool value) @nogc {
     (cast(FontFace)obj).wantHinting = value;
 }
 
@@ -528,7 +526,7 @@ void ha_face_set_hinting(ha_face_t* obj, bool value) {
     Returns:
         The current set DPI.
 */
-float ha_face_get_dpi(ha_face_t* obj) {
+float ha_face_get_dpi(ha_face_t* obj) @nogc {
     return (cast(FontFace)obj).dpi;
 }
 
@@ -539,7 +537,7 @@ float ha_face_get_dpi(ha_face_t* obj) {
         obj = The object to query.
         value = The value to set.
 */
-void ha_face_set_dpi(ha_face_t* obj, float value) {
+void ha_face_set_dpi(ha_face_t* obj, float value) @nogc {
     (cast(FontFace)obj).dpi = value;
 }
 
@@ -552,7 +550,7 @@ void ha_face_set_dpi(ha_face_t* obj, float value) {
     Returns:
         The current set point size.
 */
-float ha_face_get_pt(ha_face_t* obj) {
+float ha_face_get_pt(ha_face_t* obj) @nogc {
     return (cast(FontFace)obj).pt;
 }
 
@@ -563,7 +561,7 @@ float ha_face_get_pt(ha_face_t* obj) {
         obj = The object to query.
         value = The value to set.
 */
-void ha_face_set_pt(ha_face_t* obj, float value) {
+void ha_face_set_pt(ha_face_t* obj, float value) @nogc {
     (cast(FontFace)obj).pt = value;
 }
 
@@ -576,7 +574,7 @@ void ha_face_set_pt(ha_face_t* obj, float value) {
     Returns:
         The current set point size.
 */
-float ha_face_get_px(ha_face_t* obj) {
+float ha_face_get_px(ha_face_t* obj) @nogc {
     return (cast(FontFace)obj).px;
 }
 
@@ -587,7 +585,7 @@ float ha_face_get_px(ha_face_t* obj) {
         obj = The object to query.
         value = The value to set.
 */
-void ha_face_set_px(ha_face_t* obj, float value) {
+void ha_face_set_px(ha_face_t* obj, float value) @nogc {
     (cast(FontFace)obj).px = value;
 }
 
@@ -600,7 +598,7 @@ void ha_face_set_px(ha_face_t* obj, float value) {
     Returns:
         The scaled global metrics.
 */
-FontMetrics ha_face_get_global_metrics(ha_face_t* obj) {
+FontMetrics ha_face_get_global_metrics(ha_face_t* obj) @nogc {
     return (cast(FontFace)obj).faceMetrics;
 }
 
@@ -612,7 +610,7 @@ FontMetrics ha_face_get_global_metrics(ha_face_t* obj) {
         glyphId = The ID of the glyph to fetch.
         type = The type of glyph data to fetch for the glyph.
 */
-ha_glyph_t* ha_face_get_glyph(ha_face_t* obj, uint glyphId, GlyphType type) {
+ha_glyph_t* ha_face_get_glyph(ha_face_t* obj, uint glyphId, GlyphType type) @nogc {
     return cast(ha_glyph_t*)((cast(FontFace)obj).getGlyph(glyphId, type).copyToHeap());
 }
 
@@ -646,7 +644,7 @@ struct ha_glyph_t;
 /**
     Frees the given glyph.
 */
-void ha_glyph_free(ha_glyph_t* obj) {
+void ha_glyph_free(ha_glyph_t* obj) @nogc {
     nu_free(obj);
 }
 
@@ -659,7 +657,7 @@ void ha_glyph_free(ha_glyph_t* obj) {
     Returns:
         The metrics of the glyph.
 */
-GlyphMetrics ha_glyph_get_metrics(ha_glyph_t* obj) {
+GlyphMetrics ha_glyph_get_metrics(ha_glyph_t* obj) @nogc {
     return (cast(Glyph*)obj).metrics;
 }
 
@@ -672,7 +670,7 @@ GlyphMetrics ha_glyph_get_metrics(ha_glyph_t* obj) {
     Returns:
         The ID of the glyph.
 */
-uint ha_glyph_get_id(ha_glyph_t* obj) {
+uint ha_glyph_get_id(ha_glyph_t* obj) @nogc {
     return (cast(Glyph*)obj).id;
 }
 
@@ -685,7 +683,7 @@ uint ha_glyph_get_id(ha_glyph_t* obj) {
     Returns:
         The type of the data associated with the glyph.
 */
-GlyphType ha_glyph_get_type(ha_glyph_t* obj) {
+GlyphType ha_glyph_get_type(ha_glyph_t* obj) @nogc {
     return (cast(Glyph*)obj).rawData.type;
 }
 
@@ -698,7 +696,7 @@ GlyphType ha_glyph_get_type(ha_glyph_t* obj) {
     Returns:
         True if the glyph has data.
 */
-bool ha_glyph_get_has_data(ha_glyph_t* obj) {
+bool ha_glyph_get_has_data(ha_glyph_t* obj) @nogc {
     return (cast(Glyph*)obj).hasData;
 }
 
@@ -718,7 +716,7 @@ bool ha_glyph_get_has_data(ha_glyph_t* obj) {
         If no SVG is associated with the glyph, $(D null) is 
         returned and $(D length) is set to $(D 0). 
 */
-const(char)* ha_glyph_get_svg(ha_glyph_t* obj, uint* length) {
+const(char)* ha_glyph_get_svg(ha_glyph_t* obj, uint* length) @nogc {
     *length = cast(uint)(cast(Glyph*)obj).svg.length;
     return (cast(Glyph*)obj).svg.ptr;
 }
@@ -737,7 +735,7 @@ const(char)* ha_glyph_get_svg(ha_glyph_t* obj, uint* length) {
         The rasterized data belongs to you and must be freed by you,
         using standard C $(D free) mechanisms.
 */
-void ha_glyph_rasterize(ha_glyph_t* obj, ubyte** data, uint* length, uint* width, uint* height) {
+void ha_glyph_rasterize(ha_glyph_t* obj, ubyte** data, uint* length, uint* width, uint* height) @nogc {
     HaBitmap bmp = (cast(Glyph*)obj).rasterize(true);
     *data = bmp.data.ptr;
     *length = cast(uint)bmp.data.length;
@@ -760,10 +758,353 @@ void ha_glyph_rasterize(ha_glyph_t* obj, ubyte** data, uint* length, uint* width
         The rasterized data belongs to you and must be freed by you,
         using standard C $(D free) mechanisms.
 */
-void ha_glyph_rasterize_aliased(ha_glyph_t* obj, ubyte** data, uint* length, uint* width, uint* height) {
+void ha_glyph_rasterize_aliased(ha_glyph_t* obj, ubyte** data, uint* length, uint* width, uint* height) @nogc {
     HaBitmap bmp = (cast(Glyph*)obj).rasterize(false);
     *data = bmp.data.ptr;
     *length = cast(uint)bmp.data.length;
     *width = bmp.width;
     *height = bmp.height;
+}
+
+//
+//      COLLECTIONS
+//
+
+/**
+    Opaque handle to a Font Collection
+*/
+struct ha_collection_t;
+
+/**
+    Opaque handle to a Font Family
+*/
+struct ha_family_t;
+
+/**
+    Opaque handle to a Font Info
+*/
+struct ha_info_t;
+
+/**
+    Indexes the system to create a font collection.
+
+    Params:
+        update = Whether to update the font cache.
+    
+    Returns:
+        A new font collection on success,
+        $(D null) on failure.
+*/
+ha_collection_t* ha_collection_create_from_system(bool update) @nogc {
+    return cast(ha_collection_t*)FontCollection.createFromSystem(update);
+}
+
+/**
+    Creates an empty font collection.
+
+    Returns:
+        A new font collection on success,
+        $(D null) on failure.
+*/
+ha_collection_t* ha_collection_create() @nogc {
+    
+    import numem : nogc_new;
+    return cast(ha_collection_t*)nogc_new!FontCollection();
+}
+
+/**
+    Gets the amount of font families loaded for a collection.
+
+    Params:
+        obj = The object to query
+    
+    Returns:
+        The amount of families in the collection.
+*/
+uint ha_collection_get_family_count(ha_collection_t* obj) @nogc {
+    return cast(uint)(cast(FontCollection)obj).families.length;
+}
+
+/**
+    Gets the loaded families for the collection
+
+    Params:
+        obj = The object to query
+    
+    Returns:
+        An array of font families owned by the collection.
+
+    Note:
+        The families array is owned by the collection, you must 
+        NOT free it.
+*/
+ha_family_t* ha_collection_get_families(ha_collection_t* obj) @nogc {
+    return cast(ha_family_t*)(cast(FontCollection)obj).families.ptr;
+}
+
+/**
+    Adds a font family to the font collection.
+
+    Params:
+        obj = The object to query
+        family = The family to add
+    
+    Returns:
+        An array of font families owned by the collection.
+
+    Note:
+        The families array is owned by the collection, you must 
+        NOT free it.
+*/
+void ha_collection_add_family(ha_collection_t* obj, ha_family_t* family) @nogc {
+    (cast(FontCollection)obj).addFamily(cast(FontFamily)family);
+}
+
+/**
+    Gets the name of a font family.
+
+    Params:
+        obj = The object to query
+    
+    Returns:
+        The anme of the font family.
+*/
+const(char)* ha_family_get_name(ha_family_t* obj) @nogc {
+    return (cast(FontFamily)obj).familyName.ptr;
+}
+
+/**
+    Gets the amount of faces within the family.
+
+    Params:
+        obj = The object to query
+    
+    Returns:
+        The amount of faces in the family.
+*/
+uint ha_family_get_face_info_count(ha_family_t* obj) @nogc {
+    return cast(uint)(cast(FontFamily)obj).faces.length;
+}
+
+/**
+    Gets the faces within the family.
+
+    Params:
+        obj = The object to query
+    
+    Returns:
+        An array of font face descriptions owned by the family.
+
+    Note:
+        The faces array is owned by the family, you must 
+        NOT free it.
+*/
+ha_info_t* ha_family_get_face_infos(ha_family_t* obj) @nogc {
+    return cast(ha_info_t*)(cast(FontFamily)obj).faces.ptr;
+}
+
+/**
+    Gets whether a font family contains a face that supports
+    the given Unicode character code point.
+
+    Params:
+        obj = The object to query
+        character = The unicode character to query
+    
+    Returns:
+        $(D true) if the family has the given character,
+        $(D false) otherwise.
+*/
+bool ha_family_has_character(ha_family_t* obj, uint character) @nogc {
+    return (cast(FontFamily)obj).hasCharacter(character);
+}
+
+/**
+    Gets the first face descriptor that supports a given character.
+
+    Params:
+        obj = The object to query
+        character = The unicode character to query
+    
+    Returns:
+        A $(D ha_info_t*) descriptor on success,
+        $(D null) otherwise.
+*/
+ha_info_t* ha_family_get_first_with(ha_family_t* obj, uint character) @nogc {
+    return cast(ha_info_t*)(cast(FontFamily)obj).getFirstFaceWith(character);
+}
+
+/**
+    Gets the first face descriptor that supports a given character.
+
+    Params:
+        obj = The object to query
+        info = The face descriptor to add.
+*/
+void ha_family_add_face_info(ha_family_t* obj, ha_info_t* info) @nogc {
+    (cast(FontFamily)obj).addFace(cast(FontFaceInfo)info);
+}
+
+/**
+    Gets the file path of the font face described by
+    the descriptor.
+
+    Params:
+        obj = The object to query
+
+    Note:
+        This memory is owned by the descriptor,
+        do not free it.
+*/
+const(char)* ha_info_get_path(ha_info_t* obj) @nogc {
+    return (cast(FontFaceInfo)obj).path.ptr;
+}
+
+/**
+    Gets the name of the font face described by
+    the descriptor.
+
+    Params:
+        obj = The object to query
+
+    Note:
+        This memory is owned by the descriptor,
+        do not free it.
+*/
+const(char)* ha_info_get_name(ha_info_t* obj) @nogc {
+    return (cast(FontFaceInfo)obj).name.ptr;
+}
+
+/**
+    Gets the postscript name of the font face described by
+    the descriptor.
+
+    Params:
+        obj = The object to query
+
+    Note:
+        This memory is owned by the descriptor,
+        do not free it.
+*/
+const(char)* ha_info_get_postscript_name(ha_info_t* obj) @nogc {
+    return (cast(FontFaceInfo)obj).postscriptName.ptr;
+}
+
+/**
+    Gets the family name of the font face described by
+    the descriptor.
+
+    Params:
+        obj = The object to query
+
+    Note:
+        This memory is owned by the descriptor,
+        do not free it.
+*/
+const(char)* ha_info_get_family_name(ha_info_t* obj) @nogc {
+    return (cast(FontFaceInfo)obj).familyName.ptr;
+}
+
+/**
+    Gets the sub-family name of the font face described by
+    the descriptor.
+
+    Params:
+        obj = The object to query
+
+    Note:
+        This memory is owned by the descriptor,
+        do not free it.
+*/
+const(char)* ha_info_get_subfamily_name(ha_info_t* obj) @nogc {
+    return (cast(FontFaceInfo)obj).subfamilyName.ptr;
+}
+
+/**
+    Gets the sample text of the font face described by
+    the descriptor.
+
+    Params:
+        obj = The object to query
+    
+    Returns:
+        The sample text of the font.
+
+    Note:
+        This memory is owned by the descriptor,
+        do not free it.
+*/
+const(char)* ha_info_get_sample_text(ha_info_t* obj) @nogc {
+    return (cast(FontFaceInfo)obj).sampleText.ptr;
+}
+
+/**
+    Gets the type of outlines the font face described by
+    the descriptor contains.
+
+    Params:
+        obj = The object to query
+    
+    Returns:
+        The type of outlines the font supports.
+*/
+GlyphType ha_info_get_outline_type(ha_info_t* obj) @nogc {
+    return (cast(FontFaceInfo)obj).outlines;
+}
+
+/**
+    Gets whether the font face described by
+    the descriptor is a variable font.
+
+    Params:
+        obj = The object to query
+    
+    Returns:
+        $(D true) if the font is variable,
+        $(D false) otherwise.
+*/
+bool ha_info_get_is_variable(ha_info_t* obj) @nogc {
+    return (cast(FontFaceInfo)obj).variable;
+}
+
+/**
+    Gets whether the font face described by
+    the descriptor can be realized to a Hairetsu
+    font face object.
+
+    Params:
+        obj = The object to query
+    
+    Returns:
+        $(D true) if the font can be realized,
+        $(D false) otherwise.
+*/
+bool ha_info_get_is_realizable(ha_info_t* obj) @nogc {
+    return (cast(FontFaceInfo)obj).isRealizable;
+}
+
+/**
+    Gets whether the font face described by the descriptor
+    supports the given Unicode character code point.
+
+    Params:
+        obj = The object to query
+        character = The unicode character to query
+    
+    Returns:
+        $(D true) if the face has the given character,
+        $(D false) otherwise.
+*/
+bool ha_info_get_has_character(ha_info_t* obj, uint character) @nogc {
+    return (cast(FontFaceInfo)obj).hasCharacter(character);
+}
+
+/**
+    Realises the font face into a usable font object.
+
+    Returns:
+        A font created from the font info.
+*/
+ha_font_t* ha_info_realize(ha_info_t* obj) @nogc {
+    return cast(ha_font_t*)(cast(FontFaceInfo)obj).realize();
 }
