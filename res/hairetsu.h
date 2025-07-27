@@ -45,7 +45,7 @@ typedef struct vec2i {
 typedef struct vec2u {
     int32_t x;
     int32_t y;
-} vec2i_t;
+} vec2u_t;
 
 typedef struct rect {
     vec2_t min;
@@ -96,12 +96,12 @@ typedef struct ha_fontmetrics {
         Minimum end bearing.
     */
     vec2_t minBearingEnd;
-} ha_fontmetrics_t;
+} ha_font_metrics_t;
 
 /**
     Glyph Metrics
 */
-struct ha_glyphmetrics {
+typedef struct ha_glyphmetrics {
 
     /**
         The bounding box of the glyph.
@@ -121,18 +121,18 @@ struct ha_glyphmetrics {
     /**
         The overall scale applied to the glyph.
     */
-    float scale = 1;
+    float scale;
     
     /**
         Synthetic thickness to apply. (default: 1)
     */
-    float thickness = 1;
+    float thickness;
     
     /**
         Synthetic shear to apply. (default: 1)
     */
-    float shear = 0;
-} ha_glyphmetrics_t;
+    float shear;
+} ha_glyph_metrics_t;
 
 
 typedef uint32_t ha_glyph_type_t;
@@ -149,12 +149,12 @@ enum {
     HA_GLYPH_TYPE_TTF       = 0x10,
     HA_GLYPH_TYPE_CFF       = 0x20,
     HA_GLYPH_TYPE_CFF2      = 0x40,
-    HA_GLYPH_TYPE_OUTLINE   = trueType | cff | cff2,
+    HA_GLYPH_TYPE_OUTLINE   = HA_GLYPH_TYPE_TTF | HA_GLYPH_TYPE_CFF | HA_GLYPH_TYPE_CFF2,
     
     // Complex
     HA_GLYPH_TYPE_SVG       = 0x100,
     HA_GLYPH_TYPE_ANY       = HA_GLYPH_TYPE_BITMAP | HA_GLYPH_TYPE_OUTLINE | HA_GLYPH_TYPE_SVG
-}
+};
 
 //
 //              OPAQUE HANDLES
@@ -246,7 +246,7 @@ HA_EXPORT void* ha_release(void* obj);
         This function will copy the memory out of data,
         this is to ensure ownership of the data is properly handled.
 */
-HA_EXPORT ha_fontfile_t* ha_fontfile_from_memory(char *data, uint length);
+HA_EXPORT ha_fontfile_t* ha_fontfile_from_memory(char *data, uint32_t length);
 
 /**
     Creates a new font for the given memory slice with a given name.
@@ -264,7 +264,7 @@ HA_EXPORT ha_fontfile_t* ha_fontfile_from_memory(char *data, uint length);
         This function will copy the memory out of data,
         this is to ensure ownership of the data is properly handled.
 */
-HA_EXPORT ha_fontfile_t* ha_fontfile_from_memory_with_name(ubyte *data, uint length, const char *name);
+HA_EXPORT ha_fontfile_t* ha_fontfile_from_memory_with_name(char *data, uint32_t length, const char *name);
 
 /**
     Creates a new font for the given file path
@@ -423,7 +423,7 @@ HA_EXPORT uint32_t ha_font_get_lowest_ppem(ha_font_t *obj);
     Returns:
         The global metrics.
 */
-HA_EXPORT ha_fontmetrics_t ha_font_get_global_metrics(ha_font_t *obj);
+HA_EXPORT ha_font_metrics_t ha_font_get_global_metrics(ha_font_t *obj);
 
 /**
     Gets the metrics for the given glyph ID.
@@ -435,7 +435,7 @@ HA_EXPORT ha_fontmetrics_t ha_font_get_global_metrics(ha_font_t *obj);
     Returns:
         The base metrics of the given glyph.
 */
-HA_EXPORT ha_glyphmetrics_t ha_font_glyph_metrics_for(ha_font_t *obj, uint32_t glyphId);
+HA_EXPORT ha_glyph_metrics_t ha_font_glyph_metrics_for(ha_font_t *obj, uint32_t glyphId);
 
 /**
     Gets the base ID of a glyph within the font associated
@@ -632,7 +632,7 @@ HA_EXPORT void ha_face_set_px(ha_face_t *obj, float value);
     Returns:
         The scaled global metrics.
 */
-HA_EXPORT ha_fontmetrics_t ha_face_get_global_metrics(ha_face_t *obj);
+HA_EXPORT ha_font_metrics_t ha_face_get_global_metrics(ha_face_t *obj);
 
 /**
     Gets a glyph from a glyph ID.
@@ -662,7 +662,7 @@ HA_EXPORT void ha_glyph_free(ha_glyph_t *obj);
     Returns:
         The metrics of the glyph.
 */
-HA_EXPORT ha_glyphmetrics_t ha_glyph_get_metrics(ha_glyph_t* obj);
+HA_EXPORT ha_glyph_metrics_t ha_glyph_get_metrics(ha_glyph_t* obj);
 
 /**
     Gets the ID of the glyph.
@@ -713,7 +713,7 @@ HA_EXPORT bool ha_glyph_get_has_data(ha_glyph_t *obj);
         If no SVG is associated with the glyph, $(D null) is 
         returned and $(D length) is set to $(D 0). 
 */
-HA_EXPORT const char *ha_glyph_get_svg(ha_glyph_t *obj, uint *length);
+HA_EXPORT const char *ha_glyph_get_svg(ha_glyph_t *obj, uint32_t *length);
 
 /**
     Tries to rasterize the given glyph to the given buffer.
@@ -729,7 +729,7 @@ HA_EXPORT const char *ha_glyph_get_svg(ha_glyph_t *obj, uint *length);
         The rasterized data belongs to you and must be freed by you,
         using standard C $(D free) mechanisms.
 */
-HA_EXPORT void ha_glyph_rasterize(ha_glyph_t *obj, char **data, uint *length, uint *width, uint *height);
+HA_EXPORT void ha_glyph_rasterize(ha_glyph_t *obj, char **data, uint32_t *length, uint32_t *width, uint32_t *height);
 
 /**
     Tries to rasterize the given glyph to the given buffer;
@@ -746,7 +746,7 @@ HA_EXPORT void ha_glyph_rasterize(ha_glyph_t *obj, char **data, uint *length, ui
         The rasterized data belongs to you and must be freed by you,
         using standard C $(D free) mechanisms.
 */
-HA_EXPORT void ha_glyph_rasterize_aliased(ha_glyph_t *obj, char **data, uint *length, uint *width, uint *height);
+HA_EXPORT void ha_glyph_rasterize_aliased(ha_glyph_t *obj, char **data, uint32_t *length, uint32_t *width, uint32_t *height);
 
 //
 //              COLLECTIONS
