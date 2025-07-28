@@ -798,7 +798,7 @@ HA_EXPORT uint32_t ha_collection_get_family_count(ha_collection_t *obj);
         The families array is owned by the collection, you must 
         NOT free it.
 */
-HA_EXPORT ha_family_t *ha_collection_get_families(ha_collection_t *obj);
+HA_EXPORT ha_family_t **ha_collection_get_families(ha_collection_t *obj);
 
 /**
     Adds a font family to the font collection.
@@ -851,7 +851,7 @@ HA_EXPORT uint32_t ha_family_get_face_info_count(ha_family_t *obj);
         The faces array is owned by the family, you must 
         NOT free it.
 */
-HA_EXPORT ha_info_t *ha_family_get_face_infos(ha_family_t *obj);
+HA_EXPORT ha_info_t **ha_family_get_face_infos(ha_family_t *obj);
 
 /**
     Gets whether a font family contains a face that supports

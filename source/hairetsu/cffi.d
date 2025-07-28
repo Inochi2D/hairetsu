@@ -838,8 +838,8 @@ uint ha_collection_get_family_count(ha_collection_t* obj) @nogc {
         The families array is owned by the collection, you must 
         NOT free it.
 */
-ha_family_t* ha_collection_get_families(ha_collection_t* obj) @nogc {
-    return cast(ha_family_t*)(cast(FontCollection)obj).families.ptr;
+ha_family_t** ha_collection_get_families(ha_collection_t* obj) @nogc {
+    return cast(ha_family_t**)(cast(FontCollection)obj).families.ptr;
 }
 
 /**
@@ -899,8 +899,8 @@ uint ha_family_get_face_info_count(ha_family_t* obj) @nogc {
         The faces array is owned by the family, you must 
         NOT free it.
 */
-ha_info_t* ha_family_get_face_infos(ha_family_t* obj) @nogc {
-    return cast(ha_info_t*)(cast(FontFamily)obj).faces.ptr;
+ha_info_t** ha_family_get_face_infos(ha_family_t* obj) @nogc {
+    return cast(ha_info_t**)(cast(FontFamily)obj).faces.ptr;
 }
 
 /**
