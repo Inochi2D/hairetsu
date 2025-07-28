@@ -204,20 +204,31 @@ const(char)* ha_fontfile_get_name(ha_fontfile_t* obj) @nogc {
 }
 
 /**
-    Gets the list of fonts within the file.
+    Gets the amount of fonts within the file.
 
     Params:
         obj = The object to query.
-        target = Where to store the array.
 
     Returns:
         Unsigned 32-bit integer length of the font objects
         owned by the font file; the returned array should
         NOT be freed by the caller.
 */
-uint ha_fontfile_get_fonts(ha_fontfile_t* obj, ha_font_t** target) @nogc {
-    *target = cast(ha_font_t*)((cast(FontFile)obj).fonts.ptr);
+uint ha_fontfile_get_font_count(ha_fontfile_t* obj) @nogc {
     return cast(uint)(cast(FontFile)obj).fonts.length;
+}
+
+/**
+    Gets the list of fonts within the file.
+
+    Params:
+        obj = The object to query.
+
+    Returns:
+        Pointer to a list of fonts owned by the font file.
+*/
+ha_font_t** ha_fontfile_get_fonts(ha_fontfile_t* obj) @nogc {
+    return cast(ha_font_t**)((cast(FontFile)obj).fonts.ptr);
 }
 
 

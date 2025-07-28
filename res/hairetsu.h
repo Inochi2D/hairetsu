@@ -304,18 +304,28 @@ HA_EXPORT const char *ha_fontfile_get_type(ha_fontfile_t *obj);
 HA_EXPORT const char *ha_fontfile_get_name(ha_fontfile_t *obj);
 
 /**
-    Gets the list of fonts within the file.
+    Gets the amount of fonts within the file.
 
     Params:
         obj = The object to query.
-        target = Where to store the array.
 
     Returns:
         Unsigned 32-bit integer length of the font objects
         owned by the font file; the returned array should
         NOT be freed by the caller.
 */
-HA_EXPORT uint32_t ha_fontfile_get_fonts(ha_fontfile_t *obj, ha_font_t **target);
+HA_EXPORT uint32_t ha_fontfile_get_font_count(ha_fontfile_t *obj);
+
+/**
+    Gets the list of fonts within the file.
+
+    Params:
+        obj = The object to query.
+
+    Returns:
+        Pointer to a list of fonts owned by the font file.
+*/
+HA_EXPORT ha_font_t **ha_fontfile_get_fonts(ha_fontfile_t *obj);
 
 //
 //              FONT OBJECTS
