@@ -163,9 +163,9 @@ typedef struct ha_fontfile ha_fontfile_t;
 typedef struct ha_font ha_font_t;
 typedef struct ha_face ha_face_t;
 typedef struct ha_glyph ha_glyph_t;
-typedef struct ha_glyph ha_collection_t;
-typedef struct ha_glyph ha_family_t;
-typedef struct ha_glyph ha_info_t;
+typedef struct ha_collection ha_collection_t;
+typedef struct ha_family ha_family_t;
+typedef struct ha_info ha_info_t;
 
 //
 //              LIBRARY INITIALIZATION
