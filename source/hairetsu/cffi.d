@@ -149,7 +149,7 @@ ha_fontfile_t* ha_fontfile_from_memory(ubyte* data, uint length) @nogc {
         this is to ensure ownership of the data is properly handled.
 */
 ha_fontfile_t* ha_fontfile_from_memory_with_name(ubyte* data, uint length, const(char)* name) @nogc {
-    nstring nname = name;
+    nstring nname = name.fromStringz;
     return cast(ha_fontfile_t*)FontFile.fromMemory(data[0..length], nname);
 }
 
@@ -165,7 +165,7 @@ ha_fontfile_t* ha_fontfile_from_memory_with_name(ubyte* data, uint length, const
         $(D null) on failure.
 */
 ha_fontfile_t* ha_fontfile_from_file(const(char)* path) @nogc {
-    nstring npath = path;
+    nstring npath = path.fromStringz;
     return cast(ha_fontfile_t*)FontFile.fromFile(npath);
 }
 

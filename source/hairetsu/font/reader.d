@@ -50,8 +50,8 @@ public:
             This can safely be called from any thread.
     */
     static FontReader tryCreateFor(Stream stream) @trusted {
-        enforce(stream.canRead(), nogc_new!StreamReadException(stream, "Stream is not readable!"));
-        enforce(stream.canSeek(), nogc_new!StreamReadException(stream, "Stream is not seekable!"));
+        if (!stream.canRead()) throw nogc_new!StreamReadException(stream, "Stream is not readable!");
+        if (!stream.canSeek()) throw nogc_new!StreamReadException(stream, "Stream is not seekable!");
 
         foreach(FontReader reader; readers.byValue) {
             
@@ -177,8 +177,8 @@ public:
             the input stream.
     */
     this(Stream stream) @trusted {
-        enforce(stream.canRead(), nogc_new!StreamReadException(stream, "Stream is not readable!"));
-        enforce(stream.canSeek(), nogc_new!StreamReadException(stream, "Stream is not seekable!"));
+        if (!stream.canRead()) nogc_new!StreamReadException(stream, "Stream is not readable!");
+        if (!stream.canSeek()) nogc_new!StreamReadException(stream, "Stream is not seekable!");
 
         // NOTE:    Streams that can be flushed, eg. file streams might end up
         //          blocking file access, which would be bad for fonts.
