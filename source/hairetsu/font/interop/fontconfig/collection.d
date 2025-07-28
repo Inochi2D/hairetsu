@@ -71,14 +71,14 @@ extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
                 continue;
 
             faces[faceIdx] = nogc_new!FCFontFaceInfo(charSet, index);
-            faces[faceIdx].familyName = cast(string)family.fromStringz().nu_dup();
+            faces[faceIdx].familyName = cast(string)family.fromStringz;
 
             // Optional info
-            if (format) faces[faceIdx].outlines = (cast(string)format.fromStringz()).toGlyphType();
-            if (file) faces[faceIdx].path = cast(string)file.fromStringz().nu_dup();
-            if (fullName) faces[faceIdx].name = cast(string)fullName.fromStringz().nu_dup();
-            if (psName) faces[faceIdx].postscriptName = cast(string)psName.fromStringz().nu_dup();
-            faces[faceIdx].sampleText = cast(string)faces[faceIdx].name.nu_dup();
+            if (format)     faces[faceIdx].outlines         = (cast(string)format.fromStringz()).toGlyphType();
+            if (file)       faces[faceIdx].path             = cast(string)file.fromStringz;
+            if (fullName)   faces[faceIdx].name             = cast(string)fullName.fromStringz;
+            if (psName)     faces[faceIdx].postscriptName   = cast(string)psName.fromStringz;
+            faces[faceIdx].sampleText = faces[faceIdx].name;
             
             FcPatternGetBool(font, FC_VARIABLE, 0, faces[faceIdx].variable);
 

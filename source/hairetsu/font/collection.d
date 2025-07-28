@@ -81,7 +81,8 @@ public:
 class FontFamily : NuRefCounted {
 private:
 @nogc:
-    FontFaceInfo[] _faces;
+    FontFaceInfo[] faces_;
+    nstring familyName_;
 
 public:
 
@@ -89,8 +90,8 @@ public:
         Destructor
     */
     ~this() {
-        nu_freea(familyName);
-        nu_freea(_faces);
+        familyName_.clear();
+        nu_freea(faces_);
     }
 
     /**
@@ -101,14 +102,15 @@ public:
     /**
         Name of the font family.
     */
-    string familyName;
+    @property string familyName() => familyName_[];
+    @property void familyName(string value) { familyName_ = value; }
 
     /**
         The fonts within the collection
     */
     final
     @property FontFaceInfo[] faces() {
-        return _faces;
+        return faces_;
     }
 
     /**
@@ -124,7 +126,7 @@ public:
     */
     final
     bool hasCharacter(codepoint code) {
-        foreach(face; faces) {
+        foreach(face; faces_) {
             if (face.hasCharacter(code))
                 return true;
         }
@@ -145,7 +147,7 @@ public:
     */
     final
     FontFaceInfo getFirstFaceWith(codepoint code) {
-        foreach(face; faces) {
+        foreach(face; faces_) {
             if (face.hasCharacter(code)) {
                 return face;
             }
@@ -158,8 +160,8 @@ public:
     */
     final
     void addFace(FontFaceInfo font) {
-        this._faces = _faces.nu_resize(_faces.length+1);
-        this._faces[$-1] = font;
+        this.faces_ = faces_.nu_resize(faces_.length+1);
+        this.faces_[$-1] = font;
     }
 }
 
@@ -172,6 +174,12 @@ class FontFaceInfo : NuRefCounted {
 private:
 @nogc:
     Stream stream;
+    nstring path_;
+    nstring name_;
+    nstring postscriptName_;
+    nstring familyName_;
+    nstring subfamilyName_;
+    nstring sampleText_;
 
 protected:
 
@@ -215,12 +223,12 @@ public:
         Destructor
     */
     ~this() {
-        nu_freea(path);
-        nu_freea(name);
-        nu_freea(postscriptName);
-        nu_freea(familyName);
-        nu_freea(subfamilyName);
-        nu_freea(sampleText);
+        path_.clear();
+        name_.clear();
+        postscriptName_.clear();
+        familyName_.clear();
+        subfamilyName_.clear();
+        sampleText_.clear();
         if (stream) nogc_delete(stream);
     }
 
@@ -259,32 +267,38 @@ public:
     /**
         Path to the font.
     */
-    string path;
+    @property string path() => path_[];
+    @property void path(string value) { path_ = value; }
 
     /**
         Name of the font.
     */
-    string name;
+    @property string name() => name_[];
+    @property void name(string value) { name_ = value; }
 
     /**
         Postscript name of the font.
     */
-    string postscriptName;
+    @property string postscriptName() => postscriptName_[];
+    @property void postscriptName(string value) { postscriptName_ = value; }
 
     /**
         The name of the font family the font belongs to.
     */
-    string familyName;
+    @property string familyName() => familyName_[];
+    @property void familyName(string value) { familyName_ = value; }
 
     /**
         The name of the font sub-family the font belongs to.
     */
-    string subfamilyName;
+    @property string subfamilyName() => subfamilyName_[];
+    @property void subfamilyName(string value) { subfamilyName_ = value; }
 
     /**
         The sample text to show for a given font.
     */
-    string sampleText;
+    @property string sampleText() => sampleText_[];
+    @property void sampleText(string value) { sampleText_ = value; }
 
     /**
         The kind of outlines stored in the file.
