@@ -246,7 +246,7 @@ HA_EXPORT void* ha_release(void* obj);
         This function will copy the memory out of data,
         this is to ensure ownership of the data is properly handled.
 */
-HA_EXPORT ha_fontfile_t* ha_fontfile_from_memory(char *data, uint32_t length);
+HA_EXPORT ha_fontfile_t* ha_fontfile_from_memory(uint8_t *data, uint32_t length);
 
 /**
     Creates a new font for the given memory slice with a given name.
@@ -264,7 +264,7 @@ HA_EXPORT ha_fontfile_t* ha_fontfile_from_memory(char *data, uint32_t length);
         This function will copy the memory out of data,
         this is to ensure ownership of the data is properly handled.
 */
-HA_EXPORT ha_fontfile_t* ha_fontfile_from_memory_with_name(char *data, uint32_t length, const char *name);
+HA_EXPORT ha_fontfile_t* ha_fontfile_from_memory_with_name(uint8_t *data, uint32_t length, const char *name);
 
 /**
     Creates a new font for the given file path
@@ -739,7 +739,7 @@ HA_EXPORT const char *ha_glyph_get_svg(ha_glyph_t *obj, uint32_t *length);
         The rasterized data belongs to you and must be freed by you,
         using standard C $(D free) mechanisms.
 */
-HA_EXPORT void ha_glyph_rasterize(ha_glyph_t *obj, char **data, uint32_t *length, uint32_t *width, uint32_t *height);
+HA_EXPORT void ha_glyph_rasterize(ha_glyph_t *obj, uint8_t **data, uint32_t *length, uint32_t *width, uint32_t *height);
 
 /**
     Tries to rasterize the given glyph to the given buffer;
@@ -756,7 +756,7 @@ HA_EXPORT void ha_glyph_rasterize(ha_glyph_t *obj, char **data, uint32_t *length
         The rasterized data belongs to you and must be freed by you,
         using standard C $(D free) mechanisms.
 */
-HA_EXPORT void ha_glyph_rasterize_aliased(ha_glyph_t *obj, char **data, uint32_t *length, uint32_t *width, uint32_t *height);
+HA_EXPORT void ha_glyph_rasterize_aliased(ha_glyph_t *obj, uint8_t **data, uint32_t *length, uint32_t *width, uint32_t *height);
 
 //
 //              COLLECTIONS
