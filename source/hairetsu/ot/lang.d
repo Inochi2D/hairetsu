@@ -48,7 +48,6 @@ Tag fromBCP47(string bcp47) @nogc nothrow {
         bcp47.length :
         tmp.length);
     
-    import nulib.c.stdio : printf;
     foreach(i; 0..minLength) tmp[i] = toLower(bcp47[i]);
     
     version(USE_NURT) {

@@ -203,7 +203,6 @@ public:
         Finalizes the path.
     */
     void finalize() {
-        import std.stdio : printf;
         if (!hasPath)
             return;
 

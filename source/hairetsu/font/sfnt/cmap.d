@@ -171,7 +171,6 @@ public:
     */
     void parseCmapTable(SFNTReader reader) {
         this.cmapTable = reader.readRecordBE!CmapTable();
-        import std.stdio : printf;
 
         foreach(CmapSubTable table; cmapTable.subtables) {
             switch(table.format) {
