@@ -104,25 +104,33 @@ public:
                         break;
                     
                     ushort[] idRangeOffset = table.format4.idRangeOffset;
-                    foreach(i; 0..table.format4.segCountX2/2) {
+                    ushort segCount = table.format4.segCount;
+                    foreach(i; 0..table.format4.segCount) {
                         uint startCode = table.format4.startCode[i];
                         uint endCode = table.format4.endCode[i];
 
-                        if (startCode == endCode)
+                        if ((startCode & endCode) == 0xffff)
                             break;
 
-                        // Skip this range.
-                        if (code < startCode || code > endCode)
+                        // We want the first endCode that's greater or
+                        // equal to our code as per spec.
+                        if (!(endCode >= code))
                             continue;
-
+                        
                         if (idRangeOffset[i] == 0) {
 
                             // NOTE:    Range offset of 0 means that we don't index
                             //          the glyph array!
                             return code + table.format4.idDelta[i];
                         } else {
-                            assert(idRangeOffset[i] < table.format4.glyphIdArray.length);
-                            return table.format4.glyphIdArray[idRangeOffset[i]/2];
+
+                            // NOTE:    The official spec uses a pointer trick to come
+                            //          up with the final value, this converts the
+                            //          pointer trick into a slice lookup instead.
+                            //          This is safer since the slice is bounds checked.
+                            return table.format4.glyphIdArray[
+                                i - segCount + idRangeOffset[i]/2 + (code - startCode)
+                            ];
                         }
                     }
                     break;
@@ -163,6 +171,7 @@ public:
     */
     void parseCmapTable(SFNTReader reader) {
         this.cmapTable = reader.readRecordBE!CmapTable();
+        import std.stdio : printf;
 
         foreach(CmapSubTable table; cmapTable.subtables) {
             switch(table.format) {
@@ -171,13 +180,13 @@ public:
                     break;
 
                 case 4:
-                    foreach(i; 0..table.format4.segCountX2/2) {
+                    foreach(i; 0..table.format4.segCount) {
                         uint startCode = table.format4.startCode[i];
                         uint endCode = table.format4.endCode[i];
 
                         // Skip ending codes.
-                        if (startCode == endCode)
-                            continue;
+                        if ((startCode & endCode) == 0xffff)
+                            break;
 
                         charRanges ~= CharRange(startCode, endCode);
                     }

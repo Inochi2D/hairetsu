@@ -53,6 +53,10 @@ struct CmapTable {
                     ushort encodingId = reader.readElementBE!ushort;
                     uint subtableOffset = reader.readElementBE!uint;
                     
+                    // Skip non-unicode platforms.
+                    if (platformId != 0 && !(platformId == 3 && encodingId == 1))
+                        continue;
+
                     // Read the subtable.
                     size_t next = reader.tell();
                     reader.seek(start+subtableOffset);
@@ -86,7 +90,7 @@ struct CmapSubTable {
     @nogc:
         ushort length;
         ushort language;
-        ushort segCountX2;
+        ushort segCount;
         ushort searchRange;
         ushort entrySelector;
         ushort rangeShift;
@@ -105,33 +109,30 @@ struct CmapSubTable {
         }
 
         void deserialize(FontReader reader) {
+            size_t start = reader.tell()-2;
             length = reader.readElementBE!ushort();
             language = reader.readElementBE!ushort();
-            segCountX2 = reader.readElementBE!ushort();
-            searchRange = reader.readElementBE!ushort();
-            entrySelector = reader.readElementBE!ushort();
-            rangeShift = reader.readElementBE!ushort();
-
-            ushort segCount = segCountX2/2;
-            size_t glyphIdArrayLength = 
-                length - (
-                    14 // length..rangeShift + reservedPad
-                    + segCountX2  // endCode..idRangeOffset
-            ) / 2;
+            segCount = reader.readElementBE!ushort() / 2;
+            
+            // Spec recommends skipping these.
+            reader.skip(2 * 3);
 
             // Prepare arrays
             this.endCode = nu_malloca!ushort(segCount);
             this.startCode = nu_malloca!ushort(segCount);
             this.idDelta = nu_malloca!short(segCount);
             this.idRangeOffset = nu_malloca!ushort(segCount);
-            this.glyphIdArray = nu_malloca!ushort(glyphIdArrayLength);
 
             reader.readElementsBE(endCode);
             reader.skip(2); // reservedPad
             reader.readElementsBE(startCode);
             reader.readElementsBE(idDelta);
             reader.readElementsBE(idRangeOffset);
-            reader.readElementsBE(glyphIdArray);            
+            
+            // Read all the glyph mappings.
+            start = reader.tell() - start;
+            this.glyphIdArray = nu_malloca!ushort((length - start)/2);
+            reader.readElementsBE(glyphIdArray);
         }
     }
 
@@ -197,14 +198,17 @@ struct CmapSubTable {
 
     void free() {
         switch(format) {
+
             case 4:
                 this.format = 0;
                 format4.free();
                 return;
+
             case 6:
                 this.format = 0;
                 format6.free();
                 return;
+
             case 12:
                 this.format = 0;
                 format12.free();

@@ -96,7 +96,7 @@ int main(string[] args) {
 	vec2 textSize = renderer.measureGlyphRun(face, glyphRun);
 	FontMetrics fmetrics = face.faceMetrics();
 
-	HaCanvas canvas = nogc_new!HaCanvas(cast(uint)textSize.x, cast(uint)(textSize.y-fmetrics.descender.x), HaColorFormat.CBPP8);
+	HaCanvas canvas = nogc_new!HaCanvas(cast(uint)textSize.x, cast(uint)(textSize.y+fmetrics.ascender.x), HaColorFormat.CBPP8);
 	renderer.render(face, glyphRun, vec2(0, fmetrics.ascender.x), canvas);
 
 	canvas.dumpToFile();
