@@ -114,14 +114,15 @@ public:
 
                         // We want the first endCode that's greater or
                         // equal to our code as per spec.
-                        if (!(endCode >= code))
+                        if (!(endCode >= code && startCode <= code))
                             continue;
                         
                         if (idRangeOffset[i] == 0) {
 
                             // NOTE:    Range offset of 0 means that we don't index
                             //          the glyph array!
-                            return code + table.format4.idDelta[i];
+                            int rcode = table.format4.idDelta[i] + code;
+                            return cast(GlyphIndex)((rcode < 0 ? rcode + 65_536 : rcode) % 65_536);
                         } else {
 
                             // NOTE:    The official spec uses a pointer trick to come
@@ -129,7 +130,7 @@ public:
                             //          pointer trick into a slice lookup instead.
                             //          This is safer since the slice is bounds checked.
                             return table.format4.glyphIdArray[
-                                i - segCount + idRangeOffset[i]/2 + (code - startCode)
+                                i - segCount + (idRangeOffset[i]/2) + (code - startCode)
                             ];
                         }
                     }

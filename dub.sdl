@@ -55,7 +55,7 @@ configuration "appleos-static" {
     platforms "osx" "ios" "watchos" "visionos" "tvos"
     targetType "staticLibrary"
 
-    lflags "-framework" "CoreFoundation" "-framework" "CoreText"
+    lflags "-framework" "CoreFoundation" "-framework" "CoreText" "-all_load"
     versions "HA_CORETEXT"
 
     subConfiguration "nurt" "nurt-disabled"

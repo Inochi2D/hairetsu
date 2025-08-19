@@ -148,7 +148,8 @@ struct NameRecord {
         size_t dataEnd = reader.tell();
 
         reader.seek(start+tblOffset);
-        name = reader.readUTF16BE(strlen);
+        if ((strlen % 2) == 0)
+            name = reader.readUTF16BE(strlen);
 
         reader.seek(dataEnd);
     }

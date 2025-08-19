@@ -366,6 +366,7 @@ FontCollection collectionFromFaces(FontFaceInfo[] faces) @nogc {
     weak_map!(string, FontFamily) families;
     foreach(i; 0..faces.length) {
         string fname = faces[i].familyName;
+        
         if (fname !in families) {
             families[fname] = nogc_new!FontFamily();
 

@@ -80,11 +80,11 @@ string toString(CFString* str) {
 
         // First try the fast route.   
         if (const(char)* name = CFStringGetCStringPtr(str, kCFStringEncodingUTF8)) {
-            return cast(string)name[0..len].nu_dup();
+            return cast(string)name[0..len+1].nu_dup();
         }
 
         // Slow route, we have to convert ourselves.
-        char[] ret = nu_malloca!(char)(len);
+        char[] ret = nu_malloca!(char)(len+1);
         if (CFStringGetCString(str, ret.ptr, len, kCFStringEncodingUTF8))
             return cast(string)ret;
     }

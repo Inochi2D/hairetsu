@@ -19,7 +19,8 @@ out/
 dub.selections.json
 __dummy_docs/
 
-# VSCode Junk
+# Other Junk
+.DS_Store
 .vscode/
 
 # Output examples

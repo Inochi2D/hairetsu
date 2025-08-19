@@ -39,7 +39,7 @@ extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
             CFCharacterSet* charset = desc.copyAttribute!CFCharacterSet(kCTFontCharacterSetAttribute);
             faces[faceIdx] = nogc_new!CTFontFaceInfo(charset);
 
-            faces[faceIdx].familyName = familyName;
+            faces[faceIdx].familyName = familyName.nu_dup();
             faces[faceIdx].name = desc.copyAttribute!CFString(kCTFontDisplayNameAttribute).toStringReleased();
             faces[faceIdx].postscriptName = desc.copyAttribute!CFString(kCTFontNameAttribute).toStringReleased();
             faces[faceIdx].sampleText = faces[faceIdx].name.nu_dup();
@@ -52,6 +52,7 @@ extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
             CTFontFormat format;
             CFNumber* ctFormat = desc.copyAttribute!CFNumber(kCTFontFormatAttribute);
             CFNumberGetValue(ctFormat, CFNumberGetType(ctFormat), &format);
+            faces[faceIdx].outlines = format.toGlyphType();
 
             // Parse variability.
             CFDictionary* variation = desc.copyAttribute!CFDictionary(kCTFontVariationAttribute);
