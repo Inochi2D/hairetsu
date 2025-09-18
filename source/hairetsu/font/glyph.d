@@ -237,7 +237,7 @@ struct GlyphData {
         /**
             Bitmap
         */
-        HaBitmap bitmap;
+        HaBitmap* bitmap;
 
         /**
             32 bytes of untyped data.

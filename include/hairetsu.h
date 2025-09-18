@@ -17,12 +17,12 @@
 // when the D library uses cdecl.
 #ifdef _WIN32
     #ifdef _MSC_VER
-        #define HA_EXPORT __cdecl
+        #define HA_EXPORT(x) x __cdecl
     #else
-        #define HA_EXPORT
+        #define HA_EXPORT(x) x
     #endif
 #else
-    #define HA_EXPORT
+    #define HA_EXPORT(x) x
 #endif
 
 #ifdef __cplusplus

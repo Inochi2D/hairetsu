@@ -26,7 +26,7 @@ import hairetsu.common;
 // Extern deps used internally.
 import nulib.string;
 import numem : NuRefCounted;
-import numem.core.hooks : nu_free;
+import numem : nogc_delete;
 
 extern(C) export:
 
@@ -622,7 +622,8 @@ FontMetrics ha_face_get_global_metrics(ha_face_t* obj) @nogc {
         type = The type of glyph data to fetch for the glyph.
 */
 ha_glyph_t* ha_face_get_glyph(ha_face_t* obj, uint glyphId, GlyphType type) @nogc {
-    return cast(ha_glyph_t*)((cast(FontFace)obj).getGlyph(glyphId, type).copyToHeap());
+    Glyph g = (cast(FontFace)obj).getGlyph(glyphId, type);
+    return cast(ha_glyph_t*)(g.copyToHeap());
 }
 
 //
@@ -656,7 +657,8 @@ struct ha_glyph_t;
     Frees the given glyph.
 */
 void ha_glyph_free(ha_glyph_t* obj) @nogc {
-    nu_free(obj);
+    auto glyph = cast(Glyph*)obj;
+    nogc_delete(glyph);
 }
 
 /**
