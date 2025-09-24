@@ -19,6 +19,9 @@ out/
 dub.selections.json
 __dummy_docs/
 
+# Redub Junk
+.ldc2_cache
+
 # Other Junk
 .DS_Store
 .vscode/

@@ -12,24 +12,36 @@ Hairetsu is built around reference counted types built ontop of `numem`; despite
 by hairetsu should be usable in a GC context.
 
 # Building and Packaging
-Hairetsu uses the `dub` build system and package manager during the build process.
+Hairetsu uses the `dub` or `redub` build system and package manager during the build process.
 When using hairetsu in D code you can just simply add it as a D dependency.
 If you wish to use hairetsu outside of DLang, you can compile a shared/dynamic library using the `-dynamic` variants
 of the configurations.
 
 ## On Linux, FreeBSD, etc.
 ```
+# Using dub
 dub build --build=release --config=posix-dynamic
+
+# Using redub
+redub build --build=release --config=posix-dynamic
 ```
 
 ## On Windows
 ```
+# Using dub
 dub build --build=release --config=win32-dynamic
+
+# Using redub
+redub build --build=release --config=win32-dynamic
 ```
 
 ## On macOS (and derived)
 ```
+# Using dub
 dub build --build=release --config=appleos-dynamic
+
+# Using redub
+redub build --build=release --config=appleos-dynamic
 ```
 
 The shared object will be put in `out/`, a C FFI interface is provided in [cffi.d](source/hairetsu/cffi.d).
