@@ -17,12 +17,15 @@
 // when the D library uses cdecl.
 #ifdef _WIN32
     #ifdef _MSC_VER
-        #define HA_EXPORT(x) x __cdecl
+        #define HA_EXPORT
+        #define HA_CALL __cdecl
     #else
-        #define HA_EXPORT(x) x
+        #define HA_EXPORT
+        #define HA_CALL
     #endif
 #else
-    #define HA_EXPORT(x) x
+    #define HA_EXPORT
+    #define HA_CALL
 #endif
 
 #ifdef __cplusplus
@@ -178,7 +181,7 @@ typedef struct ha_info ha_info_t;
         $(D true) if initialized,
         $(D false) otherwise.
 */
-HA_EXPORT bool ha_get_initialized();
+HA_EXPORT bool HA_CALL ha_get_initialized();
 
 /**
     Attempts to initialize hairetsu manually,
@@ -189,7 +192,7 @@ HA_EXPORT bool ha_get_initialized();
         $(D true) if initialized,
         $(D false) otherwise.
 */
-HA_EXPORT bool ha_try_initialize();
+HA_EXPORT bool HA_CALL ha_try_initialize();
 
 /**
     Attempts to shut down hairetsu manually,
@@ -200,7 +203,7 @@ HA_EXPORT bool ha_try_initialize();
         $(D true) if initialized,
         $(D false) otherwise.
 */
-HA_EXPORT bool ha_try_shutdown();
+HA_EXPORT bool HA_CALL ha_try_shutdown();
 
 //
 //              MEMORY MANAGMENT
@@ -212,7 +215,7 @@ HA_EXPORT bool ha_try_shutdown();
     Params:
         obj = The object to retain.
 */
-HA_EXPORT void ha_retain(void* obj);
+HA_EXPORT void HA_CALL ha_retain(void* obj);
 
 /**
     Releases a reference to a hairetsu object.
@@ -224,7 +227,7 @@ HA_EXPORT void ha_retain(void* obj);
         The resulting handle after the operation,
         $(D null) if the object was freed.
 */
-HA_EXPORT void* ha_release(void* obj);
+HA_EXPORT void* HA_CALL ha_release(void* obj);
 
 
 //
@@ -246,7 +249,7 @@ HA_EXPORT void* ha_release(void* obj);
         This function will copy the memory out of data,
         this is to ensure ownership of the data is properly handled.
 */
-HA_EXPORT ha_fontfile_t* ha_fontfile_from_memory(uint8_t *data, uint32_t length);
+HA_EXPORT ha_fontfile_t* HA_CALL ha_fontfile_from_memory(uint8_t *data, uint32_t length);
 
 /**
     Creates a new font for the given memory slice with a given name.
@@ -264,7 +267,7 @@ HA_EXPORT ha_fontfile_t* ha_fontfile_from_memory(uint8_t *data, uint32_t length)
         This function will copy the memory out of data,
         this is to ensure ownership of the data is properly handled.
 */
-HA_EXPORT ha_fontfile_t* ha_fontfile_from_memory_with_name(uint8_t *data, uint32_t length, const char *name);
+HA_EXPORT ha_fontfile_t* HA_CALL ha_fontfile_from_memory_with_name(uint8_t *data, uint32_t length, const char *name);
 
 /**
     Creates a new font for the given file path
@@ -277,7 +280,7 @@ HA_EXPORT ha_fontfile_t* ha_fontfile_from_memory_with_name(uint8_t *data, uint32
         A $(D FontFile) instance on success,
         $(D null) on failure.
 */
-HA_EXPORT ha_fontfile_t* ha_fontfile_from_file(const char *path);
+HA_EXPORT ha_fontfile_t* HA_CALL ha_fontfile_from_file(const char *path);
 
 /**
     Gets the type name of the font file, in UTF-8 encoding.
@@ -289,7 +292,7 @@ HA_EXPORT ha_fontfile_t* ha_fontfile_from_file(const char *path);
         Name of the type of font contained within the font file
         in UTF-8 encoding; $(D null) if obj is invalid.
 */
-HA_EXPORT const char *ha_fontfile_get_type(ha_fontfile_t *obj);
+HA_EXPORT const char** HA_CALL ha_fontfile_get_type(ha_fontfile_t *obj);
 
 /**
     Gets the name of the font file, in UTF-8 encoding.
@@ -301,7 +304,7 @@ HA_EXPORT const char *ha_fontfile_get_type(ha_fontfile_t *obj);
         Name of font contained within the font file
         in UTF-8 encoding; $(D null) if obj is invalid.
 */
-HA_EXPORT const char *ha_fontfile_get_name(ha_fontfile_t *obj);
+HA_EXPORT const char** HA_CALL ha_fontfile_get_name(ha_fontfile_t *obj);
 
 /**
     Gets the amount of fonts within the file.
@@ -314,7 +317,7 @@ HA_EXPORT const char *ha_fontfile_get_name(ha_fontfile_t *obj);
         owned by the font file; the returned array should
         NOT be freed by the caller.
 */
-HA_EXPORT uint32_t ha_fontfile_get_font_count(ha_fontfile_t *obj);
+HA_EXPORT uint32_t HA_CALL ha_fontfile_get_font_count(ha_fontfile_t *obj);
 
 /**
     Gets the list of fonts within the file.
@@ -325,7 +328,7 @@ HA_EXPORT uint32_t ha_fontfile_get_font_count(ha_fontfile_t *obj);
     Returns:
         Pointer to a list of fonts owned by the font file.
 */
-HA_EXPORT ha_font_t **ha_fontfile_get_fonts(ha_fontfile_t *obj);
+HA_EXPORT ha_font_t** HA_CALL ha_fontfile_get_fonts(ha_fontfile_t *obj);
 
 //
 //              FONT OBJECTS
@@ -344,7 +347,7 @@ HA_EXPORT ha_font_t **ha_fontfile_get_fonts(ha_fontfile_t *obj);
         The string is owned by the font and should not be
         freed by you directly.
 */
-HA_EXPORT const char *ha_font_get_name(ha_font_t *obj);
+HA_EXPORT const char** HA_CALL ha_font_get_name(ha_font_t *obj);
 
 /**
     Gets the family name of the font.
@@ -359,7 +362,7 @@ HA_EXPORT const char *ha_font_get_name(ha_font_t *obj);
         The string is owned by the font and should not be
         freed by you directly.
 */
-HA_EXPORT const char *ha_font_get_family(ha_font_t *obj);
+HA_EXPORT const char** HA_CALL ha_font_get_family(ha_font_t *obj);
 
 /**
     Gets the subfamily name of the font.
@@ -374,7 +377,7 @@ HA_EXPORT const char *ha_font_get_family(ha_font_t *obj);
         The string is owned by the font and should not be
         freed by you directly.
 */
-HA_EXPORT const char *ha_font_get_subfamily(ha_font_t *obj);
+HA_EXPORT const char** HA_CALL ha_font_get_subfamily(ha_font_t *obj);
 
 /**
     Gets the type name of the font.
@@ -389,7 +392,7 @@ HA_EXPORT const char *ha_font_get_subfamily(ha_font_t *obj);
         The string is owned by the font and should not be
         freed by you directly.
 */
-HA_EXPORT const char *ha_font_get_type(ha_font_t *obj);
+HA_EXPORT const char** HA_CALL ha_font_get_type(ha_font_t *obj);
 
 /**
     Gets amount of glyphs stored within the font.
@@ -400,7 +403,7 @@ HA_EXPORT const char *ha_font_get_type(ha_font_t *obj);
     Returns:
         The amount of glyphs stored within the font.
 */
-HA_EXPORT uint32_t ha_font_get_glyph_count(ha_font_t *obj);
+HA_EXPORT uint32_t HA_CALL ha_font_get_glyph_count(ha_font_t *obj);
 
 /**
     Gets Units per EM of the font.
@@ -411,7 +414,7 @@ HA_EXPORT uint32_t ha_font_get_glyph_count(ha_font_t *obj);
     Returns:
         The Units per EM.
 */
-HA_EXPORT uint32_t ha_font_get_upem(ha_font_t *obj);
+HA_EXPORT uint32_t HA_CALL ha_font_get_upem(ha_font_t *obj);
 
 /**
     Gets lowest recommended pixels-per-EM of the font.
@@ -422,7 +425,7 @@ HA_EXPORT uint32_t ha_font_get_upem(ha_font_t *obj);
     Returns:
         The lowest recommended pixels-per-EM for readability.
 */
-HA_EXPORT uint32_t ha_font_get_lowest_ppem(ha_font_t *obj);
+HA_EXPORT uint32_t HA_CALL ha_font_get_lowest_ppem(ha_font_t *obj);
 
 /**
     Gets the global metrics of the font.
@@ -433,7 +436,7 @@ HA_EXPORT uint32_t ha_font_get_lowest_ppem(ha_font_t *obj);
     Returns:
         The global metrics.
 */
-HA_EXPORT ha_font_metrics_t ha_font_get_global_metrics(ha_font_t *obj);
+HA_EXPORT ha_font_metrics_t HA_CALL ha_font_get_global_metrics(ha_font_t *obj);
 
 /**
     Gets the metrics for the given glyph ID.
@@ -445,7 +448,7 @@ HA_EXPORT ha_font_metrics_t ha_font_get_global_metrics(ha_font_t *obj);
     Returns:
         The base metrics of the given glyph.
 */
-HA_EXPORT ha_glyph_metrics_t ha_font_glyph_metrics_for(ha_font_t *obj, uint32_t glyphId);
+HA_EXPORT ha_glyph_metrics_t HA_CALL ha_font_glyph_metrics_for(ha_font_t *obj, uint32_t glyphId);
 
 /**
     Gets the base ID of a glyph within the font associated
@@ -459,7 +462,7 @@ HA_EXPORT ha_glyph_metrics_t ha_font_glyph_metrics_for(ha_font_t *obj, uint32_t 
         The glyph ID for the given codepoint, or 
         $(D GLYPH_MISSING) if not found.
 */
-HA_EXPORT uint32_t ha_font_find_glyph(ha_font_t *obj, uint32_t codepoint);
+HA_EXPORT uint32_t HA_CALL ha_font_find_glyph(ha_font_t *obj, uint32_t codepoint);
 
 /**
     Creates a new face object from the font.
@@ -471,7 +474,7 @@ HA_EXPORT uint32_t ha_font_find_glyph(ha_font_t *obj, uint32_t codepoint);
         A reference to a newly created face object,
         or $(D null) on failure.
 */
-HA_EXPORT ha_face_t *ha_font_create_face(ha_font_t *obj);
+HA_EXPORT ha_face_t* HA_CALL ha_font_create_face(ha_font_t *obj);
 
 //
 //              FACE OBJECTS
@@ -486,7 +489,7 @@ HA_EXPORT ha_face_t *ha_font_create_face(ha_font_t *obj);
     Returns:
         The Units per EM.
 */
-HA_EXPORT uint32_t ha_face_get_upem(ha_face_t *obj);
+HA_EXPORT uint32_t HA_CALL ha_face_get_upem(ha_face_t *obj);
 
 /**
     Gets scale of the font face.
@@ -497,7 +500,7 @@ HA_EXPORT uint32_t ha_face_get_upem(ha_face_t *obj);
     Returns:
         The scale factor.
 */
-HA_EXPORT float ha_face_get_scale(ha_face_t *obj);
+HA_EXPORT float HA_CALL ha_face_get_scale(ha_face_t *obj);
 
 /**
     Gets pixels-per-EM of the font face.
@@ -508,7 +511,7 @@ HA_EXPORT float ha_face_get_scale(ha_face_t *obj);
     Returns:
         The pixels-per-EM.
 */
-HA_EXPORT float ha_face_get_ppem(ha_face_t *obj);
+HA_EXPORT float HA_CALL ha_face_get_ppem(ha_face_t *obj);
 
 /**
     Gets amount of glyphs stored within the font face.
@@ -519,7 +522,7 @@ HA_EXPORT float ha_face_get_ppem(ha_face_t *obj);
     Returns:
         The amount of glyphs stored within the font face.
 */
-HA_EXPORT uint32_t ha_face_get_glyph_count(ha_face_t *obj);
+HA_EXPORT uint32_t HA_CALL ha_face_get_glyph_count(ha_face_t *obj);
 
 /**
     Gets the face which is used when the given face does not
@@ -532,7 +535,7 @@ HA_EXPORT uint32_t ha_face_get_glyph_count(ha_face_t *obj);
         A weak reference to the fallback face, or
         $(D null) if no fallback is specified.
 */
-HA_EXPORT ha_face_t *ha_face_get_fallback(ha_face_t *obj);
+HA_EXPORT ha_face_t* HA_CALL ha_face_get_fallback(ha_face_t *obj);
 
 /**
     Sets the face which is used when the given face does not
@@ -547,7 +550,7 @@ HA_EXPORT ha_face_t *ha_face_get_fallback(ha_face_t *obj);
         If this is the case the operation will set the fallback to
         $(D null)!
 */
-HA_EXPORT void ha_face_set_fallback(ha_face_t *obj, ha_face_t *face);
+HA_EXPORT void HA_CALL ha_face_set_fallback(ha_face_t *obj, ha_face_t *face);
 
 /**
     Gets whether hinting is requested for the face.
@@ -558,7 +561,7 @@ HA_EXPORT void ha_face_set_fallback(ha_face_t *obj, ha_face_t *face);
     Returns:
         Whether hinting is requested.
 */
-HA_EXPORT bool ha_face_get_hinting(ha_face_t *obj);
+HA_EXPORT bool HA_CALL ha_face_get_hinting(ha_face_t *obj);
 
 /**
     Sets whether hinting is requested for the face.
@@ -567,7 +570,7 @@ HA_EXPORT bool ha_face_get_hinting(ha_face_t *obj);
         obj = The object to query.
         value = The value to set.
 */
-HA_EXPORT void ha_face_set_hinting(ha_face_t *obj, bool value);
+HA_EXPORT void HA_CALL ha_face_set_hinting(ha_face_t *obj, bool value);
 
 /**
     Gets the dots-per-inch of the font face, defaults to 96.
@@ -582,7 +585,7 @@ HA_EXPORT void ha_face_set_hinting(ha_face_t *obj, bool value);
     Returns:
         The current set DPI.
 */
-HA_EXPORT float ha_face_get_dpi(ha_face_t *obj);
+HA_EXPORT float HA_CALL ha_face_get_dpi(ha_face_t *obj);
 
 /**
     Sets the dots-per-inch of the font face.
@@ -591,7 +594,7 @@ HA_EXPORT float ha_face_get_dpi(ha_face_t *obj);
         obj = The object to query.
         value = The value to set.
 */
-HA_EXPORT void ha_face_set_dpi(ha_face_t *obj, float value);
+HA_EXPORT void HA_CALL ha_face_set_dpi(ha_face_t *obj, float value);
 
 /**
     Gets the point size of the font face.
@@ -602,7 +605,7 @@ HA_EXPORT void ha_face_set_dpi(ha_face_t *obj, float value);
     Returns:
         The current set point size.
 */
-HA_EXPORT float ha_face_get_pt(ha_face_t *obj);
+HA_EXPORT float HA_CALL ha_face_get_pt(ha_face_t *obj);
 
 /**
     Sets the point size of the font face.
@@ -611,7 +614,7 @@ HA_EXPORT float ha_face_get_pt(ha_face_t *obj);
         obj = The object to query.
         value = The value to set.
 */
-HA_EXPORT void ha_face_set_pt(ha_face_t *obj, float value);
+HA_EXPORT void HA_CALL ha_face_set_pt(ha_face_t *obj, float value);
 
 /**
     Gets the pixel size of the font face.
@@ -622,7 +625,7 @@ HA_EXPORT void ha_face_set_pt(ha_face_t *obj, float value);
     Returns:
         The current set point size.
 */
-HA_EXPORT float ha_face_get_px(ha_face_t *obj);
+HA_EXPORT float HA_CALL ha_face_get_px(ha_face_t *obj);
 
 /**
     Sets the pixel size of the font face.
@@ -631,7 +634,7 @@ HA_EXPORT float ha_face_get_px(ha_face_t *obj);
         obj = The object to query.
         value = The value to set.
 */
-HA_EXPORT void ha_face_set_px(ha_face_t *obj, float value);
+HA_EXPORT void HA_CALL ha_face_set_px(ha_face_t *obj, float value);
 
 /**
     Gets the scaled global metrics of the font face.
@@ -642,7 +645,7 @@ HA_EXPORT void ha_face_set_px(ha_face_t *obj, float value);
     Returns:
         The scaled global metrics.
 */
-HA_EXPORT ha_font_metrics_t ha_face_get_global_metrics(ha_face_t *obj);
+HA_EXPORT ha_font_metrics_t HA_CALL ha_face_get_global_metrics(ha_face_t *obj);
 
 /**
     Gets a glyph from a glyph ID.
@@ -652,7 +655,7 @@ HA_EXPORT ha_font_metrics_t ha_face_get_global_metrics(ha_face_t *obj);
         glyphId = The ID of the glyph to fetch.
         type = The type of glyph data to fetch for the glyph.
 */
-HA_EXPORT ha_glyph_t* ha_face_get_glyph(ha_face_t *obj, uint32_t glyphId, ha_glyph_type_t type);
+HA_EXPORT ha_glyph_t* HA_CALL ha_face_get_glyph(ha_face_t *obj, uint32_t glyphId, ha_glyph_type_t type);
 
 //
 //              GLYPHS
@@ -661,7 +664,7 @@ HA_EXPORT ha_glyph_t* ha_face_get_glyph(ha_face_t *obj, uint32_t glyphId, ha_gly
 /**
     Frees the given glyph.
 */
-HA_EXPORT void ha_glyph_free(ha_glyph_t *obj);
+HA_EXPORT void HA_CALL ha_glyph_free(ha_glyph_t *obj);
 
 /**
     Gets the metrics for the glyph.
@@ -672,7 +675,7 @@ HA_EXPORT void ha_glyph_free(ha_glyph_t *obj);
     Returns:
         The metrics of the glyph.
 */
-HA_EXPORT ha_glyph_metrics_t ha_glyph_get_metrics(ha_glyph_t* obj);
+HA_EXPORT ha_glyph_metrics_t HA_CALL ha_glyph_get_metrics(ha_glyph_t* obj);
 
 /**
     Gets the ID of the glyph.
@@ -683,7 +686,7 @@ HA_EXPORT ha_glyph_metrics_t ha_glyph_get_metrics(ha_glyph_t* obj);
     Returns:
         The ID of the glyph.
 */
-HA_EXPORT ha_glyph_type_t ha_glyph_get_type(ha_glyph_t *obj);
+HA_EXPORT ha_glyph_type_t HA_CALL ha_glyph_get_type(ha_glyph_t *obj);
 
 /**
     Gets the type of data associated with the glyph.
@@ -694,7 +697,7 @@ HA_EXPORT ha_glyph_type_t ha_glyph_get_type(ha_glyph_t *obj);
     Returns:
         The type of the data associated with the glyph.
 */
-HA_EXPORT uint32_t ha_glyph_get_id(ha_glyph_t *obj);
+HA_EXPORT uint32_t HA_CALL ha_glyph_get_id(ha_glyph_t *obj);
 
 /**
     Gets whether the glyph has any data associated with it.
@@ -705,7 +708,7 @@ HA_EXPORT uint32_t ha_glyph_get_id(ha_glyph_t *obj);
     Returns:
         True if the glyph has data.
 */
-HA_EXPORT bool ha_glyph_get_has_data(ha_glyph_t *obj);
+HA_EXPORT bool HA_CALL ha_glyph_get_has_data(ha_glyph_t *obj);
 
 /**
     Gets the SVG data associated with the glyph (if any)
@@ -723,7 +726,7 @@ HA_EXPORT bool ha_glyph_get_has_data(ha_glyph_t *obj);
         If no SVG is associated with the glyph, $(D null) is 
         returned and $(D length) is set to $(D 0). 
 */
-HA_EXPORT const char *ha_glyph_get_svg(ha_glyph_t *obj, uint32_t *length);
+HA_EXPORT const char** HA_CALL ha_glyph_get_svg(ha_glyph_t *obj, uint32_t *length);
 
 /**
     Tries to rasterize the given glyph to the given buffer.
@@ -739,7 +742,7 @@ HA_EXPORT const char *ha_glyph_get_svg(ha_glyph_t *obj, uint32_t *length);
         The rasterized data belongs to you and must be freed by you,
         using standard C $(D free) mechanisms.
 */
-HA_EXPORT void ha_glyph_rasterize(ha_glyph_t *obj, uint8_t **data, uint32_t *length, uint32_t *width, uint32_t *height);
+HA_EXPORT void HA_CALL ha_glyph_rasterize(ha_glyph_t *obj, uint8_t **data, uint32_t *length, uint32_t *width, uint32_t *height);
 
 /**
     Tries to rasterize the given glyph to the given buffer;
@@ -756,7 +759,7 @@ HA_EXPORT void ha_glyph_rasterize(ha_glyph_t *obj, uint8_t **data, uint32_t *len
         The rasterized data belongs to you and must be freed by you,
         using standard C $(D free) mechanisms.
 */
-HA_EXPORT void ha_glyph_rasterize_aliased(ha_glyph_t *obj, uint8_t **data, uint32_t *length, uint32_t *width, uint32_t *height);
+HA_EXPORT void HA_CALL ha_glyph_rasterize_aliased(ha_glyph_t *obj, uint8_t **data, uint32_t *length, uint32_t *width, uint32_t *height);
 
 //
 //              COLLECTIONS
@@ -769,7 +772,7 @@ HA_EXPORT void ha_glyph_rasterize_aliased(ha_glyph_t *obj, uint8_t **data, uint3
         A new font collection on success,
         $(D null) on failure.
 */
-HA_EXPORT ha_collection_t *ha_collection_create();
+HA_EXPORT ha_collection_t* HA_CALL ha_collection_create();
 
 /**
     Indexes the system to create a font collection.
@@ -781,7 +784,7 @@ HA_EXPORT ha_collection_t *ha_collection_create();
         A new font collection on success,
         $(D null) on failure.
 */
-HA_EXPORT ha_collection_t *ha_collection_create_from_system(bool update);
+HA_EXPORT ha_collection_t* HA_CALL ha_collection_create_from_system(bool update);
 
 /**
     Gets the amount of font families loaded for a collection.
@@ -792,7 +795,7 @@ HA_EXPORT ha_collection_t *ha_collection_create_from_system(bool update);
     Returns:
         The amount of families in the collection.
 */
-HA_EXPORT uint32_t ha_collection_get_family_count(ha_collection_t *obj);
+HA_EXPORT uint32_t HA_CALL ha_collection_get_family_count(ha_collection_t *obj);
 
 
 /**
@@ -808,7 +811,7 @@ HA_EXPORT uint32_t ha_collection_get_family_count(ha_collection_t *obj);
         The families array is owned by the collection, you must 
         NOT free it.
 */
-HA_EXPORT ha_family_t **ha_collection_get_families(ha_collection_t *obj);
+HA_EXPORT ha_family_t** HA_CALL ha_collection_get_families(ha_collection_t *obj);
 
 /**
     Adds a font family to the font collection.
@@ -824,7 +827,7 @@ HA_EXPORT ha_family_t **ha_collection_get_families(ha_collection_t *obj);
         The families array is owned by the collection, you must 
         NOT free it.
 */
-HA_EXPORT void ha_collection_add_family(ha_collection_t *obj, ha_family_t *family);
+HA_EXPORT void HA_CALL ha_collection_add_family(ha_collection_t *obj, ha_family_t *family);
 
 
 /**
@@ -836,7 +839,7 @@ HA_EXPORT void ha_collection_add_family(ha_collection_t *obj, ha_family_t *famil
     Returns:
         The anme of the font family.
 */
-HA_EXPORT const char *ha_family_get_name(ha_family_t *obj);
+HA_EXPORT const char** HA_CALL ha_family_get_name(ha_family_t *obj);
 /**
     Gets the amount of faces within the family.
 
@@ -846,7 +849,7 @@ HA_EXPORT const char *ha_family_get_name(ha_family_t *obj);
     Returns:
         The amount of faces in the family.
 */
-HA_EXPORT uint32_t ha_family_get_face_info_count(ha_family_t *obj);
+HA_EXPORT uint32_t HA_CALL ha_family_get_face_info_count(ha_family_t *obj);
 
 /**
     Gets the faces within the family.
@@ -861,7 +864,7 @@ HA_EXPORT uint32_t ha_family_get_face_info_count(ha_family_t *obj);
         The faces array is owned by the family, you must 
         NOT free it.
 */
-HA_EXPORT ha_info_t **ha_family_get_face_infos(ha_family_t *obj);
+HA_EXPORT ha_info_t** HA_CALL ha_family_get_face_infos(ha_family_t *obj);
 
 /**
     Gets whether a font family contains a face that supports
@@ -875,7 +878,7 @@ HA_EXPORT ha_info_t **ha_family_get_face_infos(ha_family_t *obj);
         $(D true) if the family has the given character,
         $(D false) otherwise.
 */
-HA_EXPORT bool ha_family_has_character(ha_family_t *obj, uint32_t character);
+HA_EXPORT bool HA_CALL ha_family_has_character(ha_family_t *obj, uint32_t character);
 
 /**
     Gets the first face descriptor that supports a given character.
@@ -888,7 +891,7 @@ HA_EXPORT bool ha_family_has_character(ha_family_t *obj, uint32_t character);
         A $(D ha_info_t*) descriptor on success,
         $(D null) otherwise.
 */
-HA_EXPORT ha_info_t* ha_family_get_first_with(ha_family_t *obj, uint32_t character);
+HA_EXPORT ha_info_t* HA_CALL ha_family_get_first_with(ha_family_t *obj, uint32_t character);
 
 /**
     Gets the first face descriptor that supports a given character.
@@ -897,7 +900,7 @@ HA_EXPORT ha_info_t* ha_family_get_first_with(ha_family_t *obj, uint32_t charact
         obj = The object to query
         info = The face descriptor to add.
 */
-HA_EXPORT void ha_family_add_face_info(ha_family_t *obj, ha_info_t *info);
+HA_EXPORT void HA_CALL ha_family_add_face_info(ha_family_t *obj, ha_info_t *info);
 
 /**
     Gets the file path of the font face described by
@@ -910,7 +913,7 @@ HA_EXPORT void ha_family_add_face_info(ha_family_t *obj, ha_info_t *info);
         This memory is owned by the descriptor,
         do not free it.
 */
-HA_EXPORT const char *ha_info_get_path(ha_info_t *obj);
+HA_EXPORT const char** HA_CALL ha_info_get_path(ha_info_t *obj);
 
 /**
     Gets the name of the font face described by
@@ -923,7 +926,7 @@ HA_EXPORT const char *ha_info_get_path(ha_info_t *obj);
         This memory is owned by the descriptor,
         do not free it.
 */
-HA_EXPORT const char *ha_info_get_name(ha_info_t *obj);
+HA_EXPORT const char** HA_CALL ha_info_get_name(ha_info_t *obj);
 
 /**
     Gets the postscript name of the font face described by
@@ -936,7 +939,7 @@ HA_EXPORT const char *ha_info_get_name(ha_info_t *obj);
         This memory is owned by the descriptor,
         do not free it.
 */
-HA_EXPORT const char *ha_info_get_postscript_name(ha_info_t *obj);
+HA_EXPORT const char** HA_CALL ha_info_get_postscript_name(ha_info_t *obj);
 
 /**
     Gets the family name of the font face described by
@@ -949,7 +952,7 @@ HA_EXPORT const char *ha_info_get_postscript_name(ha_info_t *obj);
         This memory is owned by the descriptor,
         do not free it.
 */
-HA_EXPORT const char *ha_info_get_family_name(ha_info_t *obj);
+HA_EXPORT const char** HA_CALL ha_info_get_family_name(ha_info_t *obj);
 
 /**
     Gets the sub-family name of the font face described by
@@ -962,7 +965,7 @@ HA_EXPORT const char *ha_info_get_family_name(ha_info_t *obj);
         This memory is owned by the descriptor,
         do not free it.
 */
-HA_EXPORT const char *ha_info_get_subfamily_name(ha_info_t *obj);
+HA_EXPORT const char* HA_CALL ha_info_get_subfamily_name(ha_info_t *obj);
 
 /**
     Gets the sample text of the font face described by
@@ -978,7 +981,7 @@ HA_EXPORT const char *ha_info_get_subfamily_name(ha_info_t *obj);
         This memory is owned by the descriptor,
         do not free it.
 */
-HA_EXPORT const char *ha_info_get_sample_text(ha_info_t *obj);
+HA_EXPORT const char** HA_CALL ha_info_get_sample_text(ha_info_t *obj);
 
 /**
     Gets the type of outlines the font face described by
@@ -990,7 +993,7 @@ HA_EXPORT const char *ha_info_get_sample_text(ha_info_t *obj);
     Returns:
         The type of outlines the font supports.
 */
-HA_EXPORT ha_glyph_type_t ha_info_get_outline_type(ha_info_t *obj);
+HA_EXPORT ha_glyph_type_t HA_CALL ha_info_get_outline_type(ha_info_t *obj);
 
 /**
     Gets whether the font face described by
@@ -1003,7 +1006,7 @@ HA_EXPORT ha_glyph_type_t ha_info_get_outline_type(ha_info_t *obj);
         $(D true) if the font is variable,
         $(D false) otherwise.
 */
-HA_EXPORT bool ha_info_get_is_variable(ha_info_t *obj);
+HA_EXPORT bool HA_CALL ha_info_get_is_variable(ha_info_t *obj);
 
 /**
     Gets whether the font face described by
@@ -1017,7 +1020,7 @@ HA_EXPORT bool ha_info_get_is_variable(ha_info_t *obj);
         $(D true) if the font can be realized,
         $(D false) otherwise.
 */
-HA_EXPORT bool ha_info_get_is_realizable(ha_info_t *obj);
+HA_EXPORT bool HA_CALL ha_info_get_is_realizable(ha_info_t *obj);
 
 /**
     Gets whether the font face described by the descriptor
@@ -1031,7 +1034,7 @@ HA_EXPORT bool ha_info_get_is_realizable(ha_info_t *obj);
         $(D true) if the face has the given character,
         $(D false) otherwise.
 */
-HA_EXPORT bool ha_info_get_has_character(ha_info_t *obj, uint32_t character);
+HA_EXPORT bool HA_CALL ha_info_get_has_character(ha_info_t *obj, uint32_t character);
 
 /**
     Realises the font face into a usable font object.
@@ -1039,7 +1042,7 @@ HA_EXPORT bool ha_info_get_has_character(ha_info_t *obj, uint32_t character);
     Returns:
         A font created from the font info.
 */
-HA_EXPORT ha_font_t *ha_info_realize(ha_info_t *obj);
+HA_EXPORT ha_font_t* HA_CALL ha_info_realize(ha_info_t *obj);
 
 #ifdef __cplusplus
 }
