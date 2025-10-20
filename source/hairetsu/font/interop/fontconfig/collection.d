@@ -35,7 +35,7 @@ void _ha_fc_fontcollection_init(bool update) @nogc {
 extern(C) FontCollection _ha_fontcollection_from_system(bool update) @nogc {
     _ha_fc_fontcollection_init(update);
     FcPattern* pattern = FcPatternCreate();
-    FcObjectSet* objects = FcObjectSetBuild(FC_FAMILY, FC_FULLNAME, FC_POSTSCRIPT_NAME, FC_CHARSET, FC_INDEX, FC_FILE, cast(char*)null);
+    FcObjectSet* objects = FcObjectSetBuild(FC_FAMILY, FC_FULLNAME, FC_POSTSCRIPT_NAME, FC_CHARSET, FC_FONTFORMAT, FC_INDEX, FC_FILE, cast(char*)null);
     FcFontSet* fonts = FcFontList(fc, pattern, objects);
 
     // Allocate faces; we'll allocate for every font, even unsupported ones.

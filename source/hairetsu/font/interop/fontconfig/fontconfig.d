@@ -78,13 +78,11 @@ enum FcResult {
 }
 
 GlyphType toGlyphType(string typeString) @nogc {
-    if (typeString == "CFF")
-        return GlyphType.cff;
-    
-    if (typeString == "TrueType")
-        return GlyphType.trueType;
-    
-    return GlyphType.none;
+    switch(typeString) {
+        case "TrueType": return GlyphType.trueType;
+        case "CFF": return GlyphType.cff;
+        default: return GlyphType.none;
+    }
 }
 
 extern(C) extern @nogc:
@@ -103,6 +101,7 @@ FcResult FcPatternGetString(const(FcPattern)*, const(char)*, int, ref const(char
 FcResult FcPatternGetBool(const(FcPattern)*, const(char)*, int, ref bool) nothrow;
 FcResult FcPatternGetLangSet(const(FcPattern)*, const(char)*, int, ref FcLangSet*) nothrow;
 FcResult FcPatternGetCharSet(const(FcPattern)*, const(char)*, int, ref FcCharSet*) nothrow;
+void FcPatternPrint(const FcPattern *p) nothrow;
 
 struct FcCharSet;
 void FcCharSetDestroy(FcCharSet*) nothrow;
