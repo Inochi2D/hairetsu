@@ -5,8 +5,7 @@ copyright "Copyright © 2025, Luna, Copyright © 2025, Kitsunebi Games, Copyrigh
 license "BSL-1.0"
 
 dependency "numem" version=">=1.3.1"
-dependency "nulib" version=">=0.3.3"
-dependency "numem:hookset-libc" version="*"
+dependency "nulib" version=">=0.3.8"
 dependency "nurt" version=">=0.2.0" optional=true
 dependency "intel-intrinsics" version="1.12.0"
 
