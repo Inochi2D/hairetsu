@@ -74,7 +74,7 @@ Tag fromBCP47(string bcp47) @nogc nothrow {
         import std.json;
 
         enum mappingRoot = parseJSON(import("langmap.json")).object();
-        pragma(msg, "Parsing ", cast(int)mappingRoot.length, " BCP47 language mappings...");
+        pragma(msg, "Parsing BCP47 language mappings...");
 
         string[2][] getMultiMappings(JSONValue[] values) {
             if (__ctfe) {
@@ -87,7 +87,7 @@ Tag fromBCP47(string bcp47) @nogc nothrow {
         }
 
         switch(cast(string)tmp[0..minLength]) {
-            static foreach(string key, JSONValue language; mappingRoot) {
+            static foreach(const(char)[] key, JSONValue language; mappingRoot) {
                 static if (language.type == JSONType.array) {
                     static foreach(mapping; getMultiMappings(language.array[1..$])) {
                         mixin(q{case "%s-%s": return ISO15924!("%s");}.format(key, mapping[0], mapping[1]));

@@ -53,7 +53,7 @@ public:
         if (!stream.canRead()) throw nogc_new!StreamReadException(stream, "Stream is not readable!");
         if (!stream.canSeek()) throw nogc_new!StreamReadException(stream, "Stream is not seekable!");
 
-        foreach(FontReader reader; readers.byValue) {
+        foreach(FontReader reader; readers) {
             
             stream.seek(0);
             if (auto newReader = reader.tryCreateReader(stream))

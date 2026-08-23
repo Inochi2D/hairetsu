@@ -378,7 +378,7 @@ FontCollection collectionFromFaces(FontFaceInfo[] faces) @nogc {
     }
 
     // Step 3. Add them to the collection.
-    foreach(family; families.byValue) {
+    foreach(family; families) {
         collection.addFamily(family);
     }
     return collection;

@@ -57,7 +57,7 @@ float readCFFNumber(FontReader reader, bool isDict) {
         // BCD Decimal
         nstring bcd = reader.readCompressedBCDString();
         if (!bcd.empty)
-            return toFloat!float(bcd[]);
+            return to!float(bcd[]);
     }
 
     return float.nan;
