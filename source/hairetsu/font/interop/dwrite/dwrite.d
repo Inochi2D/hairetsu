@@ -25,7 +25,7 @@ version(Windows):
 
 
 
-public import nulib.system.com;
+public import nulib.com;
 
 enum DWriteFontFileType : uint {
     UNKNOWN,
